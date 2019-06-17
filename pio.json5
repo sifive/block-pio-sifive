@@ -1,0 +1,180 @@
+{
+  definitions: {
+
+    ports: {
+      t_ctrl_awvalid: 1,
+      t_ctrl_awready: -1,
+      t_ctrl_awaddr: 'addrWidth',
+      t_ctrl_awprot: 3,
+
+      t_ctrl_wvalid: 1,
+      t_ctrl_wready: -1,
+      t_ctrl_wdata: 'dataWidth',
+      t_ctrl_wstrb: 'dataWidth / 8',
+
+      t_ctrl_bvalid: -1,
+      t_ctrl_bready: 1,
+      t_ctrl_bresp: -2,
+
+      t_ctrl_arvalid: 1,
+      t_ctrl_arready: -1,
+      t_ctrl_araddr: 'addrWidth',
+      t_ctrl_arprot: 3,
+
+      t_ctrl_rvalid: -1,
+      t_ctrl_rready: 1,
+      t_ctrl_rdata: '-dataWidth',
+      t_ctrl_rresp: -2,
+
+      odata: '-pioWidth',
+      oenable: '-pioWidth',
+      idata: 'pioWidth',
+
+      irq0: -1,
+      irq1: -1,
+
+      clk: 1,
+      reset_n: 1
+    },
+
+    ctrlPortMap: {
+      ACLK: 'clk',
+      ARESETn: 'reset_n',
+
+      AWREADY: 't_ctrl_awready', // +
+      AWVALID: 't_ctrl_awvalid', // +
+      AWADDR:  't_ctrl_awaddr', // + width
+      AWPROT:  't_ctrl_awprot', // opt
+      // AWLEN:
+      // AWSIZE
+      // AWBURST
+
+      WREADY:  't_ctrl_wready', // +
+      WVALID:  't_ctrl_wvalid', // +
+      WDATA:   't_ctrl_wdata', // + matchPresenceAndWidth
+      WSTRB:   't_ctrl_wstrb', // +
+
+      BREADY:  't_ctrl_bready', // +
+      BVALID:  't_ctrl_bvalid', // +
+      BRESP:   't_ctrl_bresp', // opt
+
+      ARREADY: 't_ctrl_arready', // +
+      ARVALID: 't_ctrl_arvalid', // +
+      ARADDR:  't_ctrl_araddr', // +
+      ARPROT:  't_ctrl_arprot', // opt
+      // ARLEN
+      // ARSIZE
+      // ARBURST
+
+      RREADY:  't_ctrl_rready', // +
+      RVALID:  't_ctrl_rvalid', // +
+      RDATA:   't_ctrl_rdata', // + matchPresenceAndWidth
+      RRESP:   't_ctrl_rresp' // opt
+      // RLAST
+    },
+
+    pSchema: {
+      type: 'object',
+      properties: {
+        addrWidth: {
+          title: 'Address bus width',
+          type: 'integer', minimum: 6, maximum: 32, default: 12
+        },
+        dataWidth: {
+          title: 'Data bus width',
+          type: 'integer', minimum: 32, maximum: 64, default: 32
+        },
+        pioWidth: {
+          title: 'Number of IO pads',
+          type: 'integer', minimum: 1, maximum: 32, default: 32
+        }
+      }
+    },
+
+    csrMemMap: {
+      name: 'CSR',
+      addressBlocks: [{
+        name: 'csrAddressBlock',
+        baseAddress: 0,
+        range: 1024, width: 32,
+        usage: 'register',
+        volatile: false, access: 'read-write',
+        registers: [{
+          name: 'ODATA',
+          addressOffset: 0, size: 32,
+          displayName: 'Output Data Register',
+          fields: [{name: 'data', bitOffset: 0, bitWidth: 32}]
+        }, {
+          name: 'OENABLE', addressOffset: 32, size: 32,
+          displayName: 'Data direction',
+          description: 'determines whether the pin is an input or an output. If the data direction bit is a 1, then the pin is an input',
+          fields: [{name: 'data', bitOffset: 0, bitWidth: 32}]
+        }, {
+          name: 'IDATA', addressOffset: 64, size: 32,
+          displayName: 'Input data',
+          description: 'read the port pins',
+          fields: [{name: 'data', bitOffset: 0, bitWidth: 32}]
+        }]
+      }]
+    }
+
+  },
+  component: { // configurable, leaf
+    vendor: 'sifive',
+    library: 'blocks',
+    name: 'pio',
+    version: '0.1.0',
+    busInterfaces: [{
+      name: 'ctrl',
+      interfaceMode: 'slave',
+      busType: {vendor: 'amba.com', library: 'AMBA4', name: 'AXI4Lite', version: 'r0p0_0'},
+      abstractionTypes: [{
+        viewRef: 'RTLview',
+        portMaps: {$ref: '#/definitions/ctrlPortMap'},
+      }],
+      connectionRequired: true,
+      props: {
+        write_interleaving_depth: 1,
+        // lock_support: false,
+        read_reordering_depth: 1,
+        write_reordering_depth: 1,
+        outstanding_reads: 1, // optional
+        outstanding_writes: 1, // optional
+        outstanding_transactions: 1 // optional
+      }
+    }, {
+      name: 'irq',
+      interfaceMode: 'master',
+      busType: {vendor: 'sifive.com', library: 'free', name: 'interrupts', version: '0.1.0'},
+      abstractionTypes: [{
+        viewRef: 'RTLview',
+        portMaps: [
+          'irq0',
+          'irq1'
+        ]
+      }]
+    }],
+    addressSpaces: [{
+      name: 'csrAddressSpace',
+      range: 1024,
+      width: 32
+    }],
+    memoryMaps: [{$ref: '#/definitions/csrMemMap'}],
+    model: {
+      views: [{
+        name: 'RTLview',
+        displayName: 'RTL View',
+        description: 'Simple RTL view of a component.',
+        envIdentifier: '*Synthesis:',
+        componentInstantiationRef: 'VerilogModel'
+      }],
+      instantiations: [],
+      ports: {$ref: '#/definitions/ports'}
+    },
+    componentGenerators: [],
+    fileSets: {
+      VerilogFiles: ['pio.v']
+    },
+    pSchema: {$ref: '#/definitions/pSchema'}
+  }
+}

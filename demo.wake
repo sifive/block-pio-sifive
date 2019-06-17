@@ -1,0 +1,63 @@
+def loopbackScalaModule =
+  def name = "loopback"
+  def path = "{here}/scala/loopback"
+  def scalaVersion = sifiveSkeletonScalaModule.getScalaModuleScalaVersion
+  def deps = sifiveBlocksScalaModule, sifiveSkeletonScalaModule, Nil
+  makeScalaModule name path scalaVersion
+  | setScalaModuleSourceDirs ("src", Nil)
+  | setScalaModuleDeps deps
+  | setScalaModuleScalacOptions ("-Xsource:2.11", Nil)
+
+def pioModule =
+  def name = "pio"
+  def rootDir = "{here}/scala/pio"
+  def scalaVersion = sifiveSkeletonScalaModule.getScalaModuleScalaVersion
+  def deps = loopbackScalaModule, sifiveBlocksScalaModule, sifiveSkeletonScalaModule, Nil
+  makeScalaModule name rootDir scalaVersion
+  | setScalaModuleSourceDirs ("src", Nil)
+  | setScalaModuleDeps deps
+  | setScalaModuleScalacOptions ("-Xsource:2.11", Nil)
+
+def pioBlock =
+  def scalaModule = pioModule
+  def config = "sifive.blocks.pio.WithpioTop"
+  makeScalaBlock scalaModule config
+
+publish dutSimCompileOptionsHooks = pioHook, loopbackHook, Nil
+
+def loopbackHook =
+  def name = "loopback"
+  def addSources = source "{here}/rtl/loopback.v", _
+  makeBlackBoxHook name (editDUTSimCompileOptionsSourceFiles addSources)
+
+def pioHook =
+  def name = "pio"
+  def edits =
+    _
+    | editDUTSimCompileOptionsSourceFiles (source "{here}/rtl/pio.v", _)
+    | editDUTSimCompileOptionsIncludeDirs ("{here}/rtl", "{here}/rtl", _)
+  makeBlackBoxHook name edits
+
+def demo =
+  def programName = "demo"
+  def cFiles = source "{here}/tests/demo/main.c", Nil
+  makeTestProgramPlan programName cFiles
+
+global def pioDUT =
+  def name = "pioDUT"
+  def blocks = pioBlock, Nil
+  makeTestSocketDUT name blocks
+
+publish dutTests = demoPioTest, Nil
+
+global def demoPioTest =
+  def name = "demo"
+  def block = pioBlock
+  def program = demo
+  def plusargs =
+    NamedArg        "verbose",
+    NamedArgInteger "random_seed"      1234,
+    NamedArgInteger "tilelink_timeout" 16000,
+    NamedArgInteger "max-cycles"       50000,
+    Nil
+  makeBlockTest name block program plusargs
