@@ -29,14 +29,14 @@ publish dutSimCompileOptionsHooks = pioHook, loopbackHook, Nil
 
 def loopbackHook =
   def name = "loopback"
-  def addSources = source "{blockPIOSifiveRoot}/rtl/loopback.v", _
+  def addSources = source "{blockPIOSifiveRoot}/rtl/loopback/loopback.v", _
   makeBlackBoxHook name (editDUTSimCompileOptionsSourceFiles addSources)
 
 def pioHook =
   def name = "pio"
   def edits =
     _
-    | editDUTSimCompileOptionsSourceFiles (source "{blockPIOSifiveRoot}/rtl/pio.v", _)
+    | editDUTSimCompileOptionsSourceFiles (source "{blockPIOSifiveRoot}/rtl/pio/pio.v", _)
     | editDUTSimCompileOptionsIncludeDirs ("{blockPIOSifiveRoot}/rtl/pio", _)
   makeBlackBoxHook name edits
 
@@ -60,6 +60,6 @@ global def demoPioTest =
     NamedArg        "verbose",
     NamedArgInteger "random_seed"      1234,
     NamedArgInteger "tilelink_timeout" 16000,
-    NamedArgInteger "max-cycles"       100000,
+    NamedArgInteger "max-cycles"       50000,
     Nil
   makeBlockTest name block program plusargs

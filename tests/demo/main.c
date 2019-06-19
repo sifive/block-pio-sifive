@@ -17,10 +17,9 @@ int main()
   uint32_t oenables[5] = {0xF0F0F0F0, 0x0F0F0F0F, 0xDEADBEEF, 0x89ABCDEF, 0x7654321};
 
   int fail = 0;
-  for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < 5; i++) {
     *odata = odatas[i];
     *oenable = oenables[i];
-    printf("odata: %d oenable: %d idata: %d", *odata, *oenable, *idata);
 
     fail |= ((*odata ^ *oenable) != *idata);
   }
