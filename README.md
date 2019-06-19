@@ -51,7 +51,7 @@ particular system. An example is
 ### Initialize the workspace
 ```
 # Create a workspace, this will also fetch all dependencies
-wit init workspace -a git@github.com:sifive/demo-block.git
+wit init workspace -a git@github.com:sifive/block-pio-sifive.git
 cd workspace/
 
 # Add an environment package to provide runners for the required tools
@@ -97,20 +97,20 @@ and `odata` to `idata`.
 
 ### 2. Generating scala code with `duh`
 
-  `${demo-block root}/pio.json5` and `${demo-block root}/loopback.json5`
+  `${block-pio-sifive root}/pio.json5` and `${block-pio-sifive root}/loopback.json5`
   contain descriptions of the ports, parameters, buses, and CSRs of the pio
   and loopback blocks respectively. This description is fed into `duh` to
   generate boilerplate scala code for integrating the block into Rocket.
   This assumes node installed and the
   current directory is the workspace root.
   ```
-  mkdir -p demo-block/scala/loopback/src
-  duh-export-scala demo-block/loopback.json5 -o demo-block/scala/loopback/src
+  mkdir -p block-pio-sifive/scala/loopback/src
+  duh-export-scala block-pio-sifive/loopback.json5 -o block-pio-sifive/scala/loopback/src
   ```
   Then do the same for the pio block also from the workspace root.
   ```
-  mkdir -p demo-block/scala/pio/src
-  duh-export-scala demo-block/pio.json5 -o demo-block/scala/pio/src
+  mkdir -p block-pio-sifive/scala/pio/src
+  duh-export-scala block-pio-sifive/pio.json5 -o block-pio-sifive/scala/pio/src
   ```
   You should now see `src/${moduleName}.scala` and
   `src/${moduleName}-base.scala` files in the `scala/pio` and
@@ -131,7 +131,7 @@ and `odata` to `idata`.
   generates connections for the AXI4 interface of our block, so `clk`,
   `reset_n`, `odata`, `oenable`, and `idata` are still dangling.
 
-  Open up `demo-block/scala/pio/src/pio.scala`. There will be stubs
+  Open up `block-pio-sifive/scala/pio/src/pio.scala`. There will be stubs
   along with comments indicating where you should add your own code.
 
   The top-level of the block will be called `N${moduleName}Top`. The hierarchy
@@ -143,7 +143,7 @@ and `odata` to `idata`.
   ```
   The `imp` instance of the top-level block instantiates our verilog module
   using a Chisel BlackBox. It instantiates interface nodes that correspond to
-  the buses described in the `duh` document and connects them the ports of the
+  the buses described in the `duh` document and connects them to the ports of the
   blackbox according to the port-map from the `duh` document. The
   `N${moduleName}Top` module that wraps the `imp` instance contains any
   necessary adapters such as TileLink-to-AXI4 adapters.
@@ -152,7 +152,7 @@ and `odata` to `idata`.
   Rocket subsystem.
 
   First, add an import for the loopback block to the list of imports at the top
-  of `demo-block/scala/pio/src/pio.scala`.
+  of `block-pio-sifive/scala/pio/src/pio.scala`.
   ```scala
   import sifive.vip.loopback._
   ```
@@ -171,7 +171,7 @@ and `odata` to `idata`.
 
   Then edit the `NpioTop` class to add connections to the dangling
   ports. Copy the following lines into the body of the `NpioTop`class in
-  `demo-block/scala/pio/src/pio.scala`.
+  `block-pio-sifive/scala/pio/src/pio.scala`.
   ```scala
     // route the ports of the black box to this sink
     val ioBridgeSink = BundleBridgeSink[pioBlackBoxIO]()
@@ -235,7 +235,7 @@ and `odata` to `idata`.
   ```
 
   In order to make our new scala files visible to wake we need to add them to
-  git. In the `demo-block` directory run the following to add the scala files.
+  git. In the `block-pio-sifive` directory run the following to add the scala files.
   ```
   git add scala
   ```
@@ -269,7 +269,7 @@ and `odata` to `idata`.
   [sifive-skeleton](https://github.com/sifive/sifive-skeleton) and
   [sifive-blocks](https://github.com/sifive/sifive-blocks) so we need to add the
   already defined `sifiveBlocksScalaModule` and `sifiveSkeletonScalaModule` as
-  dependencies. Add this definition to `demo-block/demo.wake` to define the
+  dependencies. Add this definition to `block-pio-sifive/demo.wake` to define the
   `loopback` `ScalaModule`.
   ```
   def loopbackScalaModule =
@@ -286,7 +286,7 @@ and `odata` to `idata`.
   The `pio` module is almost exactly the same. The only changes are the name,
   root directory, and dependencies. We imported components from `loopback`
   into the `pio` project so we need to add `loopbackScalaModule` as a
-  dependency here. Copy the following into `demo-block/demo.wake`
+  dependency here. Copy the following into `block-pio-sifive/demo.wake`
   ```
   def pioModule =
     def name = "pio"
@@ -313,7 +313,7 @@ and `odata` to `idata`.
   `duh` generates a config called `sifive.blocks.{moduleName}.With{moduleName}Top`.
   Including this config in our DUT will instantiate the block in the subsystem using
   the `attach` function defined by `duh`. Copy the following lines for creating the
-  `pio` block into `demo-block/demo.wake`.
+  `pio` block into `block-pio-sifive/demo.wake`.
   ```
   def pioBlock =
     def scalaModule = pioModule
@@ -369,7 +369,7 @@ and `odata` to `idata`.
   a hook that will apply the transform is the blackbox of the same name is found
   in the `DUT`. We can use this to tell the simulator about our pio/loopback
   source files because `duh` will generate blackboxes of those modules for us.
-  Copy the following hook defninitions into `demo-block/demo.wake`.
+  Copy the following hook defninitions into `block-pio-sifive/demo.wake`.
   ```
   publish dutSimCompileOptionsHooks = pioHook, loopbackHook, Nil
 
@@ -387,7 +387,7 @@ and `odata` to `idata`.
 ## Making a test
 
 Currently, only c integration tests are supported. A simple test is included
-with this repository in `demo-block/tests/demo/main.c`. It looks like this.
+with this repository in `block-pio-sifive/tests/demo/main.c`. It looks like this.
 ```c
 int main()
 {
@@ -423,7 +423,7 @@ tuple TestProgramPlan =
   global Sources:     List Path
   global Filter:      DUTProgramCompiler => Boolean
 ```
-A `TestProgramPlan` should only contain machine agnositc flags, since the
+A `TestProgramPlan` should only contain machine agnostic flags, since the
 same program plan may be run on multiple different configs. Machine-specific
 options should be filled in by the `DUTProgramCompiler`. You can specify what
 `DUTProgramCompiler`s are valid for this plan using the `Filter` field.
@@ -445,7 +445,7 @@ and link programs according the DTS.
 
 Since the demo test is pretty simple, we only need to specify the cfiles and the
 program name, and we can use the default parameters. Copy the following into
-`demo-block/demo.wake` to create a `TestProgramPlan` for `demo-block/tests/demo/main.c`.
+`block-pio-sifive/demo.wake` to create a `TestProgramPlan` for `block-pio-sifive/tests/demo/main.c`.
 ```
 def demo =
   def programName = "demo"
@@ -519,7 +519,7 @@ function `makeTestSocketDUT {name} {blocks}`.
 uart, a test-finisher, and the extra blocks supplied by the `blocks` argument.
 
 Copy the following lines for creating a test `DUT` for the pio block into
-`demo-block/demo.wake`.
+`block-pio-sifive/demo.wake`.
 ```
 global def pioDUT =
   def name = "pioDUT"
@@ -553,7 +553,7 @@ signature.
   makeBlockTest name block program plusargs =
 ```
 
-Copy the following lines into `demo-block/demo.wake` to create and publish the demo
+Copy the following lines into `block-pio-sifive/demo.wake` to create and publish the demo
 test for the pio block. Publishing to `dutTests` will register this test so that it
 is automatically run whenever an applicable `DUT` is being tested (see next
 section).
