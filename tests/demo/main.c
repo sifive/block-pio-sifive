@@ -20,6 +20,7 @@ int main()
   for (int i = 0; i < 3; i++) {
     *odata = odatas[i];
     *oenable = oenables[i];
+    printf("odata: %d oenable: %d idata: %d", *odata, *oenable, *idata);
 
     fail |= ((*odata ^ *oenable) != *idata);
   }

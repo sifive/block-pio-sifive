@@ -1,6 +1,8 @@
+global def blockPIOSifiveRoot = simplify "{here}/.."
+
 def loopbackScalaModule =
   def name = "loopback"
-  def path = "{here}/scala/loopback"
+  def path = "{blockPIOSifiveRoot}/craft/loopback"
   def scalaVersion = sifiveSkeletonScalaModule.getScalaModuleScalaVersion
   def deps = sifiveBlocksScalaModule, sifiveSkeletonScalaModule, Nil
   makeScalaModule name path scalaVersion
@@ -10,7 +12,7 @@ def loopbackScalaModule =
 
 def pioModule =
   def name = "pio"
-  def rootDir = "{here}/scala/pio"
+  def rootDir = "{blockPIOSifiveRoot}/craft/pio"
   def scalaVersion = sifiveSkeletonScalaModule.getScalaModuleScalaVersion
   def deps = loopbackScalaModule, sifiveBlocksScalaModule, sifiveSkeletonScalaModule, Nil
   makeScalaModule name rootDir scalaVersion
@@ -27,20 +29,20 @@ publish dutSimCompileOptionsHooks = pioHook, loopbackHook, Nil
 
 def loopbackHook =
   def name = "loopback"
-  def addSources = source "{here}/rtl/loopback.v", _
+  def addSources = source "{blockPIOSifiveRoot}/rtl/loopback.v", _
   makeBlackBoxHook name (editDUTSimCompileOptionsSourceFiles addSources)
 
 def pioHook =
   def name = "pio"
   def edits =
     _
-    | editDUTSimCompileOptionsSourceFiles (source "{here}/rtl/pio.v", _)
-    | editDUTSimCompileOptionsIncludeDirs ("{here}/rtl", "{here}/rtl", _)
+    | editDUTSimCompileOptionsSourceFiles (source "{blockPIOSifiveRoot}/rtl/pio.v", _)
+    | editDUTSimCompileOptionsIncludeDirs ("{blockPIOSifiveRoot}/rtl/pio", _)
   makeBlackBoxHook name edits
 
 def demo =
   def programName = "demo"
-  def cFiles = source "{here}/tests/demo/main.c", Nil
+  def cFiles = source "{blockPIOSifiveRoot}/tests/demo/main.c", Nil
   makeTestProgramPlan programName cFiles
 
 global def pioDUT =
@@ -58,6 +60,6 @@ global def demoPioTest =
     NamedArg        "verbose",
     NamedArgInteger "random_seed"      1234,
     NamedArgInteger "tilelink_timeout" 16000,
-    NamedArgInteger "max-cycles"       50000,
+    NamedArgInteger "max-cycles"       100000,
     Nil
   makeBlockTest name block program plusargs
