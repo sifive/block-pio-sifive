@@ -252,29 +252,28 @@ class NpioTopBase(c: NpioTopParams)(implicit p: Parameters) extends SimpleLazyMo
   val pioWidth: Int = c.blackbox.pioWidth
 // no channel node
   
-  val ctrlNode: TLInwardNode = (
-    imp.ctrlNode
-      := AXI4Buffer(
-        aw = c.blackbox.ctrlParams.axi4BufferParams.aw,
-        ar = c.blackbox.ctrlParams.axi4BufferParams.ar,
-        w = c.blackbox.ctrlParams.axi4BufferParams.w,
-        r = c.blackbox.ctrlParams.axi4BufferParams.r,
-        b = c.blackbox.ctrlParams.axi4BufferParams.b
-      )
-      := AXI4UserYanker(capMaxFlight = Some(c.blackbox.ctrlParams.maxTransactions))
-  
-  
-      := TLToAXI4()
-  
-      := TLFragmenter((dataWidth / 8), c.blackbox.cacheBlockBytes, holdFirstDeny=true)
-      := TLBuffer(
-        a = c.blackbox.ctrlParams.tlBufferParams.a,
-        b = c.blackbox.ctrlParams.tlBufferParams.b,
-        c = c.blackbox.ctrlParams.tlBufferParams.c,
-        d = c.blackbox.ctrlParams.tlBufferParams.d,
-        e = c.blackbox.ctrlParams.tlBufferParams.e
-      )
-  )
+  val ctrlNode: AXI4SlaveNode = imp.ctrlNode
+
+  def getCtrlNodeTLAdapter(): TLInwardNode = {(
+    ctrlNode
+    := AXI4Buffer(
+      aw = c.blackbox.ctrlParams.axi4BufferParams.aw,
+      ar = c.blackbox.ctrlParams.axi4BufferParams.ar,
+      w = c.blackbox.ctrlParams.axi4BufferParams.w,
+      r = c.blackbox.ctrlParams.axi4BufferParams.r,
+      b = c.blackbox.ctrlParams.axi4BufferParams.b
+    )
+    := AXI4UserYanker(capMaxFlight = Some(c.blackbox.ctrlParams.maxTransactions))
+    := TLToAXI4()
+    := TLFragmenter((dataWidth / 8), c.blackbox.cacheBlockBytes, holdFirstDeny=true)
+    := TLBuffer(
+      a = c.blackbox.ctrlParams.tlBufferParams.a,
+      b = c.blackbox.ctrlParams.tlBufferParams.b,
+      c = c.blackbox.ctrlParams.tlBufferParams.c,
+      d = c.blackbox.ctrlParams.tlBufferParams.d,
+      e = c.blackbox.ctrlParams.tlBufferParams.e
+    )
+  )}
   
   
   val irqNode: IntSourceNode = imp.irqNode
@@ -285,7 +284,7 @@ object NpioTopBase {
     implicit val p: Parameters = bap.p
     val pio_top = LazyModule(new NpioTop(c))
     // no channel attachment
-    bap.pbus.coupleTo("axi") { pio_top.ctrlNode := TLWidthWidget(bap.pbus) := _ }
+    bap.pbus.coupleTo("axi") { pio_top.getCtrlNodeTLAdapter() := TLWidthWidget(bap.pbus) := _ }
     bap.ibus := pio_top.irqNode
     pio_top
   }
