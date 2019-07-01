@@ -1,6 +1,6 @@
 global def blockPIOSifiveRoot = simplify "{here}/.."
 
-def loopbackScalaModule =
+global def loopbackScalaModule =
   def name = "loopback"
   def path = "{blockPIOSifiveRoot}/craft/loopback"
   def scalaVersion = sifiveSkeletonScalaModule.getScalaModuleScalaVersion
@@ -10,7 +10,7 @@ def loopbackScalaModule =
   | setScalaModuleDeps deps
   | setScalaModuleScalacOptions ("-Xsource:2.11", Nil)
 
-def pioModule =
+global def pioScalaModule =
   def name = "pio"
   def rootDir = "{blockPIOSifiveRoot}/craft/pio"
   def scalaVersion = sifiveSkeletonScalaModule.getScalaModuleScalaVersion
@@ -20,8 +20,8 @@ def pioModule =
   | setScalaModuleDeps deps
   | setScalaModuleScalacOptions ("-Xsource:2.11", Nil)
 
-def pioBlock =
-  def scalaModule = pioModule
+global def pioBlock =
+  def scalaModule = pioScalaModule
   def config = "sifive.blocks.pio.WithpioTop"
   makeScalaBlock scalaModule config
 
@@ -40,7 +40,7 @@ def pioHook =
     | editDUTSimCompileOptionsIncludeDirs ("{blockPIOSifiveRoot}/rtl/pio", _)
   makeBlackBoxHook name edits
 
-def demo =
+global def demo =
   def programName = "demo"
   def cFiles = source "{blockPIOSifiveRoot}/tests/demo/main.c", Nil
   makeTestProgramPlan programName cFiles
