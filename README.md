@@ -18,7 +18,7 @@
 
 #### duh
 
-* `npm i duh@1.10.0`
+* `npm i duh@1.13.1`
 * duh assists in IP onboarding
 * Please see instructions on [duh README](https://github.com/sifive/duh)
 
@@ -89,7 +89,7 @@ and `odata` to `idata`.
 ### 1. Creating the `duh` description
   First, install version 1.10.0 of `duh`
   ```
-  npm i duh@1.10.0
+  npm i duh@1.13.1
   ```
   `duh` descriptions for the pio and loopback blocks are already included with
   this repo. See https://github.com/sifive/duh for instructions on how to create
@@ -97,7 +97,7 @@ and `odata` to `idata`.
 
 ### 2. Generating scala code with `duh`
 
-  `${block-pio-sifive root}/pio.json5` and `${block-pio-sifive root}/loopback.json5`
+  `block-pio-sifive/pio.json5` and `block-pio-sifive/loopback.json5`
   contain descriptions of the ports, parameters, buses, and CSRs of the pio
   and loopback blocks respectively. This description is fed into `duh` to
   generate boilerplate scala code for integrating the block into Rocket.
