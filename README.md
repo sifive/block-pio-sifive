@@ -110,9 +110,9 @@ and `odata` to `idata`.
   ```
   duh-export-scala block-pio-sifive/pio.json5 -o block-pio-sifive/craft/pio/src
   ```
-  You should now see `src/${moduleName}.scala` and
-  `src/${moduleName}-base.scala` files in the `craft/pio` and
-  `scala/loopback` directories.
+  You should now see `${moduleName}.scala` and
+  `${moduleName}-base.scala` files in the `block-pio-sifive/craft/pio/src` and
+  `block-pio-sifive/craft/loopback/src` directories.
 
 ### 3. Extending `duh` generated base classes
 
@@ -264,7 +264,7 @@ and `odata` to `idata`.
   fields will default to `Nil`.
 
   The loopback block uses components from
-  [sifive-skeleton](https://github.com/sifive/sifive-skeleton) and
+  [soc-testsocket-sifive](https://github.com/sifive/soc-testsocket-sifive) and
   [sifive-blocks](https://github.com/sifive/sifive-blocks) so we need to add the
   already defined `sifiveBlocksScalaModule` and `sifiveSkeletonScalaModule` as
   dependencies. Add this definition to `block-pio-sifive/wake/demo.wake` to define the
