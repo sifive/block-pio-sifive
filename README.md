@@ -263,11 +263,11 @@ and `odata` to `idata`.
   we need to set are `ScalacOptions`, `Deps`,  and `SourceDirs`. All other
   fields will default to `Nil`.
 
-	In `block-pio-sifive/wake/demo.wake` declare a variable that points to the
-	root of the `block-pio-sifive` package.
-	```
-	global def blockPIOSifiveRoot = simplify "{here}/.."
-	```
+  In `block-pio-sifive/wake/demo.wake` declare a variable that points to the
+  root of the `block-pio-sifive` package.
+  ```
+  global def blockPIOSifiveRoot = simplify "{here}/.."
+  ```
 
   The loopback block uses components from
   [soc-testsocket-sifive](https://github.com/sifive/soc-testsocket-sifive) and
@@ -276,7 +276,7 @@ and `odata` to `idata`.
   dependencies. Add this definition to `block-pio-sifive/wake/demo.wake` to define the
   `loopback` `ScalaModule`.
   ```
-  def loopbackScalaModule =
+  global def loopbackScalaModule =
     def name = "loopback"
     def path = "{blockPIOSifiveRoot}/craft/loopback"
     def scalaVersion = sifiveSkeletonScalaModule.getScalaModuleScalaVersion
@@ -292,7 +292,7 @@ and `odata` to `idata`.
   into the `pio` project so we need to add `loopbackScalaModule` as a
   dependency here. Copy the following into `block-pio-sifive/wake/demo.wake`
   ```
-  def pioModule =
+  global def pioScalaModule =
     def name = "pio"
     def rootDir = "{blockPIOSifiveRoot}/craft/pio"
     def scalaVersion = sifiveSkeletonScalaModule.getScalaModuleScalaVersion
@@ -319,8 +319,8 @@ and `odata` to `idata`.
   the `attach` function defined by `duh`. Copy the following lines for creating the
   `pio` block into `block-pio-sifive/wake/demo.wake`.
   ```
-  def pioBlock =
-    def scalaModule = pioModule
+  global def pioBlock =
+    def scalaModule = pioScalaModule
     def config = "sifive.blocks.pio.WithpioTop"
     makeScalaBlock scalaModule config
   ```
@@ -451,7 +451,7 @@ Since the demo test is pretty simple, we only need to specify the cfiles and the
 program name, and we can use the default parameters. Copy the following into
 `block-pio-sifive/wake/demo.wake` to create a `TestProgramPlan` for `block-pio-sifive/tests/demo/main.c`.
 ```
-def demo =
+global def demo =
   def programName = "demo"
   def cFiles = source "{blockPIOSifiveRoot}/tests/demo/main.c", Nil
   makeTestProgramPlan programName cFiles
@@ -485,7 +485,7 @@ int main()
 We would need to add an argument to the c compiler. Our new wake program would
 then look like this.
 ```
-def demo =
+global def demo =
   def programName = "demo"
   def cFiles = source "{blockPIOSifiveRoot}/tests/demo/main.c", Nil
   makeTestProgramPlan programName cFiles

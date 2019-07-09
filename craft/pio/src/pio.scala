@@ -32,7 +32,6 @@ class NpioTopIO(
   val idata = Input(UInt(pioWidth.W))
 }
 
-
 class Lpio(c: pioParams)(implicit p: Parameters) extends LpioBase(c)(p)
 {
 
@@ -61,7 +60,6 @@ class NpioTop(c: NpioTopParams)(implicit p: Parameters) extends NpioTopBase(c)(p
     ioBridgeSource.bundle.oenable := ioBridgeSink.bundle.oenable
     ioBridgeSink.bundle.idata     := ioBridgeSource.bundle.idata
   }
-
 }
 
 object NpioTop {
