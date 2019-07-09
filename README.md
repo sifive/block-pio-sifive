@@ -263,6 +263,12 @@ and `odata` to `idata`.
   we need to set are `ScalacOptions`, `Deps`,  and `SourceDirs`. All other
   fields will default to `Nil`.
 
+	In `block-pio-sifive/wake/demo.wake` declare a variable that points to the
+	root of the `block-pio-sifive` package.
+	```
+	global def blockPIOSifiveRoot = simplify "{here}/.."
+	```
+
   The loopback block uses components from
   [soc-testsocket-sifive](https://github.com/sifive/soc-testsocket-sifive) and
   [sifive-blocks](https://github.com/sifive/sifive-blocks) so we need to add the
@@ -272,7 +278,7 @@ and `odata` to `idata`.
   ```
   def loopbackScalaModule =
     def name = "loopback"
-    def path = "{here}/../craft/loopback"
+    def path = "{blockPIOSifiveRoot}/craft/loopback"
     def scalaVersion = sifiveSkeletonScalaModule.getScalaModuleScalaVersion
     def deps = sifiveBlocksScalaModule, sifiveSkeletonScalaModule, Nil
     makeScalaModule name path scalaVersion
@@ -288,7 +294,7 @@ and `odata` to `idata`.
   ```
   def pioModule =
     def name = "pio"
-    def rootDir = "{here}/../craft/pio"
+    def rootDir = "{blockPIOSifiveRoot}/craft/pio"
     def scalaVersion = sifiveSkeletonScalaModule.getScalaModuleScalaVersion
     def deps = loopbackScalaModule, sifiveBlocksScalaModule, sifiveSkeletonScalaModule, Nil
     makeScalaModule name rootDir scalaVersion
@@ -373,12 +379,12 @@ and `odata` to `idata`.
 
   def loopbackHook =
     def name = "loopback"
-    def addSources = source "{here}/../rtl/loopback.v", _
+    def addSources = source "{blockPIOSifiveRoot}/rtl/loopback/loopback.v", _
     makeBlackBoxHook name (editDUTSimCompileOptionsSourceFiles addSources)
 
   def pioHook =
     def name = "pio"
-    def addSources = source "{here}/../rtl/pio.v", _
+    def addSources = source "{blockPIOSifiveRoot}/rtl/loopback/pio.v", _
     makeBlackBoxHook name (editDUTSimCompileOptionsSourceFiles addSources)
   ```
 
@@ -447,7 +453,7 @@ program name, and we can use the default parameters. Copy the following into
 ```
 def demo =
   def programName = "demo"
-  def cFiles = source "{here}/../tests/demo/main.c", Nil
+  def cFiles = source "{blockPIOSifiveRoot}/tests/demo/main.c", Nil
   makeTestProgramPlan programName cFiles
 ```
 
@@ -481,7 +487,7 @@ then look like this.
 ```
 def demo =
   def programName = "demo"
-  def cFiles = source "{here}/../tests/demo/main.c", Nil
+  def cFiles = source "{blockPIOSifiveRoot}/tests/demo/main.c", Nil
   makeTestProgramPlan programName cFiles
   | editTestProgramPlanCFlags ("-DPIO=0x60000", _)
 ```
@@ -491,7 +497,7 @@ files for dhrystone are included in this repo.
 ```
 def dhrystone =
   def programName = "dhrystone"
-  def prefix = "{here}/../tests/dhrystone"
+  def prefix = "{blockPIOSifiveRoot}/tests/dhrystone"
   def cFiles = source "{prefix}/dhry_1.c", source "{prefix}/dhry_2.c", Nil
   def withIncludeDirs = prefix, _
   def withExtraCFlags =
