@@ -384,7 +384,7 @@ and `odata` to `idata`.
 
   def pioHook =
     def name = "pio"
-    def addSources = source "{blockPIOSifiveRoot}/rtl/loopback/pio.v", _
+    def addSources = source "{blockPIOSifiveRoot}/rtl/pio/pio.v", _
     makeBlackBoxHook name (editDUTSimCompileOptionsSourceFiles addSources)
   ```
 
