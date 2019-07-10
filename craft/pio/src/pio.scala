@@ -92,6 +92,7 @@ object NpioTop {
         pioNode.bundle.idata        := loopbackNode.bundle.idata
       }
     }
+
     pio
   }
 }

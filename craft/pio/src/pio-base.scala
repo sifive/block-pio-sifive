@@ -95,7 +95,7 @@ class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule {
     AXI4SlavePortParameters(
       slaves = Seq(
         AXI4SlaveParameters(
-          address       = List(AddressSet(c.ctrlParams.base, ((1 << addrWidth) - 1))),
+          address       = List(AddressSet(c.ctrlParams.base, ((1L << addrWidth) - 1))),
           executable    = c.ctrlParams.executable,
           supportsWrite = TransferSizes(1, (dataWidth / 8)),
           supportsRead  = TransferSizes(1, (dataWidth / 8)),
@@ -124,8 +124,8 @@ class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule {
       c.pioWidth
     ))
     // interface wiring 2
-    
-    
+
+
     // port wiring
     blackbox.io.t_ctrl_awvalid := ioBridgeSource.bundle.t_ctrl_awvalid
     ioBridgeSource.bundle.t_ctrl_awready := blackbox.io.t_ctrl_awready
@@ -154,8 +154,8 @@ class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule {
     blackbox.io.clk := ioBridgeSource.bundle.clk
     blackbox.io.reset_n := ioBridgeSource.bundle.reset_n
     // interface alias
-    val (ctrl0, _) = ctrlNode.in(0)
-    val (irq0, _) = irqNode.out(0)
+    val ctrl0 = ctrlNode.in(0)._1
+    val irq0 = irqNode.out(0)._1
     // interface wiring
     // wiring for ctrl of type AXI4Lite
     // -> {"aw":{"valid":1,"ready":-1,"bits":{"id":"awIdWidth","addr":"awAddrWidth","len":8,"size":3,"burst":2,"lock":1,"cache":4,"prot":3,"qos":4}},"w":{"valid":1,"ready":-1,"bits":{"data":"wDataWidth","strb":"wStrbWidth","last":1}},"b":{"valid":-1,"ready":1,"bits":{"id":"-bIdWidth","resp":-2}},"ar":{"valid":1,"ready":-1,"bits":{"id":"arIdWidth","addr":"addrWidth","len":8,"size":3,"burst":2,"lock":1,"cache":4,"prot":3,"qos":4}},"r":{"valid":-1,"ready":1,"bits":{"id":"-rIdWidth","data":"-dataWidth","resp":-2,"last":-1}}}// aw
@@ -205,7 +205,7 @@ class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule {
     ctrl0.r.bits.data := blackbox.io.t_ctrl_rdata
     ctrl0.r.bits.resp := blackbox.io.t_ctrl_rresp
     ctrl0.r.bits.last := true.B // RLAST
-    
+
     // wiring for irq of type interrupts
     // ["irq0","irq1"]
   }
@@ -251,9 +251,11 @@ class NpioTopBase(c: NpioTopParams)(implicit p: Parameters) extends SimpleLazyMo
   val dataWidth: Int = c.blackbox.dataWidth
   val pioWidth: Int = c.blackbox.pioWidth
 // no channel node
-  
-  val ctrlNode: TLInwardNode = (
-    imp.ctrlNode
+
+  val ctrlNode: AXI4SlaveNode = imp.ctrlNode
+
+  def getctrlNodeTLAdapter(): TLInwardNode = {(
+    ctrlNode
       := AXI4Buffer(
         aw = c.blackbox.ctrlParams.axi4BufferParams.aw,
         ar = c.blackbox.ctrlParams.axi4BufferParams.ar,
@@ -262,10 +264,7 @@ class NpioTopBase(c: NpioTopParams)(implicit p: Parameters) extends SimpleLazyMo
         b = c.blackbox.ctrlParams.axi4BufferParams.b
       )
       := AXI4UserYanker(capMaxFlight = Some(c.blackbox.ctrlParams.maxTransactions))
-  
-  
       := TLToAXI4()
-  
       := TLFragmenter((dataWidth / 8), c.blackbox.cacheBlockBytes, holdFirstDeny=true)
       := TLBuffer(
         a = c.blackbox.ctrlParams.tlBufferParams.a,
@@ -274,9 +273,9 @@ class NpioTopBase(c: NpioTopParams)(implicit p: Parameters) extends SimpleLazyMo
         d = c.blackbox.ctrlParams.tlBufferParams.d,
         e = c.blackbox.ctrlParams.tlBufferParams.e
       )
-  )
-  
-  
+  )}
+
+
   val irqNode: IntSourceNode = imp.irqNode
 }
 
@@ -285,7 +284,7 @@ object NpioTopBase {
     implicit val p: Parameters = bap.p
     val pio_top = LazyModule(new NpioTop(c))
     // no channel attachment
-    bap.pbus.coupleTo("axi") { pio_top.ctrlNode := TLWidthWidget(bap.pbus) := _ }
+    bap.pbus.coupleTo("axi") { pio_top.getctrlNodeTLAdapter() := TLWidthWidget(bap.pbus) := _ }
     bap.ibus := pio_top.irqNode
     pio_top
   }

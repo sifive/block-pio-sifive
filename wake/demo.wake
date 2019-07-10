@@ -34,11 +34,8 @@ def loopbackHook =
 
 def pioHook =
   def name = "pio"
-  def edits =
-    _
-    | editDUTSimCompileOptionsSourceFiles (source "{blockPIOSifiveRoot}/rtl/pio/pio.v", _)
-    | editDUTSimCompileOptionsIncludeDirs ("{blockPIOSifiveRoot}/rtl/pio", _)
-  makeBlackBoxHook name edits
+  def addSources = source "{blockPIOSifiveRoot}/rtl/loopback/pio.v", _
+  makeBlackBoxHook name (editDUTSimCompileOptionsSourceFiles addSources)
 
 global def demo =
   def programName = "demo"
