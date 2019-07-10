@@ -5,16 +5,16 @@
 #### wit
 
 * Wit is a workspace manager
-* requires version 0.6
+* Use v0.10.1
 * Please see instructions on the [wit README](https://github.com/sifive/wit)
 
 #### wake
 
 * wake is a build tool
-* Use v0.15
-* For installation instructions see the [wake README](https://github.com/sifive/wake/tree/v0.15.0#installing-dependencies)
-* [wake tutorial](https://github.com/sifive/wake/blob/v0.15.0/share/doc/wake/tutorial.md)
-* [wake quickref](https://github.com/sifive/wake/blob/v0.15.0/share/doc/wake/quickref.md)
+* Use v0.15.1
+* For installation instructions see the [wake README](https://github.com/sifive/wake/tree/v0.15.1#installing-dependencies)
+* [wake tutorial](https://github.com/sifive/wake/blob/v0.15.1/share/doc/wake/tutorial.md)
+* [wake quickref](https://github.com/sifive/wake/blob/v0.15.1/share/doc/wake/quickref.md)
 
 #### duh
 
@@ -585,12 +585,12 @@ simulation result directory (details in the next section).
 
 Now that we have a test to run we can run it with the following command.
 ```
-wake 'runSim ${dut plan}'
+wake 'runSim pioDUT'
 ```
 
-The `run` function uses the default output directory and simulator.
-`${workspace root}/build` is the default output directory, and VCS is the default
-simulator.
+The `runSim` function uses the default output directory and simulator.
+`${workspace root}/build` is the default output directory, and Verilator is the
+default simulator.
 
 The available simulators are `VCS`, `VCS_Waves`, `Verilator`, `Verilator_Waves`,
 `Xcelium`, and `Xcelium_Waves`. To run tests with a different simulator use
@@ -617,5 +617,5 @@ bin, elf, and hex files of the test program can be found in
 `${build_dir}/${dut_name}/program/${program_name}`.
 
 ## Wrap up
-Checkout tag `complete` if you would like to see how the repo should look
+Checkout the branch `master` if you would like to see how the repo should look
 like after completing the tutorial.
