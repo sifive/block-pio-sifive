@@ -616,6 +616,41 @@ Firrtl files can be found in `${build_dir}/${dut_name}/firrtl`.
 bin, elf, and hex files of the test program can be found in
 `${build_dir}/${dut_name}/program/${program_name}`.
 
+## Creating a Bitstream
+
+We can also map our test-socket and pio block to a VC707 fpga using `makeVC707TestSocketDUT`.
+`makeVC707TestSocketDUT` is like `makeTestSocketDUT` but it accepts an extra `frequency`
+argument and returns a plan that can mapped be to a VC707.
+
+Add the following lines to `block-pio-sifive/wake/demo.wake` to make a VC707 plan for the
+pio block.
+```
+global def pioVC707DUT =
+  def name = "pioVC707DUT"
+  def blocks = pioBlock, Nil
+  def frequency = 50
+  makeVC707TestSocketDUT name frequency blocks
+```
+
+To supply black-boxed verilog source files to vivado, publish to the `vivadoVsrcHooks`
+list.
+
+Add the following lines to `block-pio-sifive/wake/demo.wake` to publish the loopback and pio
+verilog files to Vivado.
+```
+publish vivadoVsrcHooks =
+  def makeSource file _ = source file, Nil
+  makeBlackBoxHook "pio"          "{blockPIOSifiveRoot}/rtl/pio/pio.sv".makeSource,
+  makeBlackBoxHook "loopback"     "{blockPIOSifiveRoot}/rtl/loopback/loopback.sv".makeSource,
+  Nil
+```
+
+Finally, to create a bitstream for `pioVC707DUT` run
+```
+wake 'runBitstream "vc707" pioVC707DUT'
+```
+The bitstream will be placed at `build/api-generator-sifive/pioVC707DUT/mcs/obj/VC707Shell.bit`
+
 ## Wrap up
 Checkout tag `complete` if you would like to see how the repo should look
 like after completing the tutorial.
