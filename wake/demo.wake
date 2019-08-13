@@ -47,6 +47,12 @@ global def pioDUT =
   def blocks = pioBlock, Nil
   makeTestSocketDUT name blocks
 
+global def pioVC707DUT =
+  def name = "pioVC707DUT"
+  def blocks = pioBlock, Nil
+  def frequency = 50
+  makeVC707TestSocketDUT name frequency blocks
+
 publish dutTests = demoPioTest, Nil
 
 global def demoPioTest =
@@ -60,3 +66,9 @@ global def demoPioTest =
     NamedArgInteger "max-cycles"       50000,
     Nil
   makeBlockTest name block program plusargs
+
+publish vivadoVsrcHooks =
+  def makeSource file _ = source file, Nil
+  makeBlackBoxHook "pio"          "{blockPIOSifiveRoot}/rtl/pio/pio.sv".makeSource,
+  makeBlackBoxHook "loopback"     "{blockPIOSifiveRoot}/rtl/loopback/loopback.sv".makeSource,
+  Nil
