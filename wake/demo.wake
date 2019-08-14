@@ -29,12 +29,12 @@ publish dutSimCompileOptionsHooks = pioHook, loopbackHook, Nil
 
 def loopbackHook =
   def name = "loopback"
-  def addSources = source "{blockPIOSifiveRoot}/rtl/loopback/loopback.v", _
+  def addSources = source "{blockPIOSifiveRoot}/rtl/loopback/loopback.sv", _
   makeBlackBoxHook name (editDUTSimCompileOptionsSourceFiles addSources)
 
 def pioHook =
   def name = "pio"
-  def addSources = source "{blockPIOSifiveRoot}/rtl/pio/pio.v", _
+  def addSources = source "{blockPIOSifiveRoot}/rtl/pio/pio.sv", _
   makeBlackBoxHook name (editDUTSimCompileOptionsSourceFiles addSources)
 
 global def demo =

@@ -366,7 +366,7 @@ and `odata` to `idata`.
     hook, Nil
   ```
 
-  The `pio` block needs `pio.v` and `loopback.v` to be added to the list
+  The `pio` block needs `pio.sv` and `loopback.sv` to be added to the list
   of files to be compiled in the simulation so we need to add hooks to
   `dutSimCompileOptionsHooks` to add those files. There is a helper function
   `makeBlackBoxHook` that takes a name and a transform function and returns
@@ -379,12 +379,12 @@ and `odata` to `idata`.
 
   def loopbackHook =
     def name = "loopback"
-    def addSources = source "{blockPIOSifiveRoot}/rtl/loopback/loopback.v", _
+    def addSources = source "{blockPIOSifiveRoot}/rtl/loopback/loopback.sv", _
     makeBlackBoxHook name (editDUTSimCompileOptionsSourceFiles addSources)
 
   def pioHook =
     def name = "pio"
-    def addSources = source "{blockPIOSifiveRoot}/rtl/pio/pio.v", _
+    def addSources = source "{blockPIOSifiveRoot}/rtl/pio/pio.sv", _
     makeBlackBoxHook name (editDUTSimCompileOptionsSourceFiles addSources)
   ```
 
