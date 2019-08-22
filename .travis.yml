@@ -1,0 +1,18 @@
+services:
+  - docker
+
+before_install:
+  - docker pull sifive/wit:0.10.1
+
+install:
+  - docker run -d -v `pwd`:`pwd` -w `pwd` -i -t --name wit-host sifive/wit:0.10.1 tail -f /dev/null
+  - docker exec -it wit-host bash -c "git config --global url."https://github.com/".insteadOf 'git@github.com:'"
+  - docker exec -it wit-host bash -c "wit init workspace -a git@github.com:sifive/block-pio-sifive.git -a git@github.com:sifive/environment-blockci-sifive.git"
+  - docker build --file=block-pio-sifive.Dockerfile --tag=sim .
+
+jobs:
+  include:
+    - name: "Run with internet"
+      script: docker run -it sim wake -v --no-tty runSim pioDUT
+    - name: "Run without internet"
+      script: docker run -it --network none sim wake -v --no-tty runSim pioDUT
