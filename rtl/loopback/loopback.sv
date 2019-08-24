@@ -1,11 +1,11 @@
 module loopback #(
-  parameter pioWidth = 10
+  parameter dataWidth = 8
 ) (
-  input        [pioWidth-1:0] odata,
-  input        [pioWidth-1:0] oenable,
-  output logic [pioWidth-1:0] idata
+  input  [dataWidth-1:0] wdata,
+  input  [dataWidth-1:0] wenable,
+  output [dataWidth-1:0] rdata
 );
 
-assign idata = odata ^ oenable;
+assign rdata = wdata ^ wenable;
 
 endmodule

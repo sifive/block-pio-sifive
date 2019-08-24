@@ -26,52 +26,52 @@ import sifive.blocks.util.{NonBlockingEnqueue, NonBlockingDequeue}
 
 
 class loopbackBlackBoxIO(
-  val pioWidth: Int
+  val dataWidth: Int
 ) extends Bundle {
-  val odata = Input(UInt((pioWidth).W))
-  val oenable = Input(UInt((pioWidth).W))
-  val idata = Output(UInt((pioWidth).W))
+  val wdata = Input(UInt((dataWidth).W))
+  val wenable = Input(UInt((dataWidth).W))
+  val rdata = Output(UInt((dataWidth).W))
 }
 
 class loopback(
-  val pioWidth: Int
+  val dataWidth: Int
 ) extends BlackBox(Map(
-  "pioWidth" -> core.IntParam(pioWidth)
+  "dataWidth" -> core.IntParam(dataWidth)
 )) with HasBlackBoxResource {
   val io = IO(new loopbackBlackBoxIO(
-    pioWidth
+    dataWidth
   ))
 // setResource("top.v")
 }
 
 case class loopbackParams(
-  pioWidth: Int = 32,
+  dataWidth: Int = 32,
   cacheBlockBytes: Int
 )
+
+
 
 class LloopbackBase(c: loopbackParams)(implicit p: Parameters) extends LazyModule {
   val device = new SimpleDevice("loopback", Seq("sifive,loopback-v0"))
 
-  val pioWidth = c.pioWidth
-
-
+  val dataWidth = c.dataWidth
 
 
 
   val ioBridgeSource = BundleBridgeSource(() => new loopbackBlackBoxIO(
-    c.pioWidth
+    c.dataWidth
   ))
 
   class LloopbackBaseImp extends LazyRawModuleImp(this) {
     val blackbox = Module(new loopback(
-      c.pioWidth
+      c.dataWidth
     ))
     // interface wiring 2
 
     // port wiring
-    blackbox.io.odata := ioBridgeSource.bundle.odata
-    blackbox.io.oenable := ioBridgeSource.bundle.oenable
-    ioBridgeSource.bundle.idata := blackbox.io.idata
+    blackbox.io.wdata := ioBridgeSource.bundle.wdata
+    blackbox.io.wenable := ioBridgeSource.bundle.wenable
+    ioBridgeSource.bundle.rdata := blackbox.io.rdata
     // interface alias
 
     // interface wiring
@@ -100,7 +100,7 @@ object NloopbackTopParams {
 
 class NloopbackTopBase(c: NloopbackTopParams)(implicit p: Parameters) extends SimpleLazyModule {
   val imp = LazyModule(new Lloopback(c.blackbox))
-  val pioWidth: Int = c.blackbox.pioWidth
+  val dataWidth: Int = c.blackbox.dataWidth
 // no channel node
 
 }

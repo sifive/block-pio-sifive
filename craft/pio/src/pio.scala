@@ -19,17 +19,22 @@ import freechips.rocketchip.tilelink._
 import freechips.rocketchip.subsystem._
 import freechips.rocketchip.regmapper._
 
+import freechips.rocketchip.diplomaticobjectmodel.logicaltree.{LogicalTreeNode}
+import freechips.rocketchip.diplomaticobjectmodel.model._
+import freechips.rocketchip.diplomaticobjectmodel.{DiplomaticObjectModelAddressing, HasLogicalTreeNode}
+
 import sifive.skeleton._
 import sifive.blocks.util.{NonBlockingEnqueue, NonBlockingDequeue}
 
 import sifive.vip.loopback._
+import sifive.blocks.pio.CSR.csrAddressBlock._
 
 class NpioTopIO(
-  val pioWidth: Int
+  val dataWidth: Int
 ) extends Bundle {
-  val odata = Output(UInt(pioWidth.W))
-  val oenable = Output(UInt(pioWidth.W))
-  val idata = Input(UInt(pioWidth.W))
+  val odata = Output(UInt(dataWidth.W))
+  val oenable = Output(UInt(dataWidth.W))
+  val idata = Input(UInt(dataWidth.W))
 }
 
 class Lpio(c: pioParams)(implicit p: Parameters) extends LpioBase(c)(p)
@@ -39,26 +44,50 @@ class Lpio(c: pioParams)(implicit p: Parameters) extends LpioBase(c)(p)
 
 }
 
-class NpioTop(c: NpioTopParams)(implicit p: Parameters) extends NpioTopBase(c)(p)
+
+case class OMPIO(
+  blackbox: pioParams,
+  memoryRegions: Seq[OMMemoryRegion],
+  interrupts: Seq[OMInterrupt],
+  _types: Seq[String] = Seq("OMGPIO", "OMDevice", "OMComponent", "OMCompoundType")
+) extends OMDevice
+
+class NpioTopLogicalTreeNode(device: SimpleDevice, pio: NpioTop) extends LogicalTreeNode(() => Some(device)) {
+  override def getOMComponents(resourceBindings: ResourceBindings, components: Seq[OMComponent]): Seq[OMComponent] = {
+    DiplomaticObjectModelAddressing.getOMComponentHelper(
+      resourceBindings, (resources) => {
+      Seq()
+      })
+  }
+}
+
+class NpioTop(val c: NpioTopParams)(implicit p: Parameters) extends NpioTopBase(c)(p)
+  with HasLogicalTreeNode
 {
+
   // route the ports of the black box to this sink
   val ioBridgeSink = BundleBridgeSink[pioBlackBoxIO]()
   ioBridgeSink := imp.ioBridgeSource
 
   // create a new ports for odata, oenable, and idata
-  val ioBridgeSource = BundleBridgeSource(() => new NpioTopIO(c.blackbox.pioWidth))
+  val ioBridgeSource = BundleBridgeSource(() => new NpioTopIO(c.blackbox.dataWidth))
+  val regmap = LazyModule(new csrAddressBlockTLRegMap(p(CacheBlockBytes), c.ctrl_base))
+
+  val registerIO = BundleBridgeSink[csrAddressBlockAddressBlockBundle]()
+  registerIO := regmap.ioNode
+
+  def logicalTreeNode: LogicalTreeNode = new NpioTopLogicalTreeNode(device, this)
 
   // logic to connect ioBridgeSink/Source nodes
   override lazy val module = new LazyModuleImp(this) {
-
-    // connect the clock and negedge reset to the default clock and reset
-    ioBridgeSink.bundle.clk     := clock.asUInt
-    ioBridgeSink.bundle.reset_n := !(reset.toBool)
-
     // connect ioBridge source and sink
-    ioBridgeSource.bundle.odata   := ioBridgeSink.bundle.odata
-    ioBridgeSource.bundle.oenable := ioBridgeSink.bundle.oenable
-    ioBridgeSink.bundle.idata     := ioBridgeSource.bundle.idata
+    ioBridgeSource.bundle.odata   := ioBridgeSink.bundle.out_wdata
+    ioBridgeSource.bundle.oenable := ioBridgeSink.bundle.out_wenable
+    ioBridgeSink.bundle.out_rdata := ioBridgeSource.bundle.idata
+
+    ioBridgeSink.bundle.in_wdata   := registerIO.bundle.ODATA.data
+    ioBridgeSink.bundle.in_wenable := registerIO.bundle.OENABLE.data
+    registerIO.bundle.IDATA.data := ioBridgeSink.bundle.in_rdata
   }
 }
 
@@ -73,7 +102,7 @@ object NpioTop {
       // instantiate the loopback vip
       val loopbackP = NloopbackTopParams(
         blackbox = loopbackParams(
-          pioWidth = c.blackbox.pioWidth,
+          dataWidth = c.blackbox.dataWidth,
           cacheBlockBytes = p(CacheBlockBytes)))
       val loopback = NloopbackTop.attach(loopbackP)(bap)
 
@@ -87,11 +116,13 @@ object NpioTop {
 
       // connect the pio and loopback signals
       InModuleBody {
-        loopbackNode.bundle.odata   := pioNode.bundle.odata
-        loopbackNode.bundle.oenable := pioNode.bundle.oenable
-        pioNode.bundle.idata        := loopbackNode.bundle.idata
+        loopbackNode.bundle.wdata   := pioNode.bundle.odata
+        loopbackNode.bundle.wenable := pioNode.bundle.oenable
+        pioNode.bundle.idata        := loopbackNode.bundle.rdata
       }
     }
+
+    bap.pbus.coupleTo("pio") { pio.regmap.controlXing(NoCrossing) := TLWidthWidget(bap.pbus) := _ }
 
     pio
   }
