@@ -32,6 +32,7 @@
         range: 1024, width: 32,
         usage: 'register',
         volatile: false,
+        access: 'read-write',
         registers: [{
           name: 'ODATA',
           addressOffset: 0, size: 32,

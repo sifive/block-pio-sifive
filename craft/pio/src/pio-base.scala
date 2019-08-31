@@ -57,10 +57,7 @@ case class pioParams(
 
 // busType: interrupts, mode: master
 
-class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule
-  with HasInterruptSources {
-
-  def nInterrupts = 1
+class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule {
 
   val dataWidth = c.dataWidth
 
@@ -86,7 +83,7 @@ class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule
     ioBridgeSource.bundle.irq0 := blackbox.io.irq0
     ioBridgeSource.bundle.irq1 := blackbox.io.irq1
     // interface alias
-    val irq0 = intNode.out(0)._1
+    //val irq0 = intNode.out(0)._1
     // interface wiring
     // wiring for irq of type interrupts
     // ["irq0","irq1"]
