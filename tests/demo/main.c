@@ -9,7 +9,7 @@ int main()
   uint32_t odatas[5] = {0xDEADBEEF, 0xF0F0F0F0, 0xABCD1234, 0x01234567, 0xFEDCBA98};
   uint32_t oenables[5] = {0xF0F0F0F0, 0x0F0F0F0F, 0xDEADBEEF, 0x89ABCDEF, 0x7654321};
   uint32_t read_value;
-  const struct metal_pio * m_pio = &metal_pio;
+  const struct metal_pio * m_pio = get_metal_pio();
 
   int fail = 0;
   for (int i = 0; i < 5; i++) {

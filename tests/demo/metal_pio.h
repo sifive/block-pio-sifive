@@ -18,4 +18,5 @@ __METAL_DECLARE_VTABLE(metal_pio)
 
 extern void metal_pio_write(const struct metal_pio *pio, uint32_t data, uint32_t enable);
 extern uint32_t metal_pio_read(const struct metal_pio *pio);
+extern const struct metal_pio * get_metal_pio(void);
 

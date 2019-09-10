@@ -23,3 +23,8 @@ __METAL_DEFINE_VTABLE(metal_pio) = {
     .vtable.v_pio_read    = pio_read
     };
 
+const struct metal_pio *
+get_metal_pio(void)
+{
+    return &metal_pio;
+}
