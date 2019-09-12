@@ -41,12 +41,12 @@ global def demo =
   def programName = "demo"
   def cFiles =
     source "{blockPIOSifiveRoot}/tests/demo/main.c",
-    source "{blockPIOSifiveRoot}/tests/demo/pio_drv_simple.c",
-    source "{blockPIOSifiveRoot}/tests/demo/pio_drv_simple.h",
-    source "{blockPIOSifiveRoot}/tests/demo/metal_pio.h",
-    source "{blockPIOSifiveRoot}/tests/demo/metal_pio.c",
+    source "{blockPIOSifiveRoot}/metal/drivers/metal_pio.h",
+    source "{blockPIOSifiveRoot}/metal/drivers/metal_pio.c",
     Nil
+
   makeTestProgramPlan programName cFiles
+  | setTestProgramPlanIncludeDirs ("{blockPIOSifiveRoot}/metal/drivers",Nil)
 
 global def pioDUT =
   def name = "pioDUT"
