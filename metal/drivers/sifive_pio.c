@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "sifive_pio.h"
+#include "sifive_pio0.h"
 #include <metal/compiler.h>
 
 void
