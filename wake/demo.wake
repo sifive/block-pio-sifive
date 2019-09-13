@@ -39,8 +39,14 @@ def pioHook =
 
 global def demo =
   def programName = "demo"
-  def cFiles = source "{blockPIOSifiveRoot}/tests/demo/main.c", Nil
+  def cFiles =
+    source "{blockPIOSifiveRoot}/tests/demo/main.c",
+    source "{blockPIOSifiveRoot}/metal/drivers/pio/sifive_pio0.h",
+    source "{blockPIOSifiveRoot}/metal/drivers/sifive_pio.c",
+    Nil
+
   makeTestProgramPlan programName cFiles
+  | setTestProgramPlanIncludeDirs ("{blockPIOSifiveRoot}/metal/drivers", Nil)
 
 global def pioDUT =
   def name = "pioDUT"
