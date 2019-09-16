@@ -1,0 +1,26 @@
+{
+  component: {
+    vendor: 'sifive',
+    library: 'vip',
+    name: 'loopback',
+    version: '0.1.0',
+    model: {
+      ports: {
+        odata: 'pioWidth',
+        oenable: 'pioWidth',
+        idata: '-pioWidth'
+      }
+    },
+    busInterfaces: [],
+
+    pSchema: {
+      type: 'object',
+      properties: {
+        pioWidth: {
+          type: 'integer', minimum: 1, maximum: 32, default: 32,
+          title: 'Number of IO pads'
+        },
+      }
+    }
+  }
+}

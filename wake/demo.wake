@@ -1,0 +1,80 @@
+global def blockPIOSifiveRoot = simplify "{here}/.."
+
+global def loopbackScalaModule =
+  def name = "loopback"
+  def path = "{blockPIOSifiveRoot}/craft/loopback"
+  def scalaVersion = sifiveSkeletonScalaModule.getScalaModuleScalaVersion
+  def deps = sifiveBlocksScalaModule, sifiveSkeletonScalaModule, Nil
+  makeScalaModule name path scalaVersion
+  | setScalaModuleSourceDirs ("src", Nil)
+  | setScalaModuleDeps deps
+  | setScalaModuleScalacOptions ("-Xsource:2.11", Nil)
+
+global def pioScalaModule =
+  def name = "pio"
+  def rootDir = "{blockPIOSifiveRoot}/craft/pio"
+  def scalaVersion = sifiveSkeletonScalaModule.getScalaModuleScalaVersion
+  def deps = loopbackScalaModule, sifiveBlocksScalaModule, sifiveSkeletonScalaModule, Nil
+  makeScalaModule name rootDir scalaVersion
+  | setScalaModuleSourceDirs ("src", Nil)
+  | setScalaModuleDeps deps
+  | setScalaModuleScalacOptions ("-Xsource:2.11", Nil)
+
+global def pioBlock =
+  def scalaModule = pioScalaModule
+  def config = "sifive.blocks.pio.WithpioTop"
+  makeScalaBlock scalaModule config
+
+publish dutSimCompileOptionsHooks = pioHook, loopbackHook, Nil
+
+def loopbackHook =
+  def name = "loopback"
+  def addSources = source "{blockPIOSifiveRoot}/rtl/loopback/loopback.sv", _
+  makeBlackBoxHook name (editDUTSimCompileOptionsSourceFiles addSources)
+
+def pioHook =
+  def name = "pio"
+  def addSources = source "{blockPIOSifiveRoot}/rtl/pio/pio.sv", _
+  makeBlackBoxHook name (editDUTSimCompileOptionsSourceFiles addSources)
+
+global def demo =
+  def programName = "demo"
+  def cFiles =
+    source "{blockPIOSifiveRoot}/tests/demo/main.c",
+    source "{blockPIOSifiveRoot}/metal/drivers/pio/sifive_pio0.h",
+    source "{blockPIOSifiveRoot}/metal/drivers/sifive_pio.c",
+    Nil
+
+  makeTestProgramPlan programName cFiles
+  | setTestProgramPlanIncludeDirs ("{blockPIOSifiveRoot}/metal/drivers", Nil)
+
+global def pioDUT =
+  def name = "pioDUT"
+  def blocks = pioBlock, Nil
+  makeTestSocketDUT name blocks
+
+global def pioVC707DUT =
+  def name = "pioVC707DUT"
+  def blocks = pioBlock, Nil
+  def frequency = 50
+  makeVC707TestSocketDUT name frequency blocks
+
+publish dutTests = demoPioTest, Nil
+
+global def demoPioTest =
+  def name = "demo"
+  def block = pioBlock
+  def program = demo
+  def plusargs =
+    NamedArg        "verbose",
+    NamedArgInteger "random_seed"      1234,
+    NamedArgInteger "tilelink_timeout" 16000,
+    NamedArgInteger "max-cycles"       50000,
+    Nil
+  makeBlockTest name block program plusargs
+
+publish vivadoVsrcHooks =
+  def makeSource file _ = source file, Nil
+  makeBlackBoxHook "pio"          "{blockPIOSifiveRoot}/rtl/pio/pio.sv".makeSource,
+  makeBlackBoxHook "loopback"     "{blockPIOSifiveRoot}/rtl/loopback/loopback.sv".makeSource,
+  Nil
