@@ -29,12 +29,21 @@ class Lloopback(c: loopbackParams)(implicit p: Parameters) extends LloopbackBase
 
 // User code here
 
+
+
+
+  override def extraResources(resources: ResourceBindings) =
+      Map("color" -> Seq(ResourceString("black"), ResourceString("White")),
+           "bob" -> Seq(ResourceInt(7))
+      )
+
 }
 
-class NloopbackTop(c: NloopbackTopParams)(implicit p: Parameters) extends NloopbackTopBase(c)(p)
+class NloopbackTop(c: NloopbackTopParams)(implicit p: Parameters) extends NloopbackTopBase(c)(p) with BindingScope
 {
 
 // User code here
+  ResourceBinding { Resource(imp.device, "exists").bind(ResourceString("yes")) }
 
 }
 

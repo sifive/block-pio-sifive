@@ -36,8 +36,12 @@ class Lpio(c: pioParams)(implicit p: Parameters) extends LpioBase(c)(p)
 {
 
 // User code here
+  override def extraResources(resources: ResourceBindings) =
+      Map("pio-width" -> Seq(ResourceInt(pioWidth)),
+          "compatible" -> Seq(ResourceString("sifive,blenderific111")))
 
 }
+
 
 class NpioTop(c: NpioTopParams)(implicit p: Parameters) extends NpioTopBase(c)(p)
 {
