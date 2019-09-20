@@ -37,8 +37,7 @@ class Lpio(c: pioParams)(implicit p: Parameters) extends LpioBase(c)(p)
 
 // User code here
   override def extraResources(resources: ResourceBindings) =
-      Map("pio-width" -> Seq(ResourceInt(pioWidth)),
-          "pio-type" -> Seq(ResourceString("loopback")))
+      Map("pio-width" -> Seq(ResourceInt(pioWidth)))
 
 }
 

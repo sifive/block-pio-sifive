@@ -31,11 +31,10 @@ class Lloopback(c: loopbackParams)(implicit p: Parameters) extends LloopbackBase
 
 }
 
-class NloopbackTop(c: NloopbackTopParams)(implicit p: Parameters) extends NloopbackTopBase(c)(p) with BindingScope
+class NloopbackTop(c: NloopbackTopParams)(implicit p: Parameters) extends NloopbackTopBase(c)(p)
 {
 
 // User code here
-  ResourceBinding { Resource(imp.device, "exists").bind(ResourceString("yes")) }
 
 }
 
