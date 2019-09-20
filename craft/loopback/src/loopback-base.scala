@@ -146,8 +146,11 @@ class NloopbackTopLogicalTreeNode(component: NloopbackTopBase) extends LogicalTr
 
 class NloopbackTopBase(val c: NloopbackTopParams)(implicit p: Parameters)
  extends SimpleLazyModule
+ with BindingScope
  with HasLogicalTreeNode {
   val imp = LazyModule(new Lloopback(c.blackbox))
+
+  ResourceBinding { Resource(imp.device, "exists").bind(ResourceString("yes")) }
 
   def userOM: Product with Serializable = Nil
 

@@ -299,8 +299,11 @@ class NpioTopLogicalTreeNode(component: NpioTopBase) extends LogicalTreeNode(() 
 
 class NpioTopBase(val c: NpioTopParams)(implicit p: Parameters)
  extends SimpleLazyModule
+ with BindingScope
  with HasLogicalTreeNode {
   val imp = LazyModule(new Lpio(c.blackbox))
+
+  ResourceBinding { Resource(imp.device, "exists").bind(ResourceString("yes")) }
 
   def userOM: Product with Serializable = Nil
 
