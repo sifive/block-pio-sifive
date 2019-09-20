@@ -11,6 +11,9 @@ import chisel3.experimental._
 
 import freechips.rocketchip.config._
 import freechips.rocketchip.diplomacy._
+import freechips.rocketchip.diplomaticobjectmodel.{DiplomaticObjectModelAddressing, HasLogicalTreeNode}
+import freechips.rocketchip.diplomaticobjectmodel.logicaltree.{LogicalTreeNode, LogicalModuleTree}
+import freechips.rocketchip.diplomaticobjectmodel.model._
 import freechips.rocketchip.amba.axi4._
 import freechips.rocketchip.amba.apb._
 import freechips.rocketchip.amba.ahb._
@@ -84,8 +87,19 @@ case class pioParams(
   cacheBlockBytes: Int
 )
 
+// busType: AXI4Lite, mode: slave
+// busType: interrupts, mode: master
+
 class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule {
-  val device = new SimpleDevice("pio", Seq("sifive,pio-v0"))
+
+  def extraResources(resources: ResourceBindings) = Map[String, Seq[ResourceValue]]()
+
+  val device = new SimpleDevice("pio", Seq("sifive,pio-0.1.0")) {
+    override def describe(resources: ResourceBindings): Description = {
+      val Description(name, mapping) = super.describe(resources)
+      Description(name, mapping ++ extraResources(resources))
+    }
+  }
 
   val addrWidth = c.addrWidth
   val dataWidth = c.dataWidth
@@ -99,17 +113,18 @@ class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule {
           executable    = c.ctrlParams.executable,
           supportsWrite = TransferSizes(1, (dataWidth / 8)),
           supportsRead  = TransferSizes(1, (dataWidth / 8)),
-          interleavedId = Some(0)
+          interleavedId = Some(0),
+          resources     = device.reg
         )
       ),
       beatBytes = dataWidth / 8
     )
   ))
 
-  val irqNode = IntSourceNode(IntSourcePortSimple(num = 2))
-
-// busType: AXI4Lite, mode: slave
-// busType: interrupts, mode: master
+  val irqNode = IntSourceNode(IntSourcePortSimple(
+    num = 2,
+    resources = device.int
+  ))
 
   val ioBridgeSource = BundleBridgeSource(() => new pioBlackBoxIO(
     c.addrWidth,
@@ -158,7 +173,8 @@ class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule {
     val irq0 = irqNode.out(0)._1
     // interface wiring
     // wiring for ctrl of type AXI4Lite
-    // -> {"aw":{"valid":1,"ready":-1,"bits":{"id":"awIdWidth","addr":"awAddrWidth","len":8,"size":3,"burst":2,"lock":1,"cache":4,"prot":3,"qos":4}},"w":{"valid":1,"ready":-1,"bits":{"data":"wDataWidth","strb":"wStrbWidth","last":1}},"b":{"valid":-1,"ready":1,"bits":{"id":"-bIdWidth","resp":-2}},"ar":{"valid":1,"ready":-1,"bits":{"id":"arIdWidth","addr":"addrWidth","len":8,"size":3,"burst":2,"lock":1,"cache":4,"prot":3,"qos":4}},"r":{"valid":-1,"ready":1,"bits":{"id":"-rIdWidth","data":"-dataWidth","resp":-2,"last":-1}}}// aw
+    // -> {"aw":{"valid":1,"ready":-1,"bits":{"id":"awIdWidth","addr":"awAddrWidth","len":8,"size":3,"burst":2,"lock":1,"cache":4,"prot":3,"qos":4}},"w":{"valid":1,"ready":-1,"bits":{"data":"wDataWidth","strb":"wStrbWidth","last":1}},"b":{"valid":-1,"ready":1,"bits":{"id":"-bIdWidth","resp":-2}},"ar":{"valid":1,"ready":-1,"bits":{"id":"arIdWidth","addr":"addrWidth","len":8,"size":3,"burst":2,"lock":1,"cache":4,"prot":3,"qos":4}},"r":{"valid":-1,"ready":1,"bits":{"id":"-rIdWidth","data":"-dataWidth","resp":-2,"last":-1}}}
+    // aw
     blackbox.io.t_ctrl_awvalid := ctrl0.aw.valid
     ctrl0.aw.ready := blackbox.io.t_ctrl_awready
     // aw
@@ -208,6 +224,7 @@ class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule {
 
     // wiring for irq of type interrupts
     // ["irq0","irq1"]
+
   }
   lazy val module = new LpioBaseImp
 }
@@ -245,8 +262,53 @@ object NpioTopParams {
   )
 }
 
-class NpioTopBase(c: NpioTopParams)(implicit p: Parameters) extends SimpleLazyModule {
+
+class NpioTopLogicalTreeNode(component: NpioTopBase) extends LogicalTreeNode(() => Some(component.imp.device)) {
+  override def getOMComponents(resourceBindings: ResourceBindings, components: Seq[OMComponent]): Seq[OMComponent] = {
+    DiplomaticObjectModelAddressing.getOMComponentHelper(
+      resourceBindings, (resources) => {
+        val name = component.imp.device.describe(resourceBindings).name
+        val omDevice = new scala.collection.mutable.LinkedHashMap[String, Any] with OMDevice {
+          val memoryRegions: Seq[OMMemoryRegion] =
+            DiplomaticObjectModelAddressing.getOMMemoryRegions(name, resourceBindings, None)
+
+          val interrupts: Seq[OMInterrupt] =
+            DiplomaticObjectModelAddressing.describeGlobalInterrupts(name, resourceBindings)
+
+          val _types: Seq[String] = Seq("OMpio", "OMDevice", "OMComponent", "OMCompoundType")
+        }
+        val userOM = component.userOM
+        val values = userOM.productIterator
+        if (values.nonEmpty) {
+          val pairs = (userOM.getClass.getDeclaredFields.map { field =>
+            assert(field.getName != "memoryRegions", "user Object Model must not define \"memoryRegions\"")
+            assert(field.getName != "interrupts", "user Object Model must not define \"interrupts\"")
+            assert(field.getName != "_types", "user Object Model must not define \"_types\"")
+
+            field.getName -> values.next
+          }).toSeq
+          omDevice ++= pairs
+        }
+        omDevice("memoryRegions") = omDevice.memoryRegions
+        omDevice("interrupts") = omDevice.interrupts
+        omDevice("_types") = omDevice._types
+        Seq(omDevice)
+      })
+  }
+}
+
+class NpioTopBase(val c: NpioTopParams)(implicit p: Parameters)
+ extends SimpleLazyModule
+ with BindingScope
+ with HasLogicalTreeNode {
   val imp = LazyModule(new Lpio(c.blackbox))
+
+  ResourceBinding { Resource(imp.device, "exists").bind(ResourceString("yes")) }
+
+  def userOM: Product with Serializable = Nil
+
+  def logicalTreeNode: LogicalTreeNode = new NpioTopLogicalTreeNode(this)
+
   val addrWidth: Int = c.blackbox.addrWidth
   val dataWidth: Int = c.blackbox.dataWidth
   val pioWidth: Int = c.blackbox.pioWidth
@@ -286,6 +348,7 @@ object NpioTopBase {
     // no channel attachment
     bap.pbus.coupleTo("axi") { pio_top.getctrlNodeTLAdapter() := TLWidthWidget(bap.pbus) := _ }
     bap.ibus := pio_top.irqNode
+    LogicalModuleTree.add(bap.parentNode, pio_top.logicalTreeNode)
     pio_top
   }
 }

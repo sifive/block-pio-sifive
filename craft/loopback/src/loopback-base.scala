@@ -11,6 +11,9 @@ import chisel3.experimental._
 
 import freechips.rocketchip.config._
 import freechips.rocketchip.diplomacy._
+import freechips.rocketchip.diplomaticobjectmodel.{DiplomaticObjectModelAddressing, HasLogicalTreeNode}
+import freechips.rocketchip.diplomaticobjectmodel.logicaltree.{LogicalTreeNode, LogicalModuleTree}
+import freechips.rocketchip.diplomaticobjectmodel.model._
 import freechips.rocketchip.amba.axi4._
 import freechips.rocketchip.amba.apb._
 import freechips.rocketchip.amba.ahb._
@@ -49,12 +52,20 @@ case class loopbackParams(
   cacheBlockBytes: Int
 )
 
+
+
 class LloopbackBase(c: loopbackParams)(implicit p: Parameters) extends LazyModule {
-  val device = new SimpleDevice("loopback", Seq("sifive,loopback-v0"))
+
+  def extraResources(resources: ResourceBindings) = Map[String, Seq[ResourceValue]]()
+
+  val device = new SimpleDevice("loopback", Seq("sifive,loopback-0.1.0")) {
+    override def describe(resources: ResourceBindings): Description = {
+      val Description(name, mapping) = super.describe(resources)
+      Description(name, mapping ++ extraResources(resources))
+    }
+  }
 
   val pioWidth = c.pioWidth
-
-
 
 
 
@@ -98,8 +109,53 @@ object NloopbackTopParams {
   )
 }
 
-class NloopbackTopBase(c: NloopbackTopParams)(implicit p: Parameters) extends SimpleLazyModule {
+
+class NloopbackTopLogicalTreeNode(component: NloopbackTopBase) extends LogicalTreeNode(() => Some(component.imp.device)) {
+  override def getOMComponents(resourceBindings: ResourceBindings, components: Seq[OMComponent]): Seq[OMComponent] = {
+    DiplomaticObjectModelAddressing.getOMComponentHelper(
+      resourceBindings, (resources) => {
+        val name = component.imp.device.describe(resourceBindings).name
+        val omDevice = new scala.collection.mutable.LinkedHashMap[String, Any] with OMDevice {
+          val memoryRegions: Seq[OMMemoryRegion] =
+            DiplomaticObjectModelAddressing.getOMMemoryRegions(name, resourceBindings, None)
+
+          val interrupts: Seq[OMInterrupt] =
+            DiplomaticObjectModelAddressing.describeGlobalInterrupts(name, resourceBindings)
+
+          val _types: Seq[String] = Seq("OMloopback", "OMDevice", "OMComponent", "OMCompoundType")
+        }
+        val userOM = component.userOM
+        val values = userOM.productIterator
+        if (values.nonEmpty) {
+          val pairs = (userOM.getClass.getDeclaredFields.map { field =>
+            assert(field.getName != "memoryRegions", "user Object Model must not define \"memoryRegions\"")
+            assert(field.getName != "interrupts", "user Object Model must not define \"interrupts\"")
+            assert(field.getName != "_types", "user Object Model must not define \"_types\"")
+
+            field.getName -> values.next
+          }).toSeq
+          omDevice ++= pairs
+        }
+        omDevice("memoryRegions") = omDevice.memoryRegions
+        omDevice("interrupts") = omDevice.interrupts
+        omDevice("_types") = omDevice._types
+        Seq(omDevice)
+      })
+  }
+}
+
+class NloopbackTopBase(val c: NloopbackTopParams)(implicit p: Parameters)
+ extends SimpleLazyModule
+ with BindingScope
+ with HasLogicalTreeNode {
   val imp = LazyModule(new Lloopback(c.blackbox))
+
+  ResourceBinding { Resource(imp.device, "exists").bind(ResourceString("yes")) }
+
+  def userOM: Product with Serializable = Nil
+
+  def logicalTreeNode: LogicalTreeNode = new NloopbackTopLogicalTreeNode(this)
+
   val pioWidth: Int = c.blackbox.pioWidth
 // no channel node
 
@@ -111,6 +167,7 @@ object NloopbackTopBase {
     val loopback_top = LazyModule(new NloopbackTop(c))
     // no channel attachment
 
+    LogicalModuleTree.add(bap.parentNode, loopback_top.logicalTreeNode)
     loopback_top
   }
 }
