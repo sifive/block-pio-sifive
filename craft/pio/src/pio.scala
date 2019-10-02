@@ -41,9 +41,13 @@ class Lpio(c: pioParams)(implicit p: Parameters) extends LpioBase(c)(p)
 
 }
 
+case class OMPIO(width: Int)
 
 class NpioTop(c: NpioTopParams)(implicit p: Parameters) extends NpioTopBase(c)(p)
 {
+  // add in custom fields to the Object Model entry for this block
+  override val userOM: OMPIO = OMPIO(c.blackbox.pioWidth)
+
   // route the ports of the black box to this sink
   val ioBridgeSink = BundleBridgeSink[pioBlackBoxIO]()
   ioBridgeSink := imp.ioBridgeSource
