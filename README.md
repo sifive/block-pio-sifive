@@ -1,11 +1,15 @@
 ## Creating the DUH document
 NOTE: this tutorial was made using version 1.15.0 of DUH
 
-The DUH document is a JSON5 file that describes an IP block similar to IPXACT.
-The DUH JSON schema is defined [here](https://github.com/sifive/duh-schema).
-DUH is also a suite of tools that help users author DUH documents and generate
-useful artifacts from them. This section describes how to use some of the DUH
-tools to author a DUH document for the PIO block.
+The DUH document is a JSON5 file that is primarily used to describe an IP block
+similar to IPXACT. The DUH JSON schema is defined
+[here](https://github.com/sifive/duh-schema). DUH is also a suite of tools that
+help users author DUH documents and generate useful artifacts from them. This
+section describes how to use some of the DUH tools to author a DUH document for
+the PIO block.
+
+For more detailed documentation on DUH see the
+[README](https://github.com/sifive/duh/blob/master/README.md)
 
 Subsections:
 * [Installation](#installing-duh)
@@ -30,7 +34,8 @@ npm i duh@1.15.0
 
 This will create a `node_modules` subdirectory in your current directory with
 all the package sources. The `duh` executable along with other useful tools are
-installed in `node_modules/.bin`.
+installed in `node_modules/.bin`. You may want to add this to your path with
+`export PATH=./node_modules/.bin:$PATH` for convenience.
 
 ### Initializing the DUH document
 To create an initial DUH document run `duh init` and answer the prompts. For
@@ -55,6 +60,9 @@ cat rtl/pio/pio.sv | duh-import-verilog-ports pio.json5
 ```
 
 ### Define bus interfaces
+See this [README](https://github.com/sifive/block-ark/blob/master/README.md#walkthrough-example-import-using-duh)
+for a more detailed walkthrough of `duh-portinf`
+
 Now that we have port definitions, we need to define port mappings for any bus
 interfaces that this block implements. The PIO block has an AXI4-Lite
 interface for controlling the `ODATA`, `OENABLE`, and `IDATA` registers. You can
