@@ -51,6 +51,14 @@ duh init
 ? <b>Source type</b> Verilog
 </pre>
 
+Since we are onboarding a Verilog IP block we should set the `fileSets` field in
+our DUH component to
+```javascript
+fileSets: [{
+    VerilogFiles: ['pio.sv']
+}]
+```
+
 ### Importing verilog ports
 Fill in the port definitions of the block in the DUH document. The
 `duh-import-verilog-ports` tool can parse the verilog and fill in the
@@ -95,7 +103,7 @@ You should now see the following fields in the DUH component of pio.json5
 The first candidate inferred by `duh-portinf` is pretty close but is missing
 the `ACLK` and `ARESETn` signals. Find the node corresponding to the reference
 in `busInterfaces` and add the following fields to its port map
-```
+```javascript
 "ACLK": "clk",
 "ARESETn": "reset_n",
 ```
@@ -147,8 +155,8 @@ The final result should look like
 Next we need to define the memory maps of this block. This block contains three
 control registers: `ODATA`, `OENABLE`, and `IDATA`. Add a `memoryMaps` field to
 the `component` object in pio.json5 as follows.
-```
-"memoryMaps": {
+```javascript
+"memoryMaps": [{
   name: 'CSR',
   addressBlocks: [{
     name: 'csrAddressBlock',
@@ -173,7 +181,7 @@ the `component` object in pio.json5 as follows.
       fields: [{name: 'data', bitOffset: 0, bitWidth: 32}]
     }]
   }]
-}
+}]
 ```
 
 ### Define parameter schema
@@ -182,7 +190,7 @@ Finally, we need to describe the parameters of the PIO block. This block has
 in the DUH document. The `pSchema` field of `component` is a JSON schema that
 describes the parameters of the block as a JSON object. Add a `pSchema` field
 to the `component` object in pio.json5 as follows.
-```
+```javascript
 pSchema: {
   type: 'object',
   properties: {
