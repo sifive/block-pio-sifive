@@ -1,16 +1,16 @@
 ### Creating the DUH document
 NOTE: this tutorial was made using version 1.15.0 of DUH
 
-The DUH document is a json5 file that describes an IP block similar to IPXACT.
-The DUH json schema is defined [here](https://github.com/sifive/duh-schema).
+The DUH document is a JSON5 file that describes an IP block similar to IPXACT.
+The DUH JSON schema is defined [here](https://github.com/sifive/duh-schema).
 DUH is also a suite of tools that help users author DUH documents and generate
-useful artefacts from them. This section describes how to use some of the DUH
+useful artifacts from them. This section describes how to use some of the DUH
 tools to author a DUH document for the PIO block.
 
 First you will need to install [DUH](https://github.com/sifive/duh). To install
 DUH in your current directory run
 ```bash
-npm i duh
+npm i duh@1.15.0
 ```
 
 This will create a `node_modules` subdirectory in your current directory with
@@ -37,10 +37,10 @@ definitions for you.
 cat rtl/pio/pio.sv | duh-import-verilog-ports pio.json5
 ```
 
-Now that we have port definitions we need to define port mappings for any bus
+Now that we have port definitions, we need to define port mappings for any bus
 interfaces that this block implements. The PIO block has an AXI4-Lite
-interface for controlling the `ODATA` `OENABLE` and `IDATA` registers. You can
-either define bus interfaces manually or use `duh-portinf` to infer canidate
+interface for controlling the `ODATA`, `OENABLE`, and `IDATA` registers. You can
+either define bus interfaces manually or use `duh-portinf` to infer candidate
 bus interfaces. `duh-portinf` requires us to supply specifications of the buses
 we want to infer port mappings for. We can use the default `duh-bus` included
 with our DUH install, since it contains a specification for AXI4-Lite.
@@ -68,7 +68,7 @@ You should now see the following fields in the DUH component of pio.json5
 
 The first candidate inferred by `duh-portinf` is pretty close but is missing
 the `ACLK` and `ARESETn` signals. Find the node corresponding to the reference
-in `busInterfaces` and add the following fields to it's port map
+in `busInterfaces` and add the following fields to its port map
 ```
 "ACLK": "clk",
 "ARESETn": "reset_n",
