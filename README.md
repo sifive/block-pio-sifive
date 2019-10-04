@@ -6,7 +6,8 @@ The DUH JSON schema is defined [here](https://github.com/sifive/duh-schema).
 DUH is also a suite of tools that help users author DUH documents and generate
 useful artifacts from them. This section describes how to use some of the DUH
 tools to author a DUH document for the PIO block.
-subsections:
+
+Subsections:
 * [Installation](#installing-duh)
   - how to install DUH
 * [Initialization](#initializing-the-duh-document)
