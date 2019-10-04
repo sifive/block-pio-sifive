@@ -1,4 +1,4 @@
-### Creating the DUH document
+## Creating the DUH document
 NOTE: this tutorial was made using version 1.15.0 of DUH
 
 The DUH document is a JSON5 file that describes an IP block similar to IPXACT.
@@ -6,7 +6,21 @@ The DUH JSON schema is defined [here](https://github.com/sifive/duh-schema).
 DUH is also a suite of tools that help users author DUH documents and generate
 useful artifacts from them. This section describes how to use some of the DUH
 tools to author a DUH document for the PIO block.
+subsections:
+* [Installation](#installing-duh)
+  - how to install DUH
+* [Initialization](#initializing-the-duh-document)
+  - how to initialize a DUH document
+* [Ports](#importing-verilog-ports)
+  - how to automatically import port definitions into DUH from verilog source
+* [Bus Interfaces](#define-bus-interfaces)
+  - how to automatically infer bus definitions
+* [Memory Maps](#define-memory-maps)
+  - how to define memory maps in DUH
+* [Parameter Schema](#define-parameter-schema)
+  - how to define a parameter schema in DUH
 
+### Installing DUH
 First you will need to install [DUH](https://github.com/sifive/duh). To install
 DUH in your current directory run
 ```bash
@@ -17,6 +31,7 @@ This will create a `node_modules` subdirectory in your current directory with
 all the package sources. The `duh` executable along with other useful tools are
 installed in `node_modules/.bin`.
 
+### Initializing the DUH document
 To create an initial DUH document run `duh init` and answer the prompts. For
 this tutorial we will name the block `pio` and write the DUH document to
 `block-pio-sifive/pio.json5`
@@ -30,6 +45,7 @@ duh init
 ? <b>Source type</b> Verilog
 </pre>
 
+### Importing verilog ports
 Fill in the port definitions of the block in the DUH document. The
 `duh-import-verilog-ports` tool can parse the verilog and fill in the
 definitions for you.
@@ -37,6 +53,7 @@ definitions for you.
 cat rtl/pio/pio.sv | duh-import-verilog-ports pio.json5
 ```
 
+### Define bus interfaces
 Now that we have port definitions, we need to define port mappings for any bus
 interfaces that this block implements. The PIO block has an AXI4-Lite
 interface for controlling the `ODATA`, `OENABLE`, and `IDATA` registers. You can
@@ -117,6 +134,7 @@ The final result should look like
 }
 ```
 
+### Define memory maps
 Next we need to define the memory maps of this block. This block contains three
 control registers: `ODATA`, `OENABLE`, and `IDATA`. Add a `memoryMaps` field to
 the `component` object in pio.json5 as follows.
@@ -149,6 +167,7 @@ the `component` object in pio.json5 as follows.
 }
 ```
 
+### Define parameter schema
 Finally, we need to describe the parameters of the PIO block. This block has
 `addrWidth`, `dataWidth`, and `pioWidth` parameters that need to be described
 in the DUH document. The `pSchema` field of `component` is a JSON schema that
