@@ -157,30 +157,30 @@ control registers: `ODATA`, `OENABLE`, and `IDATA`. Add a `memoryMaps` field to
 the `component` object in pio.json5 as follows.
 ```javascript
 "memoryMaps": [{
-  name: 'CSR',
-  addressBlocks: [{
-    name: 'csrAddressBlock',
-    baseAddress: 0,
-    range: 1024, width: 32,
-    usage: 'register',
-    volatile: false, access: 'read-write',
-    registers: [{
-      name: 'ODATA',
-      addressOffset: 0, size: 32,
-      displayName: 'Output Data Register',
-      fields: [{name: 'data', bitOffset: 0, bitWidth: 32}]
-    }, {
-      name: 'OENABLE', addressOffset: 32, size: 32,
-      displayName: 'Data direction',
-      description: 'determines whether the pin is an input or an output. If the data direction bit is a 1, then the pin is an input',
-      fields: [{name: 'data', bitOffset: 0, bitWidth: 32}]
-    }, {
-      name: 'IDATA', addressOffset: 64, size: 32,
-      displayName: 'Input data',
-      description: 'read the port pins',
-      fields: [{name: 'data', bitOffset: 0, bitWidth: 32}]
+    name: 'CSR',
+    addressBlocks: [{
+        name: 'csrAddressBlock',
+        baseAddress: 0,
+        range: 1024, width: 32,
+        usage: 'register',
+        volatile: false, access: 'read-write',
+        registers: [{
+            name: 'ODATA',
+            addressOffset: 0, size: 32,
+            displayName: 'Output Data Register',
+            fields: [{name: 'data', bitOffset: 0, bitWidth: 32}]
+        }, {
+            name: 'OENABLE', addressOffset: 32, size: 32,
+            displayName: 'Data direction',
+            description: 'determines whether the pin is an input or an output. If the data direction bit is a 1, then the pin is an input',
+            fields: [{name: 'data', bitOffset: 0, bitWidth: 32}]
+        }, {
+            name: 'IDATA', addressOffset: 64, size: 32,
+            displayName: 'Input data',
+            description: 'read the port pins',
+            fields: [{name: 'data', bitOffset: 0, bitWidth: 32}]
+        }]
     }]
-  }]
 }]
 ```
 
@@ -192,20 +192,26 @@ describes the parameters of the block as a JSON object. Add a `pSchema` field
 to the `component` object in pio.json5 as follows.
 ```javascript
 pSchema: {
-  type: 'object',
-  properties: {
-    addrWidth: {
-      title: 'Address bus width',
-      type: 'integer', minimum: 6, maximum: 32, default: 12
-    },
-    dataWidth: {
-      title: 'Data bus width',
-      type: 'integer', minimum: 32, maximum: 64, default: 32
-    },
-    pioWidth: {
-      title: 'Number of IO pads',
-      type: 'integer', minimum: 1, maximum: 32, default: 32
+    type: 'object',
+    properties: {
+        addrWidth: {
+            title: 'Address bus width',
+            type: 'integer', minimum: 6, maximum: 32, default: 12
+        },
+        dataWidth: {
+            title: 'Data bus width',
+            type: 'integer', minimum: 32, maximum: 64, default: 32
+        },
+        pioWidth: {
+            title: 'Number of IO pads',
+            type: 'integer', minimum: 1, maximum: 32, default: 32
+        }
     }
-  }
 }
+```
+
+### Validation
+To validate that our DUH document conforms to the DUH schema run
+```bash
+duh validate pio.json5
 ```
