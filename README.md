@@ -671,7 +671,7 @@ You can produce a document at any time, even before writing any of these section
 ```
 wake makeOnboardDocument pioDUT
 ```
-The documents will be placed in the "documentation" directory, next to the RTL and verilog files.
+The generated documents will be placed in the "documentation" directory, next to the RTL and verilog files.
 If any sections are missing, they will be filled in with "placeholder" sections.
 
 
