@@ -24,6 +24,10 @@ Subsections:
   - how to define memory maps in DUH
 * [Parameter Schema](#define-parameter-schema)
   - how to define a parameter schema in DUH
+* [Loopback](#creating-the-loopback-duh-document)
+  - how to create a DUH document for the loopback VIP
+* [Validation](#validation)
+  - how to validate that our document conforms to the DUH schema
 
 ### Installing DUH
 First you will need to install [DUH](https://github.com/sifive/duh). To install
@@ -202,6 +206,48 @@ pSchema: {
             title: 'Data bus width',
             type: 'integer', minimum: 32, maximum: 64, default: 32
         },
+        pioWidth: {
+            title: 'Number of IO pads',
+            type: 'integer', minimum: 1, maximum: 32, default: 32
+        }
+    }
+}
+```
+
+### Creating the loopback DUH document
+To test our PIO block we will use a simple loopback VIP. This VIP block can be
+onboarded with a DUH document similarly to the PIO block. Follow the same steps
+to onboard the loopback VIP as we did for the PIO block. Since the loopback
+does not have any bus interfaces we can skip the `duh-portinf` step.
+
+initialization
+<pre>
+duh init
+? <b>Document file name</b> loopback.json5
+? <b>Block name</b> loopback
+? <b>version</b> 0.1.0
+? <b>Please write a short description about the block</b> A VIP for PIO
+? <b>Block type</b> component
+? <b>Source type</b> Verilog
+</pre>
+
+import ports
+```bash
+cat rtl/loopback/loopback.sv | duh-import-verilog-ports loopback.json5
+```
+
+add fileSets
+```javascript
+fileSets: [{
+    VerilogFiles: ['loopback.sv']
+}]
+```
+
+add parameter schema
+```javascript
+pSchema: {
+    type: 'object',
+    properties: {
         pioWidth: {
             title: 'Number of IO pads',
             type: 'integer', minimum: 1, maximum: 32, default: 32
