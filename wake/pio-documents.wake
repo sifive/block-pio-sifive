@@ -1,0 +1,7 @@
+
+# Notify others we are providing documentation.
+publish docDirectory =  (simplify "{here}/../documents"), Nil
+
+# Build the pio document onlining document from scratch
+global def makePioDocument Unit = makeOnboardDocument pioDUT
+
