@@ -356,7 +356,7 @@ Copy the following lines into the body of the `NpioTop`class in `pio.scala`.
 
     // connect the clock and negedge reset to the default clock and reset
     ioBridgeSink.bundle.clk     := clock.asUInt
-    ioBridgeSink.bundle.reset_n := !(reset.toBool)
+    ioBridgeSink.bundle.reset_n := !(reset.asBool)
 
     // connect ioBridge source and sink
     ioBridgeSource.bundle.odata   := ioBridgeSink.bundle.odata
