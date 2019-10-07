@@ -651,6 +651,30 @@ wake 'runBitstream "vc707" pioVC707DUT'
 ```
 The bitstream will be placed at `build/api-generator-sifive/pioVC707DUT/mcs/obj/VC707Shell.bit`
 
+## Documenting the Block
+To include the block in manuals and other documents, you'll need to
+provide sections of text about the block - what it is, how it is used,
+and how to connect to it. 
+Once the sections are written, you can produce a test "onboarding" document
+which combines those sections so you can verify the documention is correct.
+
+See the 
+[onboarding document](https://github.com/sifive/onboarding-docgen-sifive/blob/master/README.md)
+instructions on how to write documentation for a new block.
+
+Summarizing the onboarding instructions, you will need to create three sections of documentation.
+  - an "Overview" which gives a brief paragraph about the device,
+  - a "Programming" chapter which shows how to configure and use the device, and
+  - a "HardwareInterface" chapter which shows how to interface to the device.
+
+You can produce a document at any time, even before writing any of these sections, by giving the command:
+```
+wake makeOnboardDocument pioDUT
+```
+The documents will be placed in the "documentation" directory, next to the RTL and verilog files.
+If any sections are missing, they will be filled in with "placeholder" sections.
+
+
 ## Wrap up
 Checkout tag `complete` if you would like to see how the repo should look
 like after completing the tutorial.
