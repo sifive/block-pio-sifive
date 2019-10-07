@@ -60,7 +60,7 @@ class NpioTop(c: NpioTopParams)(implicit p: Parameters) extends NpioTopBase(c)(p
 
     // connect the clock and negedge reset to the default clock and reset
     ioBridgeSink.bundle.clk     := clock.asUInt
-    ioBridgeSink.bundle.reset_n := !(reset.toBool)
+    ioBridgeSink.bundle.reset_n := !(reset.asBool)
 
     // connect ioBridge source and sink
     ioBridgeSource.bundle.odata   := ioBridgeSink.bundle.odata
@@ -78,11 +78,10 @@ object NpioTop {
     // instantiate and connect the loopback vip in the testharness
     bap.testHarness {
       // instantiate the loopback vip
-      val loopbackP = NloopbackTopParams(
+      val loopback = LazyModule(new NloopbackTop(NloopbackTopParams(
         blackbox = loopbackParams(
           pioWidth = c.blackbox.pioWidth,
-          cacheBlockBytes = p(CacheBlockBytes)))
-      val loopback = NloopbackTop.attach(loopbackP)(bap)
+          cacheBlockBytes = p(CacheBlockBytes)))))
 
       // route loopback signals to the testharness
       val loopbackNode = BundleBridgeSink[loopbackBlackBoxIO]()
