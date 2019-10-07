@@ -265,35 +265,28 @@ object NpioTopParams {
 
 class NpioTopLogicalTreeNode(component: NpioTopBase) extends LogicalTreeNode(() => Some(component.imp.device)) {
   override def getOMComponents(resourceBindings: ResourceBindings, components: Seq[OMComponent]): Seq[OMComponent] = {
-    DiplomaticObjectModelAddressing.getOMComponentHelper(
-      resourceBindings, (resources) => {
-        val name = component.imp.device.describe(resourceBindings).name
-        val omDevice = new scala.collection.mutable.LinkedHashMap[String, Any] with OMDevice {
-          val memoryRegions: Seq[OMMemoryRegion] =
-            DiplomaticObjectModelAddressing.getOMMemoryRegions(name, resourceBindings, None)
+    val name = component.imp.device.describe(resourceBindings).name
+    val omDevice = new scala.collection.mutable.LinkedHashMap[String, Any] with OMDevice {
+      val memoryRegions = component.getOMMemoryRegions(resourceBindings)
+      val interrupts = component.getOMInterrupts(resourceBindings)
+      val _types: Seq[String] = Seq("OMpio", "OMDevice", "OMComponent", "OMCompoundType")
+    }
+    val userOM = component.userOM
+    val values = userOM.productIterator
+    if (values.nonEmpty) {
+      val pairs = (userOM.getClass.getDeclaredFields.map { field =>
+        assert(field.getName != "memoryRegions", "user Object Model must not define \"memoryRegions\"")
+        assert(field.getName != "interrupts", "user Object Model must not define \"interrupts\"")
+        assert(field.getName != "_types", "user Object Model must not define \"_types\"")
 
-          val interrupts: Seq[OMInterrupt] =
-            DiplomaticObjectModelAddressing.describeGlobalInterrupts(name, resourceBindings)
-
-          val _types: Seq[String] = Seq("OMpio", "OMDevice", "OMComponent", "OMCompoundType")
-        }
-        val userOM = component.userOM
-        val values = userOM.productIterator
-        if (values.nonEmpty) {
-          val pairs = (userOM.getClass.getDeclaredFields.map { field =>
-            assert(field.getName != "memoryRegions", "user Object Model must not define \"memoryRegions\"")
-            assert(field.getName != "interrupts", "user Object Model must not define \"interrupts\"")
-            assert(field.getName != "_types", "user Object Model must not define \"_types\"")
-
-            field.getName -> values.next
-          }).toSeq
-          omDevice ++= pairs
-        }
-        omDevice("memoryRegions") = omDevice.memoryRegions
-        omDevice("interrupts") = omDevice.interrupts
-        omDevice("_types") = omDevice._types
-        Seq(omDevice)
-      })
+        field.getName -> values.next
+      }).toSeq
+      omDevice ++= pairs
+    }
+    omDevice("memoryRegions") = omDevice.memoryRegions
+    omDevice("interrupts") = omDevice.interrupts
+    omDevice("_types") = omDevice._types
+    Seq(omDevice)
   }
 }
 
@@ -306,6 +299,25 @@ class NpioTopBase(val c: NpioTopParams)(implicit p: Parameters)
   ResourceBinding { Resource(imp.device, "exists").bind(ResourceString("yes")) }
 
   def userOM: Product with Serializable = Nil
+
+  def omRegisterMaps = Seq(
+    OMRegister.convert(
+      0 -> RegFieldGroup("ODATA", None, Seq(
+        RegField(32, Bool(), RegFieldDesc("data", "")))),
+      32 -> RegFieldGroup("OENABLE", Some("determines whether the pin is an input or an output. If the data direction bit is a 1, then the pin is an input"), Seq(
+        RegField(32, Bool(), RegFieldDesc("data", "")))),
+      64 -> RegFieldGroup("IDATA", Some("read the port pins"), Seq(
+        RegField(32, Bool(), RegFieldDesc("data", ""))))))
+
+  def getOMMemoryRegions(resourceBindings: ResourceBindings): Seq[OMMemoryRegion] = {
+    val name = imp.device.describe(resourceBindings).name
+    DiplomaticObjectModelAddressing.getOMMemoryRegions(name, resourceBindings, None)
+  }
+
+  def getOMInterrupts(resourceBindings: ResourceBindings): Seq[OMInterrupt] = {
+    val name = imp.device.describe(resourceBindings).name
+    DiplomaticObjectModelAddressing.describeGlobalInterrupts(name, resourceBindings)
+  }
 
   def logicalTreeNode: LogicalTreeNode = new NpioTopLogicalTreeNode(this)
 

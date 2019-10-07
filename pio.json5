@@ -103,17 +103,17 @@
           name: 'ODATA',
           addressOffset: 0, size: 32,
           displayName: 'Output Data Register',
-          fields: [{name: 'data', bitOffset: 0, bitWidth: 32}]
+          fields: [{name: 'data', bits: 32}]
         }, {
           name: 'OENABLE', addressOffset: 32, size: 32,
           displayName: 'Data direction',
           description: 'determines whether the pin is an input or an output. If the data direction bit is a 1, then the pin is an input',
-          fields: [{name: 'data', bitOffset: 0, bitWidth: 32}]
+          fields: [{name: 'data', bits: 32}]
         }, {
           name: 'IDATA', addressOffset: 64, size: 32,
           displayName: 'Input data',
           description: 'read the port pins',
-          fields: [{name: 'data', bitOffset: 0, bitWidth: 32}]
+          fields: [{name: 'data', bits: 32}]
         }]
       }]
     }
