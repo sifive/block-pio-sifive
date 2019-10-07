@@ -13,5 +13,9 @@
         "commit": "1c38068e5338dce8594f3aef0466c6333f46a24d",
         "name": "api-scala-sifive",
         "source": "git@github.com:sifive/api-scala-sifive.git"
+    },
+    {    "commit":  "19.10.07",
+         "name":  "onboarding-docgen-sifive",
+         "source":  "git@github.com:sifive/onboarding-docgen-sifive"
     }
 ]
