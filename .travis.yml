@@ -23,6 +23,7 @@ env:
 before_install:
   - docker pull "$WIT_DOCKER_IMAGE"
   - docker pull "$BLOCKCI_DOCKER_IMAGE"
+  - docker run -it ruby:2.5.1
 
 install:
   # We have this extra step of setting a global Git configuration to remap
