@@ -45,7 +45,7 @@ jobs:
           -v "$WIT_WORKSPACE:/mnt/workspace" \
           --workdir /mnt/workspace \
           "$BLOCKCI_DOCKER_IMAGE" \
-          bash -c "wake --init . && wake -v --no-tty runSim pioDUT && wake -v --no-tty makeOnboardDocument pioDUT"
+          bash -c "wake --init . && wake -v --no-tty runSim pioDUT"
 
     - name: "Run without internet"
       script: |
@@ -54,4 +54,4 @@ jobs:
           -v "$WIT_WORKSPACE:/mnt/workspace" \
           --workdir /mnt/workspace \
           "$BLOCKCI_DOCKER_IMAGE" \
-          bash -c "wake --init . && wake -v --no-tty runSim pioDUT && wake -v --no-tty makeOnboardDocument pioDUT"
+          bash -c "wake --init . && wake -v --no-tty runSim pioDUT"
