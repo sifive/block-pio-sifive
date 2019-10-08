@@ -15,7 +15,7 @@
         "source": "git@github.com:sifive/api-scala-sifive.git"
     },
     {    "commit":  "19.10.07.2200",
-         "name":  "onboarding-docgen-sifive",
-         "source":  "git@github.com:sifive/onboarding-docgen-sifive"
+         "name":  "scribe-testsocket-sifive",
+         "source":  "git@github.com:sifive/scribe-testsocket-sifive"
     }
 ]
