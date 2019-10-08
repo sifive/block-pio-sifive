@@ -1,16 +1,16 @@
 # Overview
-This branch represents the Parallel IO block and loopback VIP in their
-preonboarded state. This README is a step-by-step tutorial of how to onboard
-the PIO block.
+This branch represents the Parallel IO (PIO) block and loopback Verification
+IP (VIP) in their preonboarded state. This README is a step-by-step tutorial
+of how to onboard the PIO block.
 
 The PIO block communicates to the CPU through an AXI4 interface. This interface
 is used to read from and drive the `odata`, `oenable`, and `idata` control
 registers that map to top-level ports. To integrate this block we need make the
 odata, oenable, and idata ports available at the top-level of design and
-connect the AXI4 interface to Rocket's periphery bus.
+connect the AXI4 interface to the Test Socket's periphery bus.
 
-There is also an accompanying vip for testing our block. The loopback vip needs
-to be instantiated in the testharness and be connected to the odata, oenable,
+There is also an accompanying VIP for testing our block. The loopback VIP needs
+to be instantiated in the test harness and be connected to the odata, oenable,
 and idata pads. The loopback block outputs the xor of `oenable` and `odata` to
 `idata`.
 
@@ -286,15 +286,16 @@ duh validate pio.json5
 ## Scala integration
 In order to integrate our IP block into the Craft framework we need create a
 Scala wrapper for our block that is parametrizeable and can be automatically
-attached to an SoC. This section describes how to generate boiler-plate Scala
-code from a DUH document and what modifications need to be made in order to
-fully integrate the PIO block.
+attached to an SoC. This is done by defining functions that instantiate and
+connect Diplomatic nodes to the SoC. This section describes how to generate
+boilerplate Scala code from a DUH document and what modifications need to be
+made in order to fully integrate the PIO block.
 
 ### Generating Scala code with DUH
-The best way to onboard a verilog IP block is to use `duh-export-scala` to
+The best way to onboard a Verilog IP block is to use `duh-export-scala` to
 generate an extensible Scala wrapper. We follow the convention of putting Scala
 code in the `craft/${design}/src` directory. Run the following commands to
-generate the scala wrapper files.
+generate the Scala wrapper files.
 ```bash
 duh-export-scala pio.json5 -o craft/pio/src
 duh-export-scala loopback.json5 -o craft/loopback/src
@@ -309,7 +310,7 @@ The `${name}.scala` files contain classes that extend the base classes defined
 in `${name}-base.scala` and can be modified to override or augment the
 base class functionality.
 
-For a more detailed explanation of the generated scala see the
+For a more detailed explanation of the generated Scala see the
 [duh-scala README](https://github.com/sifive/duh-scala#blackbox-wrapper-api).
 
 
@@ -319,7 +320,7 @@ unconnected. We need to add the following changes we to the generated base
 classes to create top-level ports for the `oenable`, `odata`, and `idata`
 signals of the PIO block and connect them to the loopback VIP.
 
-First we need to import classes from our loopback scala wrapper into
+First we need to import classes from our loopback Scala wrapper into
 `pio.scala`. Add the following line to the list of imports at the top of
 `pio.scala`.
 ```scala
@@ -370,7 +371,7 @@ JSON file contains important information about the generated instance of the
 design. To ensure our IP block is fully integrated with our tools we need to
 populate the section of Object Model that describes our PIO block.
 
-By default the generated scala will populate the `OMMemoryRegion`s of attached
+By default the generated Scala will populate the `OMMemoryRegion`s of attached
 bus interfaces and `OMInterrupts` of our block's interrupt bus interfaces. We
 need to add a field describing the `pioWidth` parameter of our block and also
 associate an `OMRegisterMap` with the AXI4 memory region.
@@ -382,7 +383,7 @@ case class OMPIO(width: Int)
 ```
 
 Then override the `userOM` and `getOMMemoryRegions` methods of `NpioTop` to add
-our custom Object Model and add register maps to our blocks memory regions
+our custom Object Model and add register maps to our block's memory regions
 respectively.
 ```scala
   // add in custom fields to the Object Model entry for this block
@@ -397,17 +398,17 @@ respectively.
 ```
 
 Finally, we need to edit `attach` method in the `NpioTop` companion object to
-instantiate the loopback VIP in the testharness and connect it to the `oenable`,
-`odata`, and `idata` ports of the PIO block. `bap.testHarness` is a `LazyScope`
-which means that when you apply it to a code block
+instantiate the loopback VIP in the test harness and connect it to the
+`oenable`, `odata`, and `idata` ports of the PIO block. `bap.testHarness` is a
+`LazyScope` which means that when you apply it to a code block
 (i.e. `bap.testHarness { $my_code_block}`) that code block will execute as if
-it was part of the `bap.testHarness` module. Replace the line
-`// User code here` in `attach` method in the `NpioTop` companion object with
-the following lines.
+it were part of the `bap.testHarness` module. Replace the line
+`// User code here` in the `attach` method of the `NpioTop` companion object
+with the following lines.
 ```scala
     implicit val p: Parameters = bap.p
 
-    // instantiate and connect the loopback vip in the testharness
+    // instantiate and connect the loopback vip in the test harness
     bap.testHarness {
       // instantiate the loopback vip
       val loopbackP = NloopbackTopParams(
