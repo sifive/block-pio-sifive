@@ -23,6 +23,7 @@ import sifive.skeleton._
 import sifive.blocks.util.{NonBlockingEnqueue, NonBlockingDequeue}
 
 import sifive.vip.loopback._
+import sifive.blocks.MyTestMonitorAXI4.MyTestMonitorAXI4Monitor
 
 class NpioTopIO(
   val pioWidth: Int
@@ -113,7 +114,9 @@ object NpioTop {
 class WithpioTop extends Config(
   new WithpioTopBase(
     ctrl_base = 0x60000L
-  )
+    ).alter((site, here, up) => {
+    case AXI4MonitorBuilder => new MyTestMonitorAXI4Monitor(_)
+  })
 
     // User code here
 )

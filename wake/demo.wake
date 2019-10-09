@@ -34,7 +34,7 @@ def loopbackHook =
 
 def pioHook =
   def name = "pio"
-  def addSources = source "{blockPIOSifiveRoot}/rtl/pio/pio.sv", _
+  def addSources = source "{blockPIOSifiveRoot}/rtl/pio/pio.sv", source "{blockPIOSifiveRoot}/rtl/monitor/MyTestMonitorAXI4.sv", _
   makeBlackBoxHook name (editDUTSimCompileOptionsSourceFiles addSources)
 
 global def demo =
