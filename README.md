@@ -17,6 +17,7 @@ and idata pads. The loopback block outputs the xor of `oenable` and `odata` to
 Sections in this README:
 * [Creating the DUH document](#creating-the-duh-document)
 * [Scala integration](#scala-integration)
+* [Wake integration](#wake-integration)
 
 ## Creating the DUH document
 NOTE: this tutorial was made using version 1.15.0 of DUH
@@ -433,3 +434,334 @@ with the following lines.
       }
     }
 ```
+
+
+## Wake integration
+Wake is the build tool that the SiFive IP onboarding flow uses to run tests,
+build software, generate documentation, and more. Look
+[here](https://github.com/sifive/wake/blob/master/share/doc/wake/tutorial.md)
+for a detailed tutorial on Wake. We follow the convention of putting Wake build
+files in the `$package/build-rules/wake` directory.
+
+In `block-pio-sifive/build-rules/wake/pio.wake` declare a variable that points
+to the root of the `block-pio-sifive` package. Use this variable when
+constructing any paths to files within `block-pio-sifive`. This is important
+for ensuring that our Wake build rules are agnostic to the location of the
+`block-pio-sifive` package.
+```
+global def blockPIOSiFiveRoot = simplify "{here}/../.."
+```
+
+### Creating a Wake `ScalaModule`
+For each of our Scala projects, we need to define a Wake `ScalaModule` to
+describe how it should be built. The framework we use to build Scala projects
+is [api-scala-sifive](https://github.com/sifive/api-scala-sifive). Read the
+README for more detailed documentation.
+
+The loopback block uses components from
+[soc-testsocket-sifive](https://github.com/sifive/soc-testsocket-sifive) and
+[sifive-blocks](https://github.com/sifive/sifive-blocks) so we need to add the
+already defined `sifiveBlocksScalaModule` and `sifiveSkeletonScalaModule` as
+dependencies. Add this definition to `block-pio-sifive/wake/pio.wake` to define the
+loopback `ScalaModule`.
+```
+global def loopbackScalaModule =
+  def name = "loopback"
+  def path = "{blockPIOSiFiveRoot}/craft/loopback"
+  def scalaVersion = sifiveSkeletonScalaModule.getScalaModuleScalaVersion
+  def deps = sifiveBlocksScalaModule, sifiveSkeletonScalaModule, Nil
+  makeScalaModule name path scalaVersion
+  | setScalaModuleSourceDirs ("src", Nil)
+  | setScalaModuleDeps deps
+  | setScalaModuleScalacOptions ("-Xsource:2.11", Nil)
+```
+
+The `pio` module is almost exactly the same. The only changes are the name,
+root directory, and dependencies. We imported components from `loopback`
+into the `pio` project so we need to add `loopbackScalaModule` as a
+dependency here. Copy the following into `pio.wake`
+```
+global def pioScalaModule =
+  def name = "pio"
+  def rootDir = "{blockPIOSiFiveRoot}/craft/pio"
+  def scalaVersion = sifiveSkeletonScalaModule.getScalaModuleScalaVersion
+  def deps = loopbackScalaModule, sifiveBlocksScalaModule, sifiveSkeletonScalaModule, Nil
+  makeScalaModule name rootDir scalaVersion
+  | setScalaModuleSourceDirs ("src", Nil)
+  | setScalaModuleDeps deps
+  | setScalaModuleScalacOptions ("-Xsource:2.11", Nil)
+```
+
+### Creating a wake `Block`
+Now that we have a scala project we can create a `ScalaBlock`. A `ScalaBlock`
+is just a `ScalaModule` associated with a config. Use `makeScalaBlock` to
+create a `ScalaBlock`.
+
+`duh` generates a config called
+`sifive.blocks.${moduleName}.With${moduleName}Top`. Including this config in
+our DUT will instantiate the block in the subsystem using the `attach` function
+defined by `duh`. Copy the following lines for creating the `pio` block into
+`pio.wake`.
+```
+global def pioBlock =
+  def scalaModule = pioScalaModule
+  def config = "sifive.blocks.pio.WithpioTop"
+  makeScalaBlock scalaModule config
+```
+
+### Adding simulation options hooks
+Now we need to describe how to simulate our blocks.
+There are two main publish/subscribe targets for adding simulation option hooks:
+`dutSimCompileOptionsHooks` and `dutSimExecuteOptionsHooks` for compile and
+runtime options respectively. These hooks are functions of the type
+`DUT => Option (a => a)`. A `None` return value means that no modifications
+are made. Otherwise the returned transformation on `a` is applied.
+
+`dutSimCompileOptionsHooks` operate on `DUTSimCompileOptions`.
+`DUTSimCompileOptions` is defined as follows:
+```
+tuple DUTSimCompileOptions =
+  global IncludeDirs:    List String
+  global Defines:        List NamedArg
+  global SourceFiles:    List Path
+  global Plusargs:       List NamedArg
+```
+
+An example hook might look like:
+```
+publish dutSimCompileOptionsHooks =
+  def hook dut =
+    if dut.getDUTName ==~ "myDUT"
+    then
+      def optionsTransform options =
+        options
+        | editDUTSimCompileOptionsIncludeDirs ("myIncludes", _)
+        | editDUTSimCompileOptionsDefines (
+          NamedArg        "MY_DEFINE",
+          NamedArgInteger "MY_DEFINE_INTEGER" 1,
+          NamedArgDouble  "MY_DEFINE_DOUBLE"  1.0,
+          NamedArgString  "MY_DEFINE_STRING"  "string",
+          NamedArgPath    "MY_DEFINE_PATH"    "mySourceFile".source,
+          _
+        )
+        | editDUTSimCompileOptionsPlusargs (NamedArgString "my_plusarg" "value", _)
+        | editDUTSimCompileOptionsSourceFiles ("mySourceFile".source, _)
+      Some optionsTransform
+    else None
+  hook, Nil
+```
+
+The `pio` block needs `pio.sv` and `loopback.sv` to be added to the list
+of files to be compiled in the simulation so we need to add hooks to
+`dutSimCompileOptionsHooks` to add those files. There is a helper function
+`makeBlackBoxHook` that takes a name and a transform function and returns
+a hook that will apply the transform is the blackbox of the same name is found
+in the `DUT`. We can use this to tell the simulator about our pio/loopback
+source files because `duh` will generate blackboxes of those modules for us.
+Copy the following hook defninitions into `pio.wake`.
+```
+publish dutSimCompileOptionsHooks = pioHook, loopbackHook, Nil
+
+def loopbackHook =
+  def name = "loopback"
+  def addSources = source "{blockPIOSiFiveRoot}/rtl/loopback/loopback.sv", _
+  makeBlackBoxHook name (editDUTSimCompileOptionsSourceFiles addSources)
+
+def pioHook =
+  def name = "pio"
+  def addSources = source "{blockPIOSiFiveRoot}/rtl/pio/pio.sv", _
+  makeBlackBoxHook name (editDUTSimCompileOptionsSourceFiles addSources)
+```
+
+## Making a test
+
+Currently, only c integration tests are supported. A simple test is included
+with this repository in `block-pio-sifive/tests/demo/main.c`. It looks like this.
+```c
+int main()
+{
+  // read/write to axi block
+  volatile uint32_t * pio = (uint32_t *) 0x60000;
+
+  volatile uint32_t * odata   = pio;
+  volatile uint32_t * oenable = pio + 1;
+  volatile uint32_t * idata   = pio + 2;
+
+  int fail = 0;
+  int test_len = 100;
+  for (int i = 0; i < test_len; i++) {
+    *odata = i;
+    *oenable = test_len - i;
+
+    fail |= ((*odata ^ *oenable) != *idata);
+  }
+
+  return fail;
+}
+```
+
+To tell wake how to compile this test we need to create a `TestProgramPlan`.
+`TestProgramPlan` is defined as follows:
+```
+tuple TestProgramPlan =
+  global Name:        String
+  global CFlags:      List String
+  global ASFlags:     List String
+  global CFiles:      List Path
+  global IncludeDirs: List String
+  global Sources:     List Path
+  global Filter:      DUTProgramCompiler => Boolean
+```
+A `TestProgramPlan` should only contain machine agnostic flags, since the
+same program plan may be run on multiple different configs. Machine-specific
+options should be filled in by the `DUTProgramCompiler`. You can specify what
+`DUTProgramCompiler`s are valid for this plan using the `Filter` field.
+
+To create a `TestProgramPlan` use `makeTestProgramPlan`. It has the following
+type signature.
+```
+def mySimpleProgram =
+  def programName = ${name of program} # String
+  def cfiles = ${files to compile} # List SPath
+  makeTestProgramPlan programName cfiles # Program
+```
+
+Currently, the only supported `DUTProgramCompiler` is
+`freedomMetalDUTProgramCompiler` which uses
+[freedom-metal](https://github.com/sifive/freedom-metal).
+`freedomMetalDUTProgramCompiler` provides standard libraries and will compile
+and link programs according the DTS.
+
+Since the demo test is pretty simple, we only need to specify the cfiles and the
+program name, and we can use the default parameters. Copy the following into
+`block-pio-sifive/wake/demo.wake` to create a `TestProgramPlan` for `block-pio-sifive/tests/demo/main.c`.
+```
+global def demo =
+  def programName = "demo"
+  def cFiles = source "{blockPIOSiFiveRoot}/tests/demo/main.c", Nil
+  makeTestProgramPlan programName cFiles
+```
+
+Suppose we did not want to hardcode the address of the pio block and we edited
+our test to look like this.
+```c
+int main()
+{
+  // read/write to axi block
+  volatile uint32_t * pio = (uint32_t *) PIO;
+
+  volatile uint32_t * odata   = pio;
+  volatile uint32_t * oenable = pio + 1;
+  volatile uint32_t * idata   = pio + 2;
+
+  int fail = 0;
+  int test_len = 100;
+  for (int i = 0; i < test_len; i++) {
+    *odata = i;
+    *oenable = test_len - i;
+
+    fail |= ((*odata ^ *oenable) != *idata);
+  }
+
+  return fail;
+}
+```
+
+We would need to add an argument to the c compiler. Our new wake program would
+then look like this.
+```
+global def demo =
+  def programName = "demo"
+  def cFiles = source "{blockPIOSiFiveRoot}/tests/demo/main.c", Nil
+  makeTestProgramPlan programName cFiles
+  | editTestProgramPlanCFlags ("-DPIO=0x60000", _)
+```
+
+A more complicated program like dhrystone looks like this. Dhrystone uses. The
+files for dhrystone are included in this repo.
+```
+def dhrystone =
+  def programName = "dhrystone"
+  def prefix = "{blockPIOSiFiveRoot}/tests/dhrystone"
+  def cFiles = source "{prefix}/dhry_1.c", source "{prefix}/dhry_2.c", Nil
+  def withIncludeDirs = prefix, _
+  def withExtraCFlags =
+    def iterations = 300
+    "-specs=nano.specs", "-O3", "-DTIME", "-DNOENUM", "-Wno-implicit",
+    "-mexplicit-relocs", "-save-temps", "-fno-inline", "-fno-builtin-printf",
+    "-fno-common", "-falign-functions=4", "-Xlinker", "--defsym=__stack_size=0x800",
+    "-DDHRY_ITERS={str iterations}", _
+  makeTestProgramPlan programName cFiles
+  | editTestProgramPlanCFlags withExtraCFlags
+  | editTestProgramPlanIncludeDirs withIncludeDirs
+```
+
+## Making a skeleton DUT
+To run our program we need a `DUT`. A `DUT` is a collection of source files,
+metadata and an object model that describes the design.
+[api-generator-sifive](https://github.com/sifive/api-generator-sifive) includes a `DUT`
+constructor called `rocketChipDUTMaker` that takes a `RocketChipDUTPlan` and
+returns a `DUT`. To construct a `DUT` to test our block we can use the helper
+function `makeTestSocketDUT {name} {blocks}`.
+
+`makeTestSocketDUT` constructs a `RocketChipDUTPlan` that includes a simulation
+uart, a test-finisher, and the extra blocks supplied by the `blocks` argument.
+
+Copy the following lines for creating a test `DUT` for the pio block into
+`block-pio-sifive/wake/demo.wake`.
+```
+global def pioDUT =
+  def name = "pioDUT"
+  def blocks = pioBlock, Nil
+  makeTestSocketDUT name blocks
+```
+
+## Making and publishing a test
+A wake `DUTTest` combines all the necessary components for compiling a design and
+simulating a test program running on that design. Use `makeDUTTest` to create a
+`DUTTest`. It has the following type signature.
+```
+publish test =
+  def name = ${name of test} # String
+  def filter = ${returns True only for DUTs where this test is applicable} # DUT => Boolean
+  def program = ${test program to run} # Program
+  def bootloader = ${bootloader to load the test program} # SimBootloader
+  def plusargs = ${extra plusargs to use for simulation} # List NamedArg
+  makeDUTTest name filter program bootloader plusargs
+```
+
+The `makeBlockTest` is a helper function that provides a default `filter` and
+`bootloader` for tests associated with a `ScalaBlock`. It has the following type
+signature.
+```
+  def myBlockTest =
+  def name = ${name of the test} # String
+  def block = ${the block this test is associated with} # ScalaBlock
+  def program = ${test program to run} # Program
+  def plusargs = ${extra plusargs to use for simulation} # List NamedArg
+  makeBlockTest name block program plusargs =
+```
+
+Copy the following lines into `block-pio-sifive/wake/demo.wake` to create and publish the demo
+test for the pio block. Publishing to `dutTests` will register this test so that it
+is automatically run whenever an applicable `DUT` is being tested (see next
+section).
+```
+publish dutTests = demoPioTest, Nil
+
+global def demoPioTest =
+  def name = "demo"
+  def block = pioBlock
+  def program = demo
+  def plusargs =
+    NamedArg        "verbose",
+    NamedArgInteger "random_seed"      1234,
+    NamedArgInteger "tilelink_timeout" 16000,
+    NamedArgInteger "max-cycles"       50000,
+    Nil
+  makeBlockTest name block program plusargs
+```
+
+The `verbose` plusarg toggles printing of the instruction trace to stderr. The
+stdout, stderr, output of `printf`, and waveform files will be output to the
+simulation result directory (details in the next section).
