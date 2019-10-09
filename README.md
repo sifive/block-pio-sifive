@@ -448,7 +448,7 @@ to the root of the `block-pio-sifive` package. Use this variable when
 constructing any paths to files within `block-pio-sifive`. This is important
 for ensuring that our Wake build rules are agnostic to the location of the
 `block-pio-sifive` package.
-```
+```wake
 global def blockPIOSiFiveRoot = simplify "{here}/../.."
 ```
 
@@ -464,7 +464,7 @@ The loopback block uses components from
 already defined `sifiveBlocksScalaModule` and `sifiveSkeletonScalaModule` as
 dependencies. Add this definition to `block-pio-sifive/wake/pio.wake` to define the
 loopback `ScalaModule`.
-```
+```wake
 global def loopbackScalaModule =
   def name = "loopback"
   def path = "{blockPIOSiFiveRoot}/craft/loopback"
@@ -480,7 +480,7 @@ The `pio` module is almost exactly the same. The only changes are the name,
 root directory, and dependencies. We imported components from `loopback`
 into the `pio` project so we need to add `loopbackScalaModule` as a
 dependency here. Copy the following into `pio.wake`
-```
+```wake
 global def pioScalaModule =
   def name = "pio"
   def rootDir = "{blockPIOSiFiveRoot}/craft/pio"
@@ -502,7 +502,7 @@ create a `ScalaBlock`.
 our DUT will instantiate the block in the subsystem using the `attach` function
 defined by `duh`. Copy the following lines for creating the `pio` block into
 `pio.wake`.
-```
+```wake
 global def pioBlock =
   def scalaModule = pioScalaModule
   def config = "sifive.blocks.pio.WithpioTop"
@@ -519,7 +519,7 @@ are made. Otherwise the returned transformation on `a` is applied.
 
 `dutSimCompileOptionsHooks` operate on `DUTSimCompileOptions`.
 `DUTSimCompileOptions` is defined as follows:
-```
+```wake
 tuple DUTSimCompileOptions =
   global IncludeDirs:    List String
   global Defines:        List NamedArg
@@ -528,7 +528,7 @@ tuple DUTSimCompileOptions =
 ```
 
 An example hook might look like:
-```
+```wake
 publish dutSimCompileOptionsHooks =
   def hook dut =
     if dut.getDUTName ==~ "myDUT"
@@ -559,7 +559,7 @@ a hook that will apply the transform is the blackbox of the same name is found
 in the `DUT`. We can use this to tell the simulator about our pio/loopback
 source files because `duh` will generate blackboxes of those modules for us.
 Copy the following hook defninitions into `pio.wake`.
-```
+```wake
 publish dutSimCompileOptionsHooks = pioHook, loopbackHook, Nil
 
 def loopbackHook =
@@ -602,7 +602,7 @@ int main()
 
 To tell wake how to compile this test we need to create a `TestProgramPlan`.
 `TestProgramPlan` is defined as follows:
-```
+```wake
 tuple TestProgramPlan =
   global Name:        String
   global CFlags:      List String
@@ -619,7 +619,7 @@ options should be filled in by the `DUTProgramCompiler`. You can specify what
 
 To create a `TestProgramPlan` use `makeTestProgramPlan`. It has the following
 type signature.
-```
+```wake
 def mySimpleProgram =
   def programName = ${name of program} # String
   def cfiles = ${files to compile} # List SPath
@@ -635,7 +635,7 @@ and link programs according the DTS.
 Since the demo test is pretty simple, we only need to specify the cfiles and the
 program name, and we can use the default parameters. Copy the following into
 `block-pio-sifive/wake/demo.wake` to create a `TestProgramPlan` for `block-pio-sifive/tests/demo/main.c`.
-```
+```wake
 global def demo =
   def programName = "demo"
   def cFiles = source "{blockPIOSiFiveRoot}/tests/demo/main.c", Nil
@@ -669,7 +669,7 @@ int main()
 
 We would need to add an argument to the c compiler. Our new wake program would
 then look like this.
-```
+```wake
 global def demo =
   def programName = "demo"
   def cFiles = source "{blockPIOSiFiveRoot}/tests/demo/main.c", Nil
@@ -679,7 +679,7 @@ global def demo =
 
 A more complicated program like dhrystone looks like this. Dhrystone uses. The
 files for dhrystone are included in this repo.
-```
+```wake
 def dhrystone =
   def programName = "dhrystone"
   def prefix = "{blockPIOSiFiveRoot}/tests/dhrystone"
@@ -709,7 +709,7 @@ uart, a test-finisher, and the extra blocks supplied by the `blocks` argument.
 
 Copy the following lines for creating a test `DUT` for the pio block into
 `block-pio-sifive/wake/demo.wake`.
-```
+```wake
 global def pioDUT =
   def name = "pioDUT"
   def blocks = pioBlock, Nil
@@ -720,7 +720,7 @@ global def pioDUT =
 A wake `DUTTest` combines all the necessary components for compiling a design and
 simulating a test program running on that design. Use `makeDUTTest` to create a
 `DUTTest`. It has the following type signature.
-```
+```wake
 publish test =
   def name = ${name of test} # String
   def filter = ${returns True only for DUTs where this test is applicable} # DUT => Boolean
@@ -733,7 +733,7 @@ publish test =
 The `makeBlockTest` is a helper function that provides a default `filter` and
 `bootloader` for tests associated with a `ScalaBlock`. It has the following type
 signature.
-```
+```wake
   def myBlockTest =
   def name = ${name of the test} # String
   def block = ${the block this test is associated with} # ScalaBlock
@@ -746,7 +746,7 @@ Copy the following lines into `block-pio-sifive/wake/demo.wake` to create and pu
 test for the pio block. Publishing to `dutTests` will register this test so that it
 is automatically run whenever an applicable `DUT` is being tested (see next
 section).
-```
+```wake
 publish dutTests = demoPioTest, Nil
 
 global def demoPioTest =
