@@ -5,16 +5,16 @@
 #### wit
 
 * Wit is a workspace manager
-* Use version 0.10.1
+* Use the [newest release](https://github.com/sifive/wit/releases) (tested with v0.11.0)
 * Please see instructions on the [wit README](https://github.com/sifive/wit)
 
 #### wake
 
 * wake is a build tool
-* Use version 0.15.1
-* For installation instructions see the [wake README](https://github.com/sifive/wake/tree/v0.15.0#installing-dependencies)
-* [wake tutorial](https://github.com/sifive/wake/blob/v0.15.0/share/doc/wake/tutorial.md)
-* [wake quickref](https://github.com/sifive/wake/blob/v0.15.0/share/doc/wake/quickref.md)
+* Use version 0.15.2
+* For installation instructions see the [wake README](https://github.com/sifive/wake/tree/v0.15.2#installing-dependencies)
+* [wake tutorial](https://github.com/sifive/wake/blob/v0.15.2/share/doc/wake/tutorial.md)
+* [wake quickref](https://github.com/sifive/wake/blob/v0.15.2/share/doc/wake/quickref.md)
 
 #### duh
 
