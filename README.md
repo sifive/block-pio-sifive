@@ -5,7 +5,7 @@
 #### wit
 
 * Wit is a workspace manager
-* Use the [newest release](https://github.com/sifive/wit/releases) (tested with v0.11.0)
+* Use version 0.11.0
 * Please see instructions on the [wit README](https://github.com/sifive/wit)
 
 #### wake
