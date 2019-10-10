@@ -1,6 +1,6 @@
-#include <pio/sifive_pio0.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <pio/sifive_pio0.h>
 
 int main() {
     // read/write to axi block
@@ -13,14 +13,16 @@ int main() {
     int fail = 0;
 
     for (int i = 0; i < 5; i++) {
-        metal_pio_write(m_pio, odatas[i], oenables[i]);
-        fail |= ((odatas[i] ^ oenables[i]) != metal_pio_read(m_pio));
+        metal_pio_odata_write(m_pio, odatas[i]);
+        metal_pio_oenable_write(m_pio, oenables[i]);
+        fail |= ((odatas[i] ^ oenables[i]) != metal_pio_idata_read(m_pio));
     }
 
     int test_len = 100;
     for (int i = 0; i < test_len; i++) {
-        metal_pio_write(m_pio, i, test_len - i);
-        fail |= ((i ^ (test_len - i)) != metal_pio_read(m_pio));
+        metal_pio_odata_write(m_pio, i);
+        metal_pio_oenable_write(m_pio, test_len -i);
+        fail |= ((i ^ (test_len - i)) != metal_pio_idata_read(m_pio));
     }
 
     return fail;

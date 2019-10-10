@@ -40,13 +40,8 @@ def pioHook =
 global def demo =
   def programName = "demo"
   def cFiles =
-    source "{blockPIOSifiveRoot}/tests/demo/main.c",
-    source "{blockPIOSifiveRoot}/metal/drivers/pio/sifive_pio0.h",
-    source "{blockPIOSifiveRoot}/metal/drivers/sifive_pio.c",
-    Nil
-
+    source "{blockPIOSifiveRoot}/tests/demo/main.c", Nil
   makeTestProgramPlan programName cFiles
-  | setTestProgramPlanIncludeDirs ("{blockPIOSifiveRoot}/metal/drivers", Nil)
 
 global def pioDUT =
   def name = "pioDUT"
@@ -77,4 +72,18 @@ publish vivadoVsrcHooks =
   def makeSource file _ = source file, Nil
   makeBlackBoxHook "pio"          "{blockPIOSifiveRoot}/rtl/pio/pio.sv".makeSource,
   makeBlackBoxHook "loopback"     "{blockPIOSifiveRoot}/rtl/loopback/loopback.sv".makeSource,
+  Nil
+
+def basicDriverHook =
+  def omfile2 _ = makeBadPath (makeError "Path not set")
+  makeBasicDriverPlan
+  (source "{blockPIOSifiveRoot}/pio.json5")
+  omfile2
+  "sifive"
+  "pio"
+  "{blockPIOSifiveRoot}/metal/drivers"
+  "pioDUT"
+
+publish basicDriverPlans =
+  basicDriverHook,
   Nil
