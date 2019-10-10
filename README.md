@@ -492,8 +492,8 @@ global def pioScalaModule =
   | setScalaModuleScalacOptions ("-Xsource:2.11", Nil)
 ```
 
-### Creating a wake `Block`
-Now that we have a scala project we can create a `ScalaBlock`. A `ScalaBlock`
+### Creating a Wake `ScalaBlock`
+Now that we have a Scala project we can create a `ScalaBlock`. A `ScalaBlock`
 is just a `ScalaModule` associated with a config. Use `makeScalaBlock` to
 create a `ScalaBlock`.
 
@@ -575,7 +575,7 @@ def pioHook =
 
 ## Making a test
 
-Currently, only c integration tests are supported. A simple test is included
+Currently, only C integration tests are supported. A simple test is included
 with this repository in `block-pio-sifive/tests/demo/main.c`. It looks like this.
 ```c
 int main()
