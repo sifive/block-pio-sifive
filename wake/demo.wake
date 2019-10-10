@@ -75,10 +75,10 @@ publish vivadoVsrcHooks =
   Nil
 
 def basicDriverHook =
-  def omfile2 _ = makeBadPath (makeError "Path not set")
+  def omfile _ = makeBadPath (makeError "Path not set")
   makeBasicDriverPlan
   (source "{blockPIOSifiveRoot}/pio.json5")
-  omfile2
+  omfile
   "sifive"
   "pio"
   "{blockPIOSifiveRoot}/metal/drivers"
