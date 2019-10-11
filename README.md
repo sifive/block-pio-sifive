@@ -573,6 +573,64 @@ def pioHook =
   makeBlackBoxHook name (editDUTSimCompileOptionsSourceFiles addSources)
 ```
 
+## Autogenerating C Driver code
+
+If the proper `basicDriverPlan` is defined, and published to the topic
+`basicDriverPlans`, a set of basic drivers for the device will be created
+in the metal/drivers directory. This will happen as part of the `runSim` wake,
+and uses the duh file from earlier and an object model file which is 
+automatically created during Verilog creation.
+
+
+
+```wake
+def basicDriverHook =
+  def omfile _ = makeBadPath (makeError "Path not set")
+  makeBasicDriverPlan
+  (source "{blockPIOSifiveRoot}/pio.json5")
+  omfile
+  "sifive"
+  "pio"
+  "{blockPIOSifiveRoot}/metal/drivers"
+  "pioDUT"
+```
+
+```
+publish basicDriverPlans =
+  basicDriverHook,
+  Nil
+```
+Once the drivers have been created, they can be modified. But this will take
+a small modification to the wake file.
+
+Remove the `publish` statement. Add the files driver and header files
+created to the `CFiles` section of the `TestProgramPlan`.
+
+change the 
+```wake
+    def mySimpleProgram =
+      def programName = ${name of program} # String
+      def cfiles = {files to compile}
+      makeTestProgramPlan programName cfiles # Program
+
+``` 
+
+to 
+```wake
+    def mySimpleProgram =
+      def programName = ${name of program} # String
+      def cfiles = 
+        {files to compile},
+        source "{blockPIOSifiveRoot}/metal/driver/sifive_pio.c",
+        source "{blockPIOSifiveRoot}/metal/driver/pio/sifive_pio0.h",
+        source "{blockPIOSifiveRoot}/metal/driver/pio/sifive_pio.h",
+        Nil
+      makeTestProgramPlan programName cfiles
+      | setTestProgramIncludeDirs "{blockPIOSifiveRoot}/metal/driver/pio"
+
+```
+to add the generated files and the path to the include dir.
+
 ## Making a test
 
 Currently, only C integration tests are supported. A simple test is included
