@@ -41,12 +41,23 @@ class Lpio(c: pioParams)(implicit p: Parameters) extends LpioBase(c)(p)
 
 }
 
+case class OMPIO(width: Int)
 
 class NpioTop(c: NpioTopParams)(implicit p: Parameters) extends NpioTopBase(c)(p)
 {
+  // add in custom fields to the Object Model entry for this block
+  override val userOM: OMPIO = OMPIO(c.blackbox.pioWidth)
+
   // route the ports of the black box to this sink
   val ioBridgeSink = BundleBridgeSink[pioBlackBoxIO]()
   ioBridgeSink := imp.ioBridgeSource
+
+  // associate register maps with memory regions in Object model
+  override def getOMMemoryRegions(resourceBindings: ResourceBindings) = {
+    super.getOMMemoryRegions(resourceBindings).zip(omRegisterMaps).map { case (memRegion, regmap) =>
+      memRegion.copy(registerMap = Some(regmap))
+    }
+  }
 
   // create a new ports for odata, oenable, and idata
   val ioBridgeSource = BundleBridgeSource(() => new NpioTopIO(c.blackbox.pioWidth))
@@ -56,7 +67,7 @@ class NpioTop(c: NpioTopParams)(implicit p: Parameters) extends NpioTopBase(c)(p
 
     // connect the clock and negedge reset to the default clock and reset
     ioBridgeSink.bundle.clk     := clock.asUInt
-    ioBridgeSink.bundle.reset_n := !(reset.toBool)
+    ioBridgeSink.bundle.reset_n := !(reset.asBool)
 
     // connect ioBridge source and sink
     ioBridgeSource.bundle.odata   := ioBridgeSink.bundle.odata
@@ -74,11 +85,10 @@ object NpioTop {
     // instantiate and connect the loopback vip in the testharness
     bap.testHarness {
       // instantiate the loopback vip
-      val loopbackP = NloopbackTopParams(
+      val loopback = LazyModule(new NloopbackTop(NloopbackTopParams(
         blackbox = loopbackParams(
           pioWidth = c.blackbox.pioWidth,
-          cacheBlockBytes = p(CacheBlockBytes)))
-      val loopback = NloopbackTop.attach(loopbackP)(bap)
+          cacheBlockBytes = p(CacheBlockBytes)))))
 
       // route loopback signals to the testharness
       val loopbackNode = BundleBridgeSink[loopbackBlackBoxIO]()
