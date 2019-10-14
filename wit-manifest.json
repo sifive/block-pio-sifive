@@ -13,7 +13,7 @@
         "commit": "1c38068e5338dce8594f3aef0466c6333f46a24d",
         "name": "api-scala-sifive",
         "source": "git@github.com:sifive/api-scala-sifive.git"
-    }
+    },
     {
         "commit": "e2342037082259e094c7e7650c599e9ea47b6a15",
         "name": "api-languages-sifive",
