@@ -5,7 +5,7 @@
         "source": "git@github.com:sifive/soc-testsocket-sifive.git"
     },
     {
-        "commit": "40dbdf2327088b1f42974e1dc5cfe646bebdb08f",
+        "commit": "ba8620dfe42844a1693321bfbd52b19e124642e8",
         "name": "api-generator-sifive",
         "source": "git@github.com:sifive/api-generator-sifive.git"
     },
@@ -13,9 +13,5 @@
         "commit": "1c38068e5338dce8594f3aef0466c6333f46a24d",
         "name": "api-scala-sifive",
         "source": "git@github.com:sifive/api-scala-sifive.git"
-    },
-    {    "commit":  "19.10.09",
-         "name":  "scribble-testsocket-sifive",
-         "source":  "git@github.com:sifive/scribble-testsocket-sifive"
     }
 ]
