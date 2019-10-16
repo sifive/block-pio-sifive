@@ -81,7 +81,8 @@ def basicDriverHook =
   omfile
   "sifive"
   "pio"
-  "{blockPIOSifiveRoot}/metal/drivers"
+  "{blockPIOSifiveRoot}/drivers/metal"
+  "build/block-pio-sifive"
   "pioDUT"
 
 publish basicDriverPlans =
