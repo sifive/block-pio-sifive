@@ -80,7 +80,7 @@ publish vivadoVsrcHooks =
   Nil
 
 # Documentation
-publish scribbleDirectories =  simplify "{here}/../documents/components", Nil
+publish scribbleDirectories =  simplify "{here}/../documents", Nil
 
 # Build the pio document onlining document from scratch
 global def makePioDocument Unit = makeOnboardingDocument pioDUT
