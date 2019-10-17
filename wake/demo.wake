@@ -40,7 +40,8 @@ def pioHook =
 global def demo =
   def programName = "demo"
   def cFiles =
-    source "{blockPIOSifiveRoot}/tests/demo/main.c", Nil
+    source "{blockPIOSifiveRoot}/tests/demo/main.c",
+    Nil
   makeTestProgramPlan programName cFiles
 
 global def pioDUT =
@@ -83,8 +84,24 @@ def basicDriverHook =
   "pio"
   "{blockPIOSifiveRoot}/drivers/metal"
   "build/block-pio-sifive"
+  ("sifive,pio-0.1.0", Nil)
   "pioDUT"
 
-publish basicDriverPlans =
-  basicDriverHook,
+# Uncomment to generate driver from object model
+# and DUH document
+#publish basicDriverPlans =
+#  basicDriverHook,
+#  Nil
+
+def pioDriver =
+  def sourceFiles =
+    (sources "{blockPIOSifiveRoot}/drivers/metal" `.*.c`)
+    ++ (sources "{blockPIOSifiveRoot}/drivers/metal" `.*.h`)
+  makeDriverImplementation
+  ("sifive,pio-0.1.0", Nil)
+  sourceFiles
+  ("{blockPIOSifiveRoot}/drivers/metal" ,Nil)
+
+publish driverImplementations =
+  pioDriver,
   Nil
