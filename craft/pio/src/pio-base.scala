@@ -87,7 +87,7 @@ case class pioParams(
   cacheBlockBytes: Int
 )
 
-// busType: AXI4Lite, mode: slave
+// busType: AXI4-Lite, mode: slave
 // busType: interrupts, mode: master
 
 class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule {
@@ -172,7 +172,7 @@ class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule {
     val ctrl0 = ctrlNode.in(0)._1
     val irq0 = irqNode.out(0)._1
     // interface wiring
-    // wiring for ctrl of type AXI4Lite
+    // wiring for ctrl of type AXI4-Lite
     // -> {"aw":{"valid":1,"ready":-1,"bits":{"id":"awIdWidth","addr":"awAddrWidth","len":8,"size":3,"burst":2,"lock":1,"cache":4,"prot":3,"qos":4}},"w":{"valid":1,"ready":-1,"bits":{"data":"wDataWidth","strb":"wStrbWidth","last":1}},"b":{"valid":-1,"ready":1,"bits":{"id":"-bIdWidth","resp":-2}},"ar":{"valid":1,"ready":-1,"bits":{"id":"arIdWidth","addr":"addrWidth","len":8,"size":3,"burst":2,"lock":1,"cache":4,"prot":3,"qos":4}},"r":{"valid":-1,"ready":1,"bits":{"id":"-rIdWidth","data":"-dataWidth","resp":-2,"last":-1}}}
     // aw
     blackbox.io.t_ctrl_awvalid := ctrl0.aw.valid
@@ -300,14 +300,38 @@ class NpioTopBase(val c: NpioTopParams)(implicit p: Parameters)
 
   def userOM: Product with Serializable = Nil
 
+  private def padFields(fields: (Int, RegField)*) = {
+    var previousOffset = 0
+    var previousField: Option[RegField] = None
+
+    fields.flatMap { case (fieldOffset, field) =>
+      val padWidth = fieldOffset - previousOffset
+      require(padWidth >= 0,
+        if (previousField.isDefined) {
+          s"register fields at $previousOffset and $fieldOffset are overlapping"
+        } else {
+          s"register field $field has a negative offset"
+        })
+
+      previousOffset = fieldOffset
+      previousField = Some(field)
+
+      if (padWidth > 0) {
+        Seq(RegField(padWidth), field)
+      } else {
+        Seq(field)
+      }
+    }
+  }
+
   def omRegisterMaps = Seq(
     OMRegister.convert(
-      0 -> RegFieldGroup("ODATA", None, Seq(
-        RegField(32, Bool(), RegFieldDesc("data", "")))),
-      32 -> RegFieldGroup("OENABLE", Some("determines whether the pin is an input or an output. If the data direction bit is a 1, then the pin is an input"), Seq(
-        RegField(32, Bool(), RegFieldDesc("data", "")))),
-      64 -> RegFieldGroup("IDATA", Some("read the port pins"), Seq(
-        RegField(32, Bool(), RegFieldDesc("data", ""))))))
+      0 -> RegFieldGroup("ODATA", Some("This drives the output data pins."), padFields(
+        0 -> RegField(pioWidth, Bool(), RegFieldDesc("data", "")))),
+      4 -> RegFieldGroup("OENABLE", Some("This determines whether the pin is an input or an output. If the data direction bit is a 1, then the pin is an input."), padFields(
+        0 -> RegField(pioWidth, Bool(), RegFieldDesc("data", "")))),
+      8 -> RegFieldGroup("IDATA", Some("This is driven by the input data pins."), padFields(
+        0 -> RegField(pioWidth, Bool(), RegFieldDesc("data", ""))))))
 
   def getOMMemoryRegions(resourceBindings: ResourceBindings): Seq[OMMemoryRegion] = {
     val name = imp.device.describe(resourceBindings).name
