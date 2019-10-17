@@ -100,20 +100,20 @@
         usage: 'register',
         volatile: false, access: 'read-write',
         registers: [{
-          name: 'ODATA',
-          addressOffset: 0, size: 32,
+          name: 'ODATA', addressOffset: 0, size: 'pioWidth',
           displayName: 'Output Data Register',
-          fields: [{name: 'data', bits: 32}]
+          description: 'This drives the output data pins.',
+          fields: [{name: 'data', bitOffset: 0, bitWidth: 'pioWidth'}]
         }, {
-          name: 'OENABLE', addressOffset: 4, size: 32,
-          displayName: 'Data direction',
-          description: 'determines whether the pin is an input or an output. If the data direction bit is a 1, then the pin is an input',
-          fields: [{name: 'data', bits: 32}]
+          name: 'OENABLE', addressOffset: 4, size: 'pioWidth',
+          displayName: 'Data Direction',
+          description: 'This determines whether the pin is an input or an output. If the data direction bit is a 1, then the pin is an input.',
+          fields: [{name: 'data', bitOffset: 0, bitWidth: 'pioWidth'}]
         }, {
-          name: 'IDATA', addressOffset: 8, size: 32,
-          displayName: 'Input data',
-          description: 'read the port pins',
-          fields: [{name: 'data', bits: 32}]
+          name: 'IDATA', addressOffset: 8, size: 'pioWidth',
+          displayName: 'Input Data',
+          description: 'This is driven by the input data pins.',
+          fields: [{name: 'data', bitOffset: 0, bitWidth: 'pioWidth'}]
         }]
       }]
     }
@@ -127,7 +127,7 @@
     busInterfaces: [{
       name: 'ctrl',
       interfaceMode: 'slave',
-      busType: {vendor: 'amba.com', library: 'AMBA4', name: 'AXI4Lite', version: 'r0p0_0'},
+      busType: {vendor: 'amba.com', library: 'AMBA4', name: 'AXI4-Lite', version: 'r0p0_0'},
       abstractionTypes: [{
         viewRef: 'RTLview',
         portMaps: {$ref: '#/definitions/ctrlPortMap'},
