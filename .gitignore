@@ -1,0 +1,13 @@
+__pycache__
+.wit
+.gem
+.venv
+.bundle
+node_modules
+.fuse*
+*.old
+wake.*
+.pytest_cache
+x
+xx
+xxx
