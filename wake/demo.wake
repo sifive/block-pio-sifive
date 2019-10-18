@@ -25,6 +25,9 @@ global def pioBlock =
   def config = "sifive.blocks.pio.WithpioTop"
   makeScalaBlock scalaModule config
 
+global def pio16Block =
+  setScalaBlockConfig "sifive.blocks.pio.WithpioTop2" pioBlock
+
 publish dutSimCompileOptionsHooks = pioHook, loopbackHook, Nil
 
 def loopbackHook =
@@ -47,10 +50,21 @@ global def demo =
 
   makeTestProgramPlan programName cFiles
   | setTestProgramPlanIncludeDirs ("{blockPIOSifiveRoot}/metal/drivers", Nil)
+  | setTestProgramPlanCFlags ("-DPIO_BASE=0x60000", Nil)
+
+global def demo16 =
+  demo
+  | setTestProgramPlanName "demo16"
+  | setTestProgramPlanCFlags ("-DPIO_WIDTH_16", "-DPIO_BASE=0x70000", Nil)
 
 global def pioDUT =
   def name = "pioDUT"
   def blocks = pioBlock, Nil
+  makeTestSocketDUT name blocks
+
+global def pio16DUT =
+  def name = "pio16DUT"
+  def blocks = pio16Block, Nil
   makeTestSocketDUT name blocks
 
 global def pioVC707DUT =
@@ -59,12 +73,24 @@ global def pioVC707DUT =
   def frequency = 50
   makeVC707TestSocketDUT name frequency blocks
 
-publish dutTests = demoPioTest, Nil
+publish dutTests = demoPioTest, demoPio16Test, Nil
 
 global def demoPioTest =
   def name = "demo"
   def block = pioBlock
   def program = demo
+  def plusargs =
+    NamedArg        "verbose",
+    NamedArgInteger "random_seed"      1234,
+    NamedArgInteger "tilelink_timeout" 16000,
+    NamedArgInteger "max-cycles"       50000,
+    Nil
+  makeBlockTest name block program plusargs
+
+global def demoPio16Test =
+  def name = "demo16"
+  def block = pio16Block
+  def program = demo16
   def plusargs =
     NamedArg        "verbose",
     NamedArgInteger "random_seed"      1234,

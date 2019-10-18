@@ -4,7 +4,6 @@
 
 #ifndef sifive_pio0_h
 #define sifive_pio0_h
-#define PIO_BASE 0x60000
 
 struct metal_pio;
 
