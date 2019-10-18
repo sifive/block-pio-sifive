@@ -18,6 +18,7 @@ Sections in this README:
 * [Creating the DUH document](#creating-the-duh-document)
 * [Scala integration](#scala-integration)
 * [Wake integration](#wake-integration)
+* [Parameterizing your block](#parameterizing-your-block)
 
 ## Creating the DUH document
 NOTE: this tutorial was made using version 1.15.0 of DUH
