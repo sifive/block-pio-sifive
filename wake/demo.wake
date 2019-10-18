@@ -104,3 +104,10 @@ publish vivadoVsrcHooks =
   makeBlackBoxHook "pio"          "{blockPIOSifiveRoot}/rtl/pio/pio.sv".makeSource,
   makeBlackBoxHook "loopback"     "{blockPIOSifiveRoot}/rtl/loopback/loopback.sv".makeSource,
   Nil
+
+
+# Documentation
+publish scribbleDirectories =  simplify "{here}/../documents", Nil
+
+# Build the pio document onlining document from scratch
+global def makePioDocument Unit = makeOnboardingDocument pioDUT
