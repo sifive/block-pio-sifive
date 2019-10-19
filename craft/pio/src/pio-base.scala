@@ -327,11 +327,11 @@ class NpioTopBase(val c: NpioTopParams)(implicit p: Parameters)
   def omRegisterMaps = Seq(
     OMRegister.convert(
       0 -> RegFieldGroup("ODATA", Some("This drives the output data pins."), padFields(
-        0 -> RegField(pioWidth, Bool(), RegFieldDesc("data", "")))),
+        0 -> RegField(pioWidth, Bool(), RegFieldDesc("data", "", reset = Some(0))))),
       4 -> RegFieldGroup("OENABLE", Some("This determines whether the pin is an input or an output. If the data direction bit is a 1, then the pin is an input."), padFields(
-        0 -> RegField(pioWidth, Bool(), RegFieldDesc("data", "")))),
+        0 -> RegField(pioWidth, Bool(), RegFieldDesc("data", "", reset = Some(0))))),
       8 -> RegFieldGroup("IDATA", Some("This is driven by the input data pins."), padFields(
-        0 -> RegField(pioWidth, Bool(), RegFieldDesc("data", ""))))))
+        0 -> RegField.r(pioWidth, Bool(), RegFieldDesc("data", ""))))))
 
   def getOMMemoryRegions(resourceBindings: ResourceBindings): Seq[OMMemoryRegion] = {
     val name = imp.device.describe(resourceBindings).name
