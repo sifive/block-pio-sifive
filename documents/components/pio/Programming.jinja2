@@ -1,4 +1,4 @@
-
+{%  set registers = RegisterMap(scope) %}
 
 [[chapter-pio]]
 = Parallel I/O (PIO)
@@ -15,61 +15,26 @@ but it does provide a full set of `penable` lines for latching the input.
 {{ Figure("{here}/pio_diagram.svg", title="PIO Block Diagram", id="pio-diagram", width="50%", **kwargs) }}
 
 == PIO Instances in {{  product_name }}
-
 {{ product_name }} contains {{ devices|length|english_number }} PIO instance{{ devices|pluralize('s') }}.
 {{ devices|pluralize('Its address,Their addresses') }} and data width are shown below in <<pio_instance_table>>.
 
-[[pio_instance_table]]
-.Parallel I/O Instances
-[cols="1,1,2",options="header"]
-|===
-| Address | Data Width | Description
+{{ Section(".InstanceTable", scope, reference_id="pio_instance_table", **kwargs) }}
 
-{% for pio in devices %}
-| {{ base_address(pio) }} | {{ pio.width }} | {{  pio.description or "(not given)" }}
-{%  endfor %}
-|===
 
 == PIO Registers
-
 The register map for the PIO control registers is shown in <<table_pio_register_map>>.
 The PIO device is designed to work with naturally aligned 32-bit memory accesses.
 
-[[table_pio_register_map]]
-.PIO Register Map
-[%autowidth,cols="^m,^,^,<,<",options="header"]
-|===
-^|Offset from base ^|Width ^|Attr. ^|Description ^|Notes
-|0x00
-|4B
-|RW
-|`pout`
-|Output Signals
-
-|0x04
-|4B
-|RW
-|`pin`
-| Input Signals    `
+{{ registers.table("PIO Register Map", "table_pio_register_map") }}
 
 
-|0x08
-|4B
-|RW
-|`penable`
-| Latches the input signals
-
-|===
-
-== PIO Output Register (`pout`)
-Setting the `pout` register sets the corresponding output lines.
-
-== PIO Input Enable Register (`penable`)
-
-For input, the input lines should be latched before reading the `pin` register.
-To latch an input line, toggle the correspondg `penable`
-bit from zero to one.
+== PIO Output Register (`ODATA`)
+{{ registers.fields("ODATA") }}
 
 
-== PIO Input Register (`pin`)
-Once data has been "latched", it may be read through the `pin` register.
+== PIO Input Enable Register (`OENABLE`)
+{{ registers.fields("OENABLE") }}
+
+
+== PIO Input Register (`IDATA`)
+{{ registers.fields("IDATA") }}
