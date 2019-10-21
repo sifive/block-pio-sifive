@@ -18,6 +18,7 @@ Sections in this README:
 * [Creating the DUH document](#creating-the-duh-document)
 * [Scala integration](#scala-integration)
 * [Wake integration](#wake-integration)
+* [Parameterizing your block](#parameterizing-your-block)
 
 ## Creating the DUH document
 NOTE: this tutorial was made using version 1.15.0 of DUH
@@ -730,16 +731,16 @@ publish test =
   makeDUTTest name filter program bootloader plusargs
 ```
 
-The `makeBlockTest` is a helper function that provides a default `filter` and
+The `makeOMBlockTest` is a helper function that provides a default `filter` and
 `bootloader` for tests associated with a `ScalaBlock`. It has the following type
 signature.
 ```wake
-  def myBlockTest =
+def myBlockTest =
   def name = ${name of the test} # String
-  def block = ${the block this test is associated with} # ScalaBlock
+  def deviceType = ${the Object Model type of the block} # String
   def program = ${test program to run} # Program
   def plusargs = ${extra plusargs to use for simulation} # List NamedArg
-  makeBlockTest name block program plusargs =
+  makeOMBlockTest name deviceType program plusargs =
 ```
 
 Copy the following lines into `block-pio-sifive/wake/demo.wake` to create and publish the demo
@@ -751,7 +752,7 @@ publish dutTests = demoPioTest, Nil
 
 global def demoPioTest =
   def name = "demo"
-  def block = pioBlock
+  def type = "OMpio"
   def program = demo
   def plusargs =
     NamedArg        "verbose",
@@ -759,9 +760,43 @@ global def demoPioTest =
     NamedArgInteger "tilelink_timeout" 16000,
     NamedArgInteger "max-cycles"       50000,
     Nil
-  makeBlockTest name block program plusargs
+  makeOMBlockTest name type program plusargs
 ```
 
 The `verbose` plusarg toggles printing of the instruction trace to stderr. The
 stdout, stderr, output of `printf`, and waveform files will be output to the
 simulation result directory (details in the next section).
+
+## Parameterizing your block
+Because the PIO block is parameterizeable we need to make sure we test multiple
+configurations of the block. To create another parameterization of the PIO
+block, add another config to `pio.scala`. The following config will instantiate
+the PIO at base address 0x70000 and with a width of 16
+
+```scala
+class WithpioTop2 extends Config((site, here, up) => {
+  case BlockDescriptorKey =>
+    val defaults = NpioTopParams.defaults(
+        ctrl_base = 0x70000L,
+        cacheBlockBytes = site(CacheBlockBytes))
+    BlockDescriptor(
+      name = "pio",
+      place = NpioTop.attach(
+        defaults.copy(blackbox = defaults.blackbox.copy(pioWidth = 16)))
+    ) +: up(BlockDescriptorKey, site)
+})
+```
+
+Now we need to add a new block to `demo.wake` and add the block to a DUT.
+```wake
+global def pio16Block =
+  setScalaBlockConfig "sifive.blocks.pio.WithpioTop2" pioBlock
+
+global def pio16DUT =
+  def name = "pio16DUT"
+  def blocks = pio16Block, Nil
+  makeTestSocketDUT name blocks
+```
+
+We should be able to reuse the test and driver for our default PIO block since
+the headers are generated based on the Object Model.
