@@ -64,29 +64,38 @@ module tb;
 
   initial begin
     $dumpfile("tb.vcd");
-    $dumpvars(1);
+    $dumpvars(0);
     $display("start time = %5d ns", $time);
-    reset_n <= 0;
-    toggle_clk;
+
+    clk <= 1; reset_n <= 0;
+    awvalid <= 0; wvalid <= 0; bready <= 0; arvalid <= 0; rready <= 0 ;
+    _clk;
     reset_n <= 1;
-    toggle_clk;
-    toggle_clk;
-    toggle_clk;
-    toggle_clk;
+    _clk;
+    awvalid <= 1; awprot <= 0; awaddr <= 0;
+    _clk;
+    awvalid <= 0; awprot <= 'x; awaddr <= 'x;
+    wvalid <= 1; wdata <= 32'h55555555; wstrb <= 4'h5;
+    _clk;
+    wvalid <= 0; wdata <= 'x; wstrb <= 'x;
+    bready <= 1;
+    _clk;
+    bready <= 0;
+    _clk;
+    arvalid <= 1; araddr <= 0; arprot <= 0;
+    _clk;
+    arvalid <= 0; araddr <= 'x; arprot <= 'x;
+    rready <= 1;
+    _clk;
+    rready <= 0;
+    _clk;
+    _clk;
     $display("stop  time = %5d ns", $time);
   end
 
-  task toggle_clk;
-    begin
-      #10 clk = ~clk;
-      #10 clk = ~clk;
-    end
+  task _clk;
+    #10 clk = ~clk;
+    #10 clk = ~clk;
   endtask
-
-  // `ifdef VCS
-  // final begin
-  //   $vcdplusflush();
-  // end
-  // `endif
 
 endmodule
