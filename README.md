@@ -656,17 +656,17 @@ The bitstream will be placed at `build/api-generator-sifive/pioVC707DUT/mcs/obj/
 To include the block in Scribble manuals and documents, you'll need to
 provide sections of text about the block - what it is, how it is used,
 and how to connect to it. 
-Once the sections are written, you can produce an test "Onboarding" document
+Once the sections are written, you can produce a test "Onboarding" document
 which combines those sections so you can verify the documentation is correct.
 
 See the 
-[Test Socket Document](https://github.com/sifive/scribble-testsocket-sifive/blob/master/README.md)
+[Test Socket "Onboarding" Document](https://github.com/sifive/scribble-testsocket-sifive/blob/master/README.md)
 instructions on how to write documentation for a new block.
 
 Summarizing the onboarding instructions, you will need to create three sections of documentation.
-  - an "Overview" which gives a brief paragraph about the device,
-  - a "Programming" chapter which shows how to configure and use the device, and
-  - a "HardwareInterface" chapter which shows how to interface to the device.
+  - an "Overview" which gives a brief paragraph about the block,
+  - a "Programming" chapter which shows how to configure and use the block, and
+  - a "HardwareInterface" chapter which shows how to interface to the block.
 
 You can produce a document at any time, even before writing any of these sections, by giving the command:
 ```
