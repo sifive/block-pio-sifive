@@ -23,9 +23,9 @@ _base_docker_run() {
   shift
 
   if [[ "$allow_internet" == "true" ]]; then
-    network_option="--network none"
-  else
     network_option=""
+  else
+    network_option="--network none"
   fi
 
   docker run --rm \
