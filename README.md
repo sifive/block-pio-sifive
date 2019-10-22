@@ -822,7 +822,7 @@ Specifically, add the following line to `demo.wake`.
 publish scribbleDirectories = simplify "../../docs/scribble", Nil  # TODO - are parens needed?
 ```
 
-### Creating an onboarding document.
+### Creating an Onboarding document.
 At this point, we can create the first draft of the PIO Onboarding document. Type the following command.
 ```
 wake makeOnboardingDocument pioDUT
@@ -831,32 +831,29 @@ The Onboarding document is a short test document which displays all the sections
 It is created in the directory `build/api-generator-sifive/pioDUT/documentation`. 
 
 Note we haven't actually written anything about PIO yet. 
-The Onboarding document creates placeholder sections which fill in for the missing PIO sections.
+The Onboarding document includes placeholder sections which fill in for the missing PIO sections.
 Consequently, we can create an Onboarding document at any time, even if we haven't written the documentation yet.
 
-The next step is to replace those placeholders with text specific 
-to the Parallel I/O block. 
-
+The next step replaces those placeholders with text specific to the Parallel I/O block. 
 We will create three Jinja templates `Overview.jinja2`, `Programming.jinja2` and `HardwareInterface.jinja2`, 
 all of which reside in the `docs/scribble/components/pio` directory.
-These three templates will fill in information about the new PIO block.
 
-#### Create the Overview template.
+#### Create the Overview Template.
 The Overview template contains a simple paragraph describing what the block does. 
-While pioDUT configuration has only a single instance of PIO,
+While the pioDUT configuration has only a single instance of PIO,
 the paragraph should be crafted to allow for multiple instances.
 
 To get started, copy the following text into the file `Overview.jinja2`.
 ```
 = Parallel I/O (PIO)
 
-The {{ product_name }} contains {{ devices|length|english_number }} parallel I/O (PIO) block{{ devices }} for simple parallel input/output.
+The {{ product_name }} contains {{ devices|length|english_number }} parallel I/O (PIO) block{{ devices|pluralize }} for simple parallel input/output.
 The PIO block is further described in <<chapter-pio>>.
 ```
-The functions and variables used in this template are described in [Scribble Onboarding TODO](TODO]. 
+The functions and variables used in this template are described in [Scribble Test Socket](https://github.com/sifive/scribble-testsocket-sifive). 
 This is a good time rerun the wake command and update the document. (`wake makeOnboardingDocument pioDUT`)
 
-#### Create the Programming template.
+#### Create the Programming Template.
 The Programming chapter goes into more detail about what the block does and how to use it. 
 For PIO, it should give a general description of a Parallel I/O device and provide information on each instance in the design.
 If it has registers, the chapter should include a register map and a description of all the register fields.
@@ -902,7 +899,7 @@ The PIO device is designed to work with naturally aligned 32-bit memory accesses
 {{ registers.fields("IDATA") }}
 ```
 Note this template makes use of the `RegisterMap` function to display both the overall register map as well as decriptions of the fields 
-of each register. For more information on RegisterMap, see [TODO -link](TODO).
+of each register. For more information on RegisterMap, see [Scribble Test Socket](https://github.com/sifive/scribble-testsocket-sifive).
 
 Second, copy the following text into the subsection `InstanceTable.jinja2`. 
 ```
@@ -921,13 +918,18 @@ Second, copy the following text into the subsection `InstanceTable.jinja2`.
 When both files have been created, re-run the `wake makeOnboardingDocument pioDUT` command and verify the document 
 contains the new "Parallel I/O (PIO)" chapter.
 
-#### Creating the Hardware Interface template. 
+#### Create the Hardware Interface Template. 
 For the Hardware Interface chapter, we will create both a Jinja template and a diagram.
 Both files will be located in the same PIO documentation directory as the other sections.
 
-First, copy the file `pio-diagram.svg` into `docs/scribble/components/pio`. 
+First, install the file `pio-diagram.svg` into `docs/scribble/components/pio`. 
+The easiest way is to checkout the file from the `master` branch.
+```
+cd docs/scribble/components/pio
+git checkout master -- pio-diagram.svg
+```
 
-Second, copy the following text into the file `HardwareInterface.jinja2`*[]: 
+Second, copy the following text into the file `HardwareInterface.jinja2`. 
 ```
 [[chapter-pio-interfaces]]
 = Parallel I/O (PIO) Interfaces
