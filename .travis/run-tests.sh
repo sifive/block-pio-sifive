@@ -23,9 +23,9 @@ _base_docker_run() {
   shift
 
   if [[ "$allow_internet" == "true" ]]; then
-    network_option="--network none"
-  else
     network_option=""
+  else
+    network_option="--network none"
   fi
 
   docker run --rm \
@@ -50,7 +50,13 @@ docker_run_no_internet() {
 ## Main script
 
 docker_run_no_internet wake --init .
+# Run preinstall step with internet so that we can install Python and Ruby
+# dependencies
+docker_run wake -v --no-tty preinstall Unit
 
 # Tail output to avoid filling up Travis CI maximum stdout.
 docker_run_no_internet wake -v --no-tty runSim pioDUT 2>&1 | (head -n 10000; tail -n 1000)
 docker_run_no_internet wake -v --no-tty runSim pio16DUT 2>&1 | (head -n 10000; tail -n 1000)
+
+docker_run_no_internet wake -v --no-tty makeOnboardingDocument pioDUT
+docker_run_no_internet wake -v --no-tty makeOnboardingDocument pio16DUT

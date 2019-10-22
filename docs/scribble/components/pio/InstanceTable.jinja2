@@ -1,0 +1,10 @@
+[[{{ reference_id }}]]
+.Parallel I/O Instances
+[cols="1,1,2",options="header"]
+|===
+| Address | Data Width | Description
+
+{% for pio in devices %}
+| {{ base_address(pio) }} | {{ pio.width }} | {{  pio.description or "" }}
+{%  endfor %}
+|===

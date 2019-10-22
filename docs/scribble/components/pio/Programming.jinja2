@@ -1,0 +1,35 @@
+{%  set registers = RegisterMap(scope) %}
+[[chapter-pio]]
+= Parallel I/O (PIO)
+
+This chapter describes the operation of the SiFive parallel I/O device.
+
+== PIO Overview
+
+The PIO device provides a series of I/O pins that can be read or written via memory mapped registers.
+Pins may be independently configured as either input or output pins via the `OENABLE` register.
+
+== PIO Instances in {{  product_name }}
+{{ product_name }} contains {{ devices|length|english_number }} PIO instance{{ devices|pluralize('s') }}.
+{{ devices|pluralize('Its address,Their addresses') }} and data width{{ devices|pluralize }} are shown below in <<table-pio-instances>>.
+
+{{ Section(".InstanceTable", scope, reference_id="table-pio-instances", **kwargs) }}
+
+
+== PIO Registers
+The register map for the PIO control registers is shown in <<table-pio-register-map>>.
+The PIO device is designed to work with naturally aligned 32-bit memory accesses.
+
+{{ registers.table("PIO Register Map", "table-pio-register-map") }}
+
+
+== PIO Output Register (`ODATA`)
+{{ registers.fields("ODATA") }}
+
+
+== PIO Input Enable Register (`OENABLE`)
+{{ registers.fields("OENABLE") }}
+
+
+== PIO Input Register (`IDATA`)
+{{ registers.fields("IDATA") }}
