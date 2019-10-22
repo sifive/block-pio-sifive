@@ -806,7 +806,7 @@ the headers are generated based on the Object Model.
 To create Scribble documentation for the new block, we will need to create three sections of text: 
  - an "Overview" paragraph with a brief description of the block, 
  - a "Programming" chapter describing how to program and configure the block, and
- - a "HardwareInterface" chapter describing how to interface to the block.
+ - a "Hardware Interface" chapter describing how to interface to the block.
  
 Scribble will include these sections in documents and manuals for designs which include the block.
 
@@ -856,9 +856,9 @@ This is a good time rerun the wake command and update the document. (`wake makeO
 #### Create the Programming Template.
 The Programming chapter goes into more detail about what the block does and how to use it. 
 For PIO, it should give a general description of a Parallel I/O device and provide information on each instance in the design.
-If it has registers, the chapter should include a register map and a description of all the register fields.
+If a block has registers, the chapter should include a register map and a description of all the register fields.
 
-For pioDUT, we are going to create an `Overview` section which invokes the `InstanceTable` subsection..
+For pioDUT, we are going to create an `Overview` section which invokes the `InstanceTable` subsection.
 
 First, copy the following text into the main section `Overview.jinja2`.
 ```
@@ -898,7 +898,7 @@ The PIO device is designed to work with naturally aligned 32-bit memory accesses
 == PIO Input Register (`IDATA`)
 {{ registers.fields("IDATA") }}
 ```
-Note this template makes use of the `RegisterMap` function to display both the overall register map as well as decriptions of the fields 
+Note this template makes use of the `RegisterMap` function to display both the overall register map as well as descriptions of the fields 
 of each register. For more information on RegisterMap, see [Scribble Test Socket](https://github.com/sifive/scribble-testsocket-sifive).
 
 Second, copy the following text into the subsection `InstanceTable.jinja2`. 
