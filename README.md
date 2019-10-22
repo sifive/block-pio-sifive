@@ -656,8 +656,8 @@ The bitstream will be placed at `build/api-generator-sifive/pioVC707DUT/mcs/obj/
 To include the block in Scribble manuals and documents, you'll need to
 provide sections of text about the block - what it is, how it is used,
 and how to connect to it. 
-Once the sections are written, you can produce an "Onboarding" document
-which combines those sections so you can verify the documention is correct.
+Once the sections are written, you can produce an test "Onboarding" document
+which combines those sections so you can verify the documentation is correct.
 
 See the 
 [Test Socket Document](https://github.com/sifive/scribble-testsocket-sifive/blob/master/README.md)
