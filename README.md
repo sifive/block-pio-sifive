@@ -19,6 +19,7 @@ Sections in this README:
 * [Scala integration](#scala-integration)
 * [Wake integration](#wake-integration)
 * [Parameterizing your block](#parameterizing-your-block)
+* [Documenting your block](#documenting-your-block)
 
 ## Creating the DUH document
 NOTE: this tutorial was made using version 1.15.0 of DUH
@@ -800,3 +801,147 @@ global def pio16DUT =
 
 We should be able to reuse the test and driver for our default PIO block since
 the headers are generated based on the Object Model.
+
+## Documenting your block
+To create Scribble documentation for the new block, we will need to create three sections of text: 
+ - an "Overview" paragraph with a brief description of the block, 
+ - a "Programming" chapter describing how to program and configure the block, and
+ - a "HardwareInterface" chapter describing how to interface to the block.
+ 
+Scribble will include these sections in documents and manuals for designs which include the block.
+
+### Creating the documentation directories.
+To begin, create a directory for to hold the `pio` documentation.  The directory structure allows multiple blocks to be documented,
+but in our case we are only describing `pio`.
+```
+mkdir -p docs/scribble/components/pio
+```
+In addition, edit the project's wake file to include the new scribble directory in the documentation path.
+Specifically, add the following line to `demo.wake`. 
+```wake
+publish scribbleDirectories = simplify "../../docs/scribble", Nil  # TODO - are parens needed?
+```
+
+### Creating an onboarding document.
+At this point, we can create the first draft of the PIO Onboarding document. Type the following command.
+```
+wake makeOnboardingDocument pioDUT
+```
+The Onboarding document is a short test document which displays all the sections we've written so far. 
+It is created in the directory `build/api-generator-sifive/pioDUT/documentation`. 
+
+Note we haven't actually written anything about PIO yet. 
+The Onboarding document creates placeholder sections which fill in for the missing PIO sections.
+Consequently, we can create an Onboarding document at any time, even if we haven't written the documentation yet.
+
+The next step is to replace those placeholders with text specific 
+to the Parallel I/O block. 
+
+We will create three Jinja templates `Overview.jinja2`, `Programming.jinja2` and `HardwareInterface.jinja2`, 
+all of which reside in the `docs/scribble/components/pio` directory.
+These three templates will fill in information about the new PIO block.
+
+#### Create the Overview template.
+The Overview template contains a simple paragraph describing what the block does. 
+While pioDUT configuration has only a single instance of PIO,
+the paragraph should be crafted to allow for multiple instances.
+
+To get started, copy the following text into the file `Overview.jinja2`.
+```
+= Parallel I/O (PIO)
+
+The {{ product_name }} contains {{ devices|length|english_number }} parallel I/O (PIO) block{{ devices }} for simple parallel input/output.
+The PIO block is further described in <<chapter-pio>>.
+```
+The functions and variables used in this template are described in [Scribble Onboarding TODO](TODO]. 
+This is a good time rerun the wake command and update the document. (`wake makeOnboardingDocument pioDUT`)
+
+#### Create the Programming template.
+The Programming chapter goes into more detail about what the block does and how to use it. 
+For PIO, it should give a general description of a Parallel I/O device and provide information on each instance in the design.
+If it has registers, the chapter should include a register map and a description of all the register fields.
+
+For pioDUT, we are going to create an `Overview` section which invokes the `InstanceTable` subsection..
+
+First, copy the following text into the main section `Overview.jinja2`.
+```
+{%  set registers = RegisterMap(scope) %}
+[[chapter-pio]]
+= Parallel I/O (PIO)
+
+This chapter describes the operation of the SiFive parallel I/O device.
+
+== PIO Overview
+
+The PIO device provides a series of I/O pins that can be read or written via memory mapped registers.
+Pins may be independently configured as either input or output pins via the `OENABLE` register.
+
+== PIO Instances in {{  product_name }}
+{{ product_name }} contains {{ devices|length|english_number }} PIO instance{{ devices|pluralize('s') }}.
+{{ devices|pluralize('Its address,Their addresses') }} and data width{{ devices|pluralize }} are shown below in <<table-pio-instances>>.
+
+{{ Section(".InstanceTable", scope, reference_id="table-pio-instances", **kwargs) }}
+
+
+== PIO Registers
+The register map for the PIO control registers is shown in <<table-pio-register-map>>.
+The PIO device is designed to work with naturally aligned 32-bit memory accesses.
+
+{{ registers.table("PIO Register Map", "table-pio-register-map") }}
+
+
+== PIO Output Register (`ODATA`)
+{{ registers.fields("ODATA") }}
+
+
+== PIO Input Enable Register (`OENABLE`)
+{{ registers.fields("OENABLE") }}
+
+
+== PIO Input Register (`IDATA`)
+{{ registers.fields("IDATA") }}
+```
+Note this template makes use of the `RegisterMap` function to display both the overall register map as well as decriptions of the fields 
+of each register. For more information on RegisterMap, see [TODO -link](TODO).
+
+Second, copy the following text into the subsection `InstanceTable.jinja2`. 
+```
+[[{{ reference_id }}]]
+.Parallel I/O Instances
+[cols="1,1,2",options="header"]
+|===
+| Address | Data Width | Description
+
+{% for pio in devices %}
+| {{ base_address(pio) }} | {{ pio.width }} | {{  pio.description or "" }}
+{%  endfor %}
+|===
+``` 
+
+When both files have been created, re-run the `wake makeOnboardingDocument pioDUT` command and verify the document 
+contains the new "Parallel I/O (PIO)" chapter.
+
+#### Creating the Hardware Interface template. 
+For the Hardware Interface chapter, we will create both a Jinja template and a diagram.
+Both files will be located in the same PIO documentation directory as the other sections.
+
+First, copy the file `pio-diagram.svg` into `docs/scribble/components/pio`. 
+
+Second, copy the following text into the file `HardwareInterface.jinja2`*[]: 
+```
+[[chapter-pio-interfaces]]
+= Parallel I/O (PIO) Interfaces
+
+The PIO device may be configured to support up to 32 inputs/output pins.
+Each instance has three ports:
+
+- `odata`, containing output data
+- `oenable`, selecting between input and output modes
+- `idata`, receiving input data
+
+The three signals are assumed to be connected to tri-state buffers such that each `odata` and `idata` signal is connected to a single external pin.
+
+{{ Figure("{here}/pio-diagram.svg", title="PIO Block Diagram", id="pio-diagram", width="50%", **kwargs) }}
+```
+
+And finally, re-run `wake makeOnboardingDocument pioDUT`.  We should now have a complete document. 
