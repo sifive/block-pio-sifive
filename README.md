@@ -811,7 +811,7 @@ To create Scribble documentation for the new block, we will need to create three
 Scribble will include these sections in documents and manuals for designs which include the block.
 
 ### Creating the documentation directories.
-To begin, create a directory for to hold the `pio` documentation.  The directory structure allows multiple blocks to be documented,
+To begin, create a directory to hold the `pio` documentation.  The directory structure allows multiple blocks to be documented,
 but in our case we are only describing `pio`.
 ```
 mkdir -p docs/scribble/components/pio
@@ -819,7 +819,7 @@ mkdir -p docs/scribble/components/pio
 In addition, edit the project's wake file to include the new scribble directory in the documentation path.
 Specifically, add the following line to `demo.wake`. 
 ```wake
-publish scribbleDirectories = simplify "../../docs/scribble", Nil  # TODO - are parens needed?
+publish scribbleDirectories = simplify "../../docs/scribble", Nil
 ```
 
 ### Creating an Onboarding document.
@@ -831,14 +831,14 @@ The Onboarding document is a short test document which displays all the sections
 It is created in the directory `build/api-generator-sifive/pioDUT/documentation`. 
 
 Note we haven't actually written anything about PIO yet. 
-The Onboarding document includes placeholder sections which fill in for the missing PIO sections.
+The Onboarding document includes placeholder sections which fill in the missing PIO sections.
 Consequently, we can create an Onboarding document at any time, even if we haven't written the documentation yet.
 
 The next step replaces those placeholders with text specific to the Parallel I/O block. 
 We will create three Jinja templates `Overview.jinja2`, `Programming.jinja2` and `HardwareInterface.jinja2`, 
 all of which reside in the `docs/scribble/components/pio` directory.
 
-#### Create the Overview Template.
+#### Create the Overview template.
 The Overview template contains a simple paragraph describing what the block does. 
 While the pioDUT configuration has only a single instance of PIO,
 the paragraph should be crafted to allow for multiple instances.
@@ -852,15 +852,23 @@ The PIO block is further described in <<chapter-pio>>.
 ```
 The functions and variables used in this template are described in [Scribble Test Socket](https://github.com/sifive/scribble-testsocket-sifive). 
 This is a good time rerun the wake command and update the document. (`wake makeOnboardingDocument pioDUT`)
+You should see an introductory paragraph:
+```
+The pioDUT Test Socket contains one parallel I/O (PIO) block for simple parallel input/output.
+The PIO block is further described in Parallel I/O (PIO).
+```
 
-#### Create the Programming Template.
+#### Create the Programming template.
 The Programming chapter goes into more detail about what the block does and how to use it. 
 For PIO, it should give a general description of a Parallel I/O device and provide information on each instance in the design.
-If a block has registers, the chapter should include a register map and a description of all the register fields.
+If the block has registers, this chapter should invoke `RegisterMap` 
+to display a register map along with descriptions of all the register fields.
+(See [Scribble Test Socket](https://github.com/sifive/scribble-testsocket-sifive) for more information on `RegisterMap`.)
 
-For pioDUT, we are going to create an `Overview` section which invokes the `InstanceTable` subsection.
+For pioDUT, we are going to create the main `Programming` section which invokes `RegisterMap`, 
+and we're going to create a subsection called `InstanceTable` which displays the configurable values of each PIO instance.
 
-First, copy the following text into the main section `Overview.jinja2`.
+First, copy the following text into the main section `Programming.jinja2`.
 ```
 {%  set registers = RegisterMap(scope) %}
 [[chapter-pio]]
@@ -898,8 +906,6 @@ The PIO device is designed to work with naturally aligned 32-bit memory accesses
 == PIO Input Register (`IDATA`)
 {{ registers.fields("IDATA") }}
 ```
-Note this template makes use of the `RegisterMap` function to display both the overall register map as well as descriptions of the fields 
-of each register. For more information on RegisterMap, see [Scribble Test Socket](https://github.com/sifive/scribble-testsocket-sifive).
 
 Second, copy the following text into the subsection `InstanceTable.jinja2`. 
 ```
@@ -918,7 +924,7 @@ Second, copy the following text into the subsection `InstanceTable.jinja2`.
 When both files have been created, re-run the `wake makeOnboardingDocument pioDUT` command and verify the document 
 contains the new "Parallel I/O (PIO)" chapter.
 
-#### Create the Hardware Interface Template. 
+#### Create the Hardware Interface template. 
 For the Hardware Interface chapter, we will create both a Jinja template and a diagram.
 Both files will be located in the same PIO documentation directory as the other sections.
 
