@@ -670,10 +670,10 @@ Summarizing the onboarding instructions, you will need to create three sections 
 
 You can produce a document at any time, even before writing any of these sections, by giving the command:
 ```
-wake makeOnboardDocument pioDUT
+wake makeOnboardingDocument pioDUT
 ```
 The documents will be placed in the "documentation" directory, next to the RTL and verilog files.
-If any sections are missing, they will be filled in with "placeholder" sections.
+If any sections are missing, they will be filled in with placeholder sections.
 
 
 ## Wrap up
