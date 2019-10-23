@@ -103,17 +103,34 @@
           name: 'ODATA', addressOffset: 0, size: 'pioWidth',
           displayName: 'Output Data Register',
           description: 'This drives the output data pins.',
-          fields: [{name: 'data', bitOffset: 0, bitWidth: 'pioWidth'}]
+          fields: [{
+            name: 'data',
+            bitOffset: 0,
+            bitWidth: 'pioWidth',
+            access: 'read-write',
+            resetValue: 0
+          }]
         }, {
           name: 'OENABLE', addressOffset: 4, size: 'pioWidth',
           displayName: 'Data Direction',
           description: 'This determines whether the pin is an input or an output. If the data direction bit is a 1, then the pin is an input.',
-          fields: [{name: 'data', bitOffset: 0, bitWidth: 'pioWidth'}]
+          fields: [{
+            name: 'data',
+            bitOffset: 0,
+            bitWidth: 'pioWidth',
+            access: 'read-write',
+            resetValue: 0
+          }]
         }, {
           name: 'IDATA', addressOffset: 8, size: 'pioWidth',
           displayName: 'Input Data',
           description: 'This is driven by the input data pins.',
-          fields: [{name: 'data', bitOffset: 0, bitWidth: 'pioWidth'}]
+          fields: [{
+            name: 'data',
+            bitOffset: 0,
+            bitWidth: 'pioWidth',
+            access: 'read-only'
+          }],
         }]
       }]
     }

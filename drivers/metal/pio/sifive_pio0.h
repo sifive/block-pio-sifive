@@ -6,8 +6,6 @@
 
 typedef uint8_t bool;
 
-#define PIO_BASE 0x60000
-
 // : these macros have control_base as a hidden input
 #define METAL_PIO_REG(offset) (((__metal_io_u8 *)control_base + offset))
 #define METAL_PIO_REGW(offset)                                                 \

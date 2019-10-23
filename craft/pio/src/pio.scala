@@ -117,3 +117,16 @@ class WithpioTop extends Config(
 
     // User code here
 )
+
+
+class WithpioTop2 extends Config((site, here, up) => {
+  case BlockDescriptorKey =>
+    val defaults = NpioTopParams.defaults(
+        ctrl_base = 0x70000L,
+        cacheBlockBytes = site(CacheBlockBytes))
+    BlockDescriptor(
+      name = "pio",
+      place = NpioTop.attach(
+        defaults.copy(blackbox = defaults.blackbox.copy(pioWidth = 16)))
+    ) +: up(BlockDescriptorKey, site)
+})
