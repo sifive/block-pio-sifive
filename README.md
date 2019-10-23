@@ -81,22 +81,6 @@ wit update
 wake --init .
 ```
 
-## Parallel I/O (PIO) Overview
-This demo block consists of a pio IP and a loopback VIP, their `duh`
-json5 descriptions, and a couple c tests. 
-
-The pio block communicates to the CPU through an AXI4 interface. This interface
-is used to read from and drive the `odata`, `oenable`, and `idata` ports. To
-integrate this block we need make the `odata`, `oenable`, and `idata` ports
-available at the top-level of design and connect the AXI4 interface to Rocket's
-periphery bus.
-
-There is also an accompanying vip for testing our block. The loopback vip needs
-to be instantiated in the testharness and be connected to the `odata`,
-`oenable`, and `idata` pads. The loopback block outputs the xor of `oenable`
-and `odata` to `idata`.
-
-
 ## Running tests
 
 We can run PIO simulation tests with the following command.
