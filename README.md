@@ -827,14 +827,15 @@ At this point, we can create the first draft of the PIO Onboarding document. Typ
 ```
 wake makeOnboardingDocument pioDUT
 ```
-The Onboarding document is a short test document which displays all the sections we've written so far. 
-It is created in the directory `build/api-generator-sifive/pioDUT/documentation`. 
+The command creates two files, `pioDUT.html` and `pioDut.adoc`, both in the directory `build/api-generator-sifive/pioDUT/documentation`. 
+The .html file can be viewed directly in a web browser, and the .adoc file contains AsciiDoc which can be used for further processing,
+See the [AsciiDoctor PDF project](https://asciidoctor.org/docs/asciidoctor-pdf) for information on converting AsciiDoc to PDF.
 
-Note we haven't actually written anything about PIO yet. 
-The Onboarding document includes placeholder sections which fill in the missing PIO sections.
-Consequently, we can create an Onboarding document at any time, even if we haven't written the documentation yet.
+Note we have created a PIO Onboarding document, even though we haven't written anything about the PIO block. 
+This initial Onboarding document includes placeholder sections which fill in the missing PIO sections.
+We can create an Onboarding document at any time, even if we haven't written documentation yet.
 
-The next step replaces those placeholders with text specific to the Parallel I/O block. 
+The next step replaces those placeholder sections with text specific to the Parallel I/O block. 
 We will create three Jinja templates `Overview.jinja2`, `Programming.jinja2` and `HardwareInterface.jinja2`, 
 all of which reside in the `docs/scribble/components/pio` directory.
 
@@ -949,7 +950,7 @@ Each instance has three ports:
 
 The three signals are assumed to be connected to tri-state buffers such that each `odata` and `idata` signal is connected to a single external pin.
 
-{{ Figure("{here}/pio-diagram.svg", title="PIO Block Diagram", id="pio-diagram", width="50%", **kwargs) }}
+{{ Figure("{here}/pio-diagram.svg", title="PIO Block Diagram", id="pio-diagram", width="50%", **context) }}
 ```
 
 And finally, re-run `wake makeOnboardingDocument pioDUT`.  We should now have a complete document. 
