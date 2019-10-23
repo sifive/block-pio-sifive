@@ -16,7 +16,7 @@ services:
 env:
   global:
     BLOCK_REPO=$TRAVIS_BUILD_DIR
-    BLOCKCI_DOCKER_IMAGE=sifive/environment-blockci:0.2.0
+    BLOCKCI_DOCKER_IMAGE=sifive/environment-blockci:0.2.1
     WIT_DOCKER_IMAGE=sifive/wit:0.10.1
     WIT_WORKSPACE=$HOME/workspace
 
@@ -35,23 +35,10 @@ install:
       -v "$WIT_WORKSPACE:/mnt/workspace" \
       --workdir /mnt/workspace \
       "$WIT_DOCKER_IMAGE" \
-      bash -c "git config --global url.'https://github.com/'.insteadOf 'git@github.com:' && wit init /mnt/workspace -a /mnt/block-pio-sifive -a git@github.com:sifive/environment-blockci-sifive.git::0.2.0"
+      bash -c "git config --global url.'https://github.com/'.insteadOf 'git@github.com:' && wit init /mnt/workspace -a /mnt/block-pio-sifive -a git@github.com:sifive/environment-blockci-sifive.git::0.2.1"
 
 jobs:
   include:
-    - name: "Run with internet"
-      script: |
-        docker run --rm \
-          -v "$WIT_WORKSPACE:/mnt/workspace" \
-          --workdir /mnt/workspace \
-          "$BLOCKCI_DOCKER_IMAGE" \
-          bash -c "wake --init . && wake -v --no-tty runSim pioDUT 2>&1 | (head -n 10000; tail -n 1000) && wake -v --no-tty runSim pio16DUT 2>&1 | (head -n 10000; tail -n 1000)"
-
-    - name: "Run without internet"
-      script: |
-        docker run --rm \
-          --network none \
-          -v "$WIT_WORKSPACE:/mnt/workspace" \
-          --workdir /mnt/workspace \
-          "$BLOCKCI_DOCKER_IMAGE" \
-          bash -c "wake --init . && wake -v --no-tty runSim pioDUT 2>&1 | (head -n 10000; tail -n 1000) && wake -v --no-tty runSim pio16DUT 2>&1 | (head -n 10000; tail -n 1000)"
+    - name: "Run tests"
+      script:
+        - ./.travis/run-tests.sh

@@ -1,0 +1,13 @@
+[[chapter-pio-interfaces]]
+= Parallel I/O (PIO) Interfaces
+
+The PIO device may be configured to support up to 32 inputs/output pins.
+Each instance has three ports:
+
+- `odata`, containing output data
+- `oenable`, selecting between input and output modes
+- `idata`, receiving input data
+
+The three signals are assumed to be connected to tri-state buffers such that each `odata` and `idata` signal is connected to a single external pin.
+
+{{ Figure("{here}/pio-diagram.svg", title="PIO Block Diagram", id="pio-diagram", width="50%", **kwargs) }}

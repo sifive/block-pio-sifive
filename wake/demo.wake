@@ -116,3 +116,7 @@ def pioDriver =
 publish driverImplementations =
   pioDriver,
   Nil
+
+# Documentation
+publish scribbleDirectories =  simplify "{here}/../docs/scribble", Nil
+
