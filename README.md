@@ -871,7 +871,7 @@ and we're going to create a subsection called `InstanceTable` which displays the
 
 First, copy the following text into the main section `Programming.jinja2`.
 ```
-{%  set registers = RegisterMap(scope) %}
+{% set registers = RegisterMap(scope) %}
 [[chapter-pio]]
 = Parallel I/O (PIO)
 
