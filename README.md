@@ -1,15 +1,17 @@
-# Parallel I/O (PIO) Test Socket
-This PIO Test Socket project demonstrates how to onboard new IP block.
-It shows the process of integrating a PIO block
-into the SiFive onboarding process.
-The result is a fully integrated PIO test socket
-which supports a workflow of testing, simulation and document creation.
+# Overview
 
-This repository contains the results of the onboarding process. It includes
-ready-to-run commands for simulating, testing, creating FPGA bitstreams and generating documentation.
+This branch represents the Parallel IO (PIO) block and loopback Verification IP (VIP) in their completed state. 
+This README describes the commands for running tests, creating an FPGA bitstream, and generating documentation.
 
-The earlier [`preonboarded`](https://github.com/sifive/block-pio-sifive) branch has step by step 
-instructions detailing how to integrate the PIO block into the test socket. 
+The earlier [`preonboarded`](https://github.com/sifive/block-pio-sifive/blob/preonboarded/README.md) branch has step-by-step 
+instructions detailing how the PIO block was created and integrated into the test socket framework.
+
+The PIO block communicates to the CPU through an AXI4 interface. 
+This interface is used to read from and drive the odata, oenable, and idata control registers that map to top-level ports. To integrate this block we need make the odata, oenable, and idata ports available at the top-level of design and connect the AXI4 interface to the Test Socket's periphery bus.
+
+There is also an accompanying VIP for testing our block. 
+The loopback VIP needs to be instantiated in the test harness and be connected to the odata, oenable, and idata pads. 
+The loopback block outputs the xor of oenable and odata to idata.
 
 
 ## Getting Started
@@ -146,11 +148,11 @@ The following command generates a test "Onboarding" document which includes that
 ```
 wake makeOnboardingDocument pioDUT
 ```
-The files `pioDUT.html` and `pioDUT.adoc` will be placed in the `build/api-generator-sifive/pioDUT/documentation` directory.
-The .html file can be viewed directly through a web browser. The .adoc file contains AsciiDoc text and can be processed into other forms.
-See 
+The command creates two files, `pioDUT.html` and `pioDut.adoc`, both in the directory `build/api-generator-sifive/pioDUT/documentation`. 
+The .html file can be viewed directly in a web browser, and the .adoc file contains AsciiDoc which can be used for further processing,
+See the [AsciiDoctor PDF project](https://asciidoctor.org/docs/asciidoctor-pdf) for information on converting AsciiDoc to PDF.
 
 
 ## Wrap up
-Checkout tag [`preonboarded`](https://github.com/sifive/block-pio-sifive) 
+Checkout tag [`preonboarded`](https://github.com/sifive/block-pio-sifive/blob/preonboarded/README.md) 
 if you would like to go back to the beginning and see the steps used for onboarding this PIO block.
