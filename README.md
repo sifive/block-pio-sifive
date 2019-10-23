@@ -56,7 +56,7 @@ The loopback block outputs the xor of oenable and odata to idata.
     * See [verilator install instructions](https://www.veripool.org/projects/verilator/wiki/Installing)
     * Verilator additionally requires Perl v5.22.2
 * python3 and pip3
-* ruby
+* ruby v2.3.7 or later
 
 #### Environment package
 In order for wake to be able to provide the correct environments for jobs
@@ -138,5 +138,5 @@ See the [AsciiDoctor PDF project](https://asciidoctor.org/docs/asciidoctor-pdf) 
 
 
 ## Wrap up
-Checkout tag [`preonboarded`](https://github.com/sifive/block-pio-sifive/blob/preonboarded/README.md) 
+Checkout branch [`preonboarded`](https://github.com/sifive/block-pio-sifive/blob/preonboarded/README.md) 
 if you would like to go back to the beginning and see the steps used for onboarding this PIO block.
