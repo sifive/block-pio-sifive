@@ -101,32 +101,17 @@ publish vivadoVsrcHooks =
   makeBlackBoxHook "loopback"     "{blockPIOSifiveRoot}/rtl/loopback/loopback.sv".makeSource,
   Nil
 
-def basicDriverHook =
-  def omfile _ = makeBadPath (makeError "Path not set")
-  makeBasicDriverPlan
-  (source "{blockPIOSifiveRoot}/pio.json5")
-  omfile
-  "sifive"
-  "pio"
-  "{blockPIOSifiveRoot}/drivers/metal"
-  "build/block-pio-sifive"
-  ("sifive,pio-0.1.0", Nil)
-  "pioDUT"
-
-# Uncomment to generate driver from object model
-# and DUH document
-#publish basicDriverPlans =
-#  basicDriverHook,
-#  Nil
-
 def pioDriver =
   def sourceFiles =
     (sources "{blockPIOSifiveRoot}/drivers/metal" `.*.c`)
     ++ (sources "{blockPIOSifiveRoot}/drivers/metal" `.*.h`)
   makeDriverImplementation
   ("sifive,pio-0.1.0", Nil)
+  "sifive"
+  "pio"
   sourceFiles
   ("{blockPIOSifiveRoot}/drivers/metal" ,Nil)
+  sourceFiles
 
 publish driverImplementations =
   pioDriver,
