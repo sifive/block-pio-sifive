@@ -51,7 +51,6 @@ global def demo =
 global def demo16 =
   demo
   | setTestProgramPlanName "demo16"
-  | setTestProgramPlanCFlags ("-DPIO_WIDTH_16", "-DPIO_BASE=0x70000", Nil)
 
 global def pioDUT =
   def name = "pioDUT"
