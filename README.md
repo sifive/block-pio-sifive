@@ -831,7 +831,7 @@ function `makeTestSocketDUT {name} {blocks}`.
 uart, a test-finisher, and the extra blocks supplied by the `blocks` argument.
 
 Copy the following lines for creating a test `DUT` for the pio block into
-`block-pio-sifive/build-ruies/wake/demo.wake`.
+`block-pio-sifive/build-rules/wake/demo.wake`.
 ```wake
 global def pioDUT =
   def name = "pioDUT"
