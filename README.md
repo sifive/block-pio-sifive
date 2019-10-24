@@ -819,7 +819,7 @@ mkdir -p docs/scribble/components/pio
 In addition, edit the project's wake file to include the new scribble directory in the documentation path.
 Specifically, add the following line to `demo.wake`. 
 ```wake
-publish scribbleDirectories = simplify "../../docs/scribble", Nil
+publish scribbleDirectories = simplify "{blockPIOSiFiveRoot}/docs/scribble", Nil
 ```
 
 ### Creating an Onboarding document.
