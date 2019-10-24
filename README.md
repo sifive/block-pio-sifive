@@ -674,27 +674,23 @@ publish driverImplementations = pioDriver, Nil
 ## Making a test
 
 Currently, only C integration tests are supported. A simple test is included
-with this repository in `block-pio-sifive/tests/demo/main.c`. It looks like this.
+with this repository in `block-pio-sifive/tests/demo/main.c`. It looks similar to this.
 ```c
+#include <pio/sifive_pio0.h>
+
 int main()
 {
   // read/write to axi block
-  volatile uint32_t * pio = (uint32_t *) 0x60000;
+  const struct metal_pio *m_pio = get_metal_pio(0);
+  bool rv;
 
-  volatile uint32_t * odata   = pio;
-  volatile uint32_t * oenable = pio + 1;
-  volatile uint32_t * idata   = pio + 2;
-
-  int fail = 0;
-  int test_len = 100;
-  for (int i = 0; i < test_len; i++) {
-    *odata = i;
-    *oenable = test_len - i;
-
-    fail |= ((*odata ^ *oenable) != *idata);
-  }
-
-  return fail;
+  // Check read/write of individual pin
+  metal_pio_odata_write(m_pio, 0, 1);
+  metal_pio_oenable_write(m_pio, 0, 1);
+  rv = metal_pio_idata_read(m_pio, 0);
+  if (rv)
+    return 1;
+  return 0;
 }
 ```
 
@@ -740,38 +736,35 @@ global def demo =
   makeTestProgramPlan programName cFiles
 ```
 
-Suppose we did not want to hardcode the address of the pio block and we edited
+Suppose we did not want to hardcode the pin number of being tested and we edited
 our test to look like this.
 ```c
+#include <pio/sifive_pio0.h>
+
 int main()
 {
   // read/write to axi block
-  volatile uint32_t * pio = (uint32_t *) PIO;
+  const struct metal_pio *m_pio = get_metal_pio(0);
+  bool rv;
 
-  volatile uint32_t * odata   = pio;
-  volatile uint32_t * oenable = pio + 1;
-  volatile uint32_t * idata   = pio + 2;
-
-  int fail = 0;
-  int test_len = 100;
-  for (int i = 0; i < test_len; i++) {
-    *odata = i;
-    *oenable = test_len - i;
-
-    fail |= ((*odata ^ *oenable) != *idata);
-  }
-
-  return fail;
+  // Check read/write of individual pin
+  metal_pio_odata_write(m_pio, PIO_PIN, 1);
+  metal_pio_oenable_write(m_pio, PIO_PIN, 1);
+  rv = metal_pio_idata_read(m_pio, PIO_PIN);
+  if (rv)
+    return 1;
+  return 0;
 }
 ```
 
-We would need to add an argument to the c compiler. Our new wake program would
+We would need to add an argument to the C compilation. Our new wake program would
 then look like this.
 ```wake
 global def demo =
   def programName = "demo"
   def cFiles = source "{blockPIOSiFiveRoot}/tests/demo/main.c", Nil
   makeTestProgramPlan programName cFiles
+  | editTestProgramPlanCFlags ("-DPIO_PIN=1", _)
 ```
 
 A more complicated program like dhrystone looks like this. Dhrystone uses. The
