@@ -9,8 +9,6 @@
 #define METAL_PIO_REGB(offset) \
    (__METAL_ACCESS_ONCE((uint8_t *)METAL_PIO_REG(offset)))
 
-struct metal_pio;
-
 struct metal_pio_vtable {
     void (*v_pio_odata_write)(uint8_t *pio_base, uint16_t bit, bool data);
     void (*v_pio_oenable_write)(uint8_t *pio_base, uint16_t bit, bool data);
