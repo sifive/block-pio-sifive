@@ -256,7 +256,7 @@ duh init
 
 import ports
 ```bash
-cat rtl/veriilog/loopback/loopback.sv | duh-import-verilog-ports loopback.json5
+cat rtl/verilog/loopback/loopback.sv | duh-import-verilog-ports loopback.json5
 ```
 
 add fileSets
