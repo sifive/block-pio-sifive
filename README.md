@@ -38,7 +38,7 @@ particular system. An example is
 ### Initialize the workspace
 ```
 # Create a workspace, this will also fetch all dependencies
-wit init workspace -a git@github.com:sifive/block-pio-sifive.git
+wit init workspace -a git@github.com:sifive/block-pio-sifive.git::preonboarded
 cd workspace/
 
 # Add an environment package to provide runners for the required tools
