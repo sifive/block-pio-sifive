@@ -673,8 +673,8 @@ publish driverImplementations = pioDriver, Nil
 
 ## Making a test
 
-Currently, only C integration tests are supported. A simple test is included
-with this repository in `block-pio-sifive/tests/demo/main.c`. It looks similar to this.
+Currently, only C integration tests are supported. Copy the following test into
+`block-pio-sifive/tests/demo/main.c`.
 ```c
 #include <pio/sifive_pio0.h>
 
@@ -736,7 +736,7 @@ global def demo =
   makeTestProgramPlan programName cFiles
 ```
 
-Suppose we did not want to hardcode the pin number of being tested and we edited
+Suppose we did not want to hardcode the pin number being tested and we edited
 our test to look like this.
 ```c
 #include <pio/sifive_pio0.h>
@@ -767,8 +767,7 @@ global def demo =
   | editTestProgramPlanCFlags ("-DPIO_PIN=1", _)
 ```
 
-A more complicated program like dhrystone looks like this. Dhrystone uses. The
-files for dhrystone are included in this repo.
+A more complicated program like dhrystone looks like this.
 ```wake
 def dhrystone =
   def programName = "dhrystone"
