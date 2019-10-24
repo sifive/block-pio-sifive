@@ -744,7 +744,7 @@ def myBlockTest =
   makeOMBlockTest name deviceType program plusargs =
 ```
 
-Copy the following lines into `block-pio-sifive/build-ruiles/wake/demo.wake` to create and publish the demo
+Copy the following lines into `block-pio-sifive/build-rules/wake/demo.wake` to create and publish the demo
 test for the pio block. Publishing to `dutTests` will register this test so that it
 is automatically run whenever an applicable `DUT` is being tested (see next
 section).
