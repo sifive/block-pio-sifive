@@ -15,11 +15,42 @@ and idata pads. The loopback block outputs the xor of `oenable` and `odata` to
 `idata`.
 
 Sections in this README:
+* [Checking out a workspace](#checking-out-a-workspace)
 * [Creating the DUH document](#creating-the-duh-document)
 * [Scala integration](#scala-integration)
 * [Wake integration](#wake-integration)
 * [Parameterizing your block](#parameterizing-your-block)
 * [Documenting your block](#documenting-your-block)
+
+## Checking out a workspace
+This repo uses [wit](git@github.com:sifive/wit.git) for workspace management.
+This section describes how to use wit to checkout a workspace with all the
+correct versions of packages that this repo depends on. To learn more about
+how to use wit see this [tutorial](https://github.com/sifive/wit/blob/0.11.x/share/doc/wit/tutorial.md).
+
+#### Environment package
+In order for wake to be able to provide the correct environments for jobs
+that need to run the above tools, you will need an environment package that
+provides wake job runners that can fulfill those environments for your
+particular system. An example is
+[environment-example-sifive](https://github.com/sifive/environment-example-sifive).
+
+### Initialize the workspace
+```
+# Create a workspace, this will also fetch all dependencies
+wit init workspace -a git@github.com:sifive/block-pio-sifive.git
+cd workspace/
+
+# Add an environment package to provide runners for the required tools
+wit add-pkg $MY_ENVIRONMENT_PACKAGE
+
+# Resolve and fetch all transitive dependencies
+wit update
+
+# Initialize the workspace for building with wake
+wake --init .
+```
+
 
 ## Creating the DUH document
 NOTE: this tutorial was made using version 1.15.0 of DUH
