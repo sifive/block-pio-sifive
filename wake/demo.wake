@@ -46,7 +46,6 @@ global def demo =
     source "{blockPIOSifiveRoot}/tests/demo/main.c",
     Nil
   makeTestProgramPlan programName cFiles
-  | setTestProgramPlanCFlags ("-DPIO_BASE=0x60000", Nil)
 
 global def demo16 =
   demo
