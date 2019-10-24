@@ -104,17 +104,23 @@ def pioDriver =
   def sourceFiles =
     (sources "{blockPIOSifiveRoot}/drivers/metal" `.*.c`)
     ++ (sources "{blockPIOSifiveRoot}/drivers/metal" `.*.h`)
-  makeDriverImplementation
-  ("sifive,pio-0.1.0", Nil)
-  "sifive"
-  "pio"
-  sourceFiles
-  ("{blockPIOSifiveRoot}/drivers/metal" ,Nil)
-  sourceFiles
 
-publish driverImplementations =
-  pioDriver,
-  Nil
+  def compatibleStrings = "sifive,pio-0.1.0", Nil
+  def vendor = "sifive"
+  def deviceName = "pio"
+  def cFiles = sourceFiles
+  def includeDirs = "{blockPIOSifiveRoot}/drivers/metal", Nil
+  def visibleFiles = sourceFiles
+
+  makeDriverImplementation
+  compatibleStrings
+  vendor
+  deviceName
+  cFiles
+  includeDirs
+  visibleFiles
+
+publish driverImplementations = pioDriver, Nil
 
 # Documentation
 publish scribbleDirectories =  simplify "{here}/../docs/scribble", Nil
