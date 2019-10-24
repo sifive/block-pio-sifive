@@ -122,7 +122,7 @@ Fill in the port definitions of the block in the DUH document. The
 `duh-import-verilog-ports` tool can parse the verilog and fill in the
 definitions for you.
 ```bash
-cat rtl/pio/pio.sv | duh-import-verilog-ports pio.json5
+cat rtl/verilog/pio/pio.sv | duh-import-verilog-ports pio.json5
 ```
 
 ### Define bus interfaces
@@ -287,7 +287,7 @@ duh init
 
 import ports
 ```bash
-cat rtl/loopback/loopback.sv | duh-import-verilog-ports loopback.json5
+cat rtl/verilog/loopback/loopback.sv | duh-import-verilog-ports loopback.json5
 ```
 
 add fileSets
@@ -495,7 +495,7 @@ The loopback block uses components from
 [soc-testsocket-sifive](https://github.com/sifive/soc-testsocket-sifive) and
 [sifive-blocks](https://github.com/sifive/sifive-blocks) so we need to add the
 already defined `sifiveBlocksScalaModule` and `sifiveSkeletonScalaModule` as
-dependencies. Add this definition to `block-pio-sifive/wake/pio.wake` to define the
+dependencies. Add this definition to `block-pio-sifive/build-rules/wake/pio.wake` to define the
 loopback `ScalaModule`.
 ```wake
 global def loopbackScalaModule =
@@ -597,12 +597,12 @@ publish dutSimCompileOptionsHooks = pioHook, loopbackHook, Nil
 
 def loopbackHook =
   def name = "loopback"
-  def addSources = source "{blockPIOSiFiveRoot}/rtl/loopback/loopback.sv", _
+  def addSources = source "{blockPIOSiFiveRoot}/rtl/verilog/loopback/loopback.sv", _
   makeBlackBoxHook name (editDUTSimCompileOptionsSourceFiles addSources)
 
 def pioHook =
   def name = "pio"
-  def addSources = source "{blockPIOSiFiveRoot}/rtl/pio/pio.sv", _
+  def addSources = source "{blockPIOSiFiveRoot}/rtl/verilog/pio/pio.sv", _
   makeBlackBoxHook name (editDUTSimCompileOptionsSourceFiles addSources)
 ```
 
@@ -706,8 +706,9 @@ publish driverImplementations = pioDriver, Nil
 
 ## Making a test
 
-Currently, only C integration tests are supported. Copy the following test into
-`block-pio-sifive/tests/demo/main.c`.
+Currently, only C integration tests are supported. A simple test is included
+with this repository in `block-pio-sifive/tests/c/demo/main.c`. It looks like this.
+
 ```c
 #include <pio/sifive_pio0.h>
 
@@ -761,7 +762,7 @@ and link programs according the DTS.
 
 Since the demo test is pretty simple, we only need to specify the cfiles and the
 program name, and we can use the default parameters. Copy the following into
-`block-pio-sifive/wake/demo.wake` to create a `TestProgramPlan` for `block-pio-sifive/tests/demo/main.c`.
+`block-pio-sifive/build-rules/wake/demo.wake` to create a `TestProgramPlan` for `block-pio-sifive/tests/c/demo/main.c`.
 ```wake
 global def demo =
   def programName = "demo"
@@ -795,7 +796,7 @@ then look like this.
 ```wake
 global def demo =
   def programName = "demo"
-  def cFiles = source "{blockPIOSiFiveRoot}/tests/demo/main.c", Nil
+  def cFiles = source "{blockPIOSiFiveRoot}/tests/c/demo/main.c", Nil
   makeTestProgramPlan programName cFiles
   | editTestProgramPlanCFlags ("-DPIO_PIN=1", _)
 ```
@@ -830,7 +831,7 @@ function `makeTestSocketDUT {name} {blocks}`.
 uart, a test-finisher, and the extra blocks supplied by the `blocks` argument.
 
 Copy the following lines for creating a test `DUT` for the pio block into
-`block-pio-sifive/wake/demo.wake`.
+`block-pio-sifive/build-rules/wake/demo.wake`.
 ```wake
 global def pioDUT =
   def name = "pioDUT"
@@ -864,7 +865,7 @@ def myBlockTest =
   makeOMBlockTest name deviceType program plusargs =
 ```
 
-Copy the following lines into `block-pio-sifive/wake/demo.wake` to create and publish the demo
+Copy the following lines into `block-pio-sifive/build-rules/wake/demo.wake` to create and publish the demo
 test for the pio block. Publishing to `dutTests` will register this test so that it
 is automatically run whenever an applicable `DUT` is being tested (see next
 section).
@@ -939,7 +940,7 @@ mkdir -p docs/scribble/components/pio
 In addition, edit the project's wake file to include the new scribble directory in the documentation path.
 Specifically, add the following line to `demo.wake`. 
 ```wake
-publish scribbleDirectories = simplify "../../docs/scribble", Nil
+publish scribbleDirectories = "{blockPIOSiFiveRoot}/docs/scribble", Nil
 ```
 
 ### Creating an Onboarding document.
