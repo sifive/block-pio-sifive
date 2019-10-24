@@ -44,18 +44,12 @@ global def demo =
   def programName = "demo"
   def cFiles =
     source "{blockPIOSifiveRoot}/tests/demo/main.c",
-    source "{blockPIOSifiveRoot}/metal/drivers/pio/sifive_pio0.h",
-    source "{blockPIOSifiveRoot}/metal/drivers/sifive_pio.c",
     Nil
-
   makeTestProgramPlan programName cFiles
-  | setTestProgramPlanIncludeDirs ("{blockPIOSifiveRoot}/metal/drivers", Nil)
-  | setTestProgramPlanCFlags ("-DPIO_BASE=0x60000", Nil)
 
 global def demo16 =
   demo
   | setTestProgramPlanName "demo16"
-  | setTestProgramPlanCFlags ("-DPIO_WIDTH_16", "-DPIO_BASE=0x70000", Nil)
 
 global def pioDUT =
   def name = "pioDUT"
@@ -105,6 +99,28 @@ publish vivadoVsrcHooks =
   makeBlackBoxHook "loopback"     "{blockPIOSifiveRoot}/rtl/loopback/loopback.sv".makeSource,
   Nil
 
+def pioDriver =
+  def sourceFiles =
+    (sources "{blockPIOSifiveRoot}/drivers/metal" `.*.c`)
+    ++ (sources "{blockPIOSifiveRoot}/drivers/metal" `.*.h`)
+
+  def compatibleStrings = "sifive,pio-0.1.0", Nil
+  def vendor = "sifive"
+  def deviceName = "pio"
+  def cFiles = sourceFiles
+  def includeDirs = "{blockPIOSifiveRoot}/drivers/metal", Nil
+  def visibleFiles = sourceFiles
+
+  makeDriverImplementation
+  compatibleStrings
+  vendor
+  deviceName
+  cFiles
+  includeDirs
+  visibleFiles
+
+publish driverImplementations = pioDriver, Nil
 
 # Documentation
 publish scribbleDirectories =  simplify "{here}/../docs/scribble", Nil
+
