@@ -5,7 +5,7 @@
         "source": "git@github.com:sifive/soc-testsocket-sifive.git"
     },
     {
-        "commit": "75fdc6eb8e8b5773cd6a28d786285de324390318",
+        "commit": "43b6fa2fa2722ea5770bafc738fb035409f5b6e5",
         "name": "api-generator-sifive",
         "source": "git@github.com:sifive/api-generator-sifive.git"
     },

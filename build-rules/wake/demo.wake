@@ -1,4 +1,4 @@
-global def blockPIOSifiveRoot = simplify "{here}/.."
+global def blockPIOSifiveRoot = simplify "{here}/../.."
 
 global def loopbackScalaModule =
   def name = "loopback"
@@ -32,18 +32,18 @@ publish dutSimCompileOptionsHooks = pioHook, loopbackHook, Nil
 
 def loopbackHook =
   def name = "loopback"
-  def addSources = source "{blockPIOSifiveRoot}/rtl/loopback/loopback.sv", _
+  def addSources = source "{blockPIOSifiveRoot}/rtl/verilog/loopback/loopback.sv", _
   makeBlackBoxHook name (editDUTSimCompileOptionsSourceFiles addSources)
 
 def pioHook =
   def name = "pio"
-  def addSources = source "{blockPIOSifiveRoot}/rtl/pio/pio.sv", _
+  def addSources = source "{blockPIOSifiveRoot}/rtl/verilog/pio/pio.sv", _
   makeBlackBoxHook name (editDUTSimCompileOptionsSourceFiles addSources)
 
 global def demo =
   def programName = "demo"
   def cFiles =
-    source "{blockPIOSifiveRoot}/tests/demo/main.c",
+    source "{blockPIOSifiveRoot}/tests/c/demo/main.c",
     Nil
   makeTestProgramPlan programName cFiles
 
@@ -95,8 +95,8 @@ global def demoPio16Test =
 
 publish vivadoVsrcHooks =
   def makeSource file _ = source file, Nil
-  makeBlackBoxHook "pio"          "{blockPIOSifiveRoot}/rtl/pio/pio.sv".makeSource,
-  makeBlackBoxHook "loopback"     "{blockPIOSifiveRoot}/rtl/loopback/loopback.sv".makeSource,
+  makeBlackBoxHook "pio"          "{blockPIOSifiveRoot}/rtl/verilog/pio/pio.sv".makeSource,
+  makeBlackBoxHook "loopback"     "{blockPIOSifiveRoot}/rtl/verilog/loopback/loopback.sv".makeSource,
   Nil
 
 def pioDriver =
@@ -122,5 +122,5 @@ def pioDriver =
 publish driverImplementations = pioDriver, Nil
 
 # Documentation
-publish scribbleDirectories =  simplify "{here}/../docs/scribble", Nil
+publish scribbleDirectories =  simplify "{blockPIOSifiveRoot}/docs/scribble", Nil
 
