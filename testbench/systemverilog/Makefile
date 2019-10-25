@@ -6,7 +6,7 @@ vcs:
 	+vcs+flush+all \
 	+warn=all \
 	-sverilog \
-	../rtl/pio/pio.sv \
+	../../rtl/pio/pio.sv \
 	tb.sv
 
 run: vcs
