@@ -16,8 +16,8 @@ services:
 env:
   global:
     BLOCK_REPO=$TRAVIS_BUILD_DIR
-    BLOCKCI_DOCKER_IMAGE=sifive/environment-blockci:0.2.1
-    WIT_DOCKER_IMAGE=sifive/wit:0.10.1
+    BLOCKCI_DOCKER_IMAGE=sifive/environment-blockci:0.3.0
+    WIT_DOCKER_IMAGE=sifive/wit:v0.11.1
     WIT_WORKSPACE=$HOME/workspace
 
 before_install:
@@ -35,7 +35,7 @@ install:
       -v "$WIT_WORKSPACE:/mnt/workspace" \
       --workdir /mnt/workspace \
       "$WIT_DOCKER_IMAGE" \
-      bash -c "git config --global url.'https://github.com/'.insteadOf 'git@github.com:' && wit init /mnt/workspace -a /mnt/block-pio-sifive -a git@github.com:sifive/environment-blockci-sifive.git::0.2.1"
+      bash -c "git config --global url.'https://github.com/'.insteadOf 'git@github.com:' && wit init /mnt/workspace -a /mnt/block-pio-sifive -a git@github.com:sifive/environment-blockci-sifive.git::0.3.0"
 
 jobs:
   include:
