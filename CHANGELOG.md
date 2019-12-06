@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Backwards-Incompatible Changes
+
+- Upgrade to environment-blockci-sifive 0.3.0 and wake 0.17.1. See their
+  respective changelogs for individual backwards-incompatible changes.
+- Upgrade to latest api-generator-sifive and soc-testsocket-sifive. These
+  packages do not yet have stable APIs.
+
 ## [0.1.0]
 
 This represents the first versioned release of block-pio-sifive, and it contains a number of new features compared to previous "unversioned" commits.
