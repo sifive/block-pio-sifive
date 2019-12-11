@@ -87,7 +87,7 @@ Subsections:
 First you will need to install [DUH](https://github.com/sifive/duh). To install
 DUH in your current directory run
 ```bash
-npm i duh@1.15.0
+npm i duh@1.16.1
 ```
 
 This will create a `node_modules` subdirectory in your current directory with
@@ -112,9 +112,9 @@ duh init
 Since we are onboarding a Verilog IP block we should set the `fileSets` field in
 our DUH component to
 ```javascript
-fileSets: [{
+fileSets: {
     VerilogFiles: ['pio.sv']
-}]
+}
 ```
 
 ### Importing verilog ports
@@ -226,17 +226,17 @@ the `component` object in pio.json5 as follows.
             name: 'ODATA',
             addressOffset: 0, size: 32,
             displayName: 'Output Data Register',
-            fields: [{name: 'data', bits: 32}]
+            fields: [{name: 'data', bitWidth: 32, bitOffset: 0}]
         }, {
             name: 'OENABLE', addressOffset: 32, size: 32,
             displayName: 'Data direction',
             description: 'determines whether the pin is an input or an output. If the data direction bit is a 1, then the pin is an input',
-            fields: [{name: 'data', bits: 32}]
+            fields: [{name: 'data', bitWidth: 32, bitOffset: 0}]
         }, {
             name: 'IDATA', addressOffset: 64, size: 32,
             displayName: 'Input data',
             description: 'read the port pins',
-            fields: [{name: 'data', bits: 32}]
+            fields: [{name: 'data', bitWidth: 32, bitOffset: 0}]
         }]
     }]
 }]
@@ -292,9 +292,9 @@ cat rtl/verilog/loopback/loopback.sv | duh-import-verilog-ports loopback.json5
 
 add fileSets
 ```javascript
-fileSets: [{
+fileSets: {
     VerilogFiles: ['loopback.sv']
-}]
+}
 ```
 
 add parameter schema
@@ -308,6 +308,19 @@ pSchema: {
         }
     }
 }
+```
+
+By default, `duh init` will set the `library` field of the initialized DUH
+component to `'blocks'`. However, since this is a VIP we should set the field
+to `vip` instead.
+
+```diff
+  component: {
+    vendor: 'sifive',
+-    library: 'blocks',
++    library: 'vip',
+    name: 'loopback',
+    version: '0.1.0',
 ```
 
 ### Validation
@@ -682,14 +695,14 @@ Add the following lines to `block-pio-sifive/wake/demo.wake`:
 ```wake
 def pioDriver =
   def sourceFiles =
-    (sources "{blockPIOSifiveRoot}/drivers/metal" `.*.c`)
-    ++ (sources "{blockPIOSifiveRoot}/drivers/metal" `.*.h`)
+    (sources "{blockPIOSiFiveRoot}/drivers/metal" `.*.c`)
+    ++ (sources "{blockPIOSiFiveRoot}/drivers/metal" `.*.h`)
 
   def compatibleStrings = "sifive,pio-0.1.0", Nil
   def vendor = "sifive"
   def deviceName = "pio"
   def cFiles = sourceFiles
-  def includeDirs = "{blockPIOSifiveRoot}/drivers/metal", Nil
+  def includeDirs = "{blockPIOSiFiveRoot}/drivers/metal", Nil
   def visibleFiles = sourceFiles
 
   makeDriverImplementation
