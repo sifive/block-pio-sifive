@@ -904,7 +904,19 @@ global def demoPioTest =
 
 The `verbose` plusarg toggles printing of the instruction trace to stderr. The
 stdout, stderr, output of `printf`, and waveform files will be output to the
-simulation result directory (details in the next section).
+simulation result directory.
+
+Now that we've published a test we can run it on `pioDUT` with the command
+```bash
+wake -v runSim pioDUT
+```
+
+Verilator is the default simulator. If you would like to run on a different
+simulator you can use the command.
+```bash
+wake -v runSimWith pioDUT [VCS|VCS_Waves|Verilator|Verilator_Waves|Xcelium|Xcelium_Waves]
+```
+
 
 ## Parameterizing your block
 Because the PIO block is parameterizeable we need to make sure we test multiple
