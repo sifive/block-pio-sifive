@@ -783,7 +783,7 @@ program name, and we can use the default parameters. Copy the following into
 ```wake
 global def demo =
   def programName = "demo"
-  def cFiles = source "{blockPIOSiFiveRoot}/tests/demo/main.c", Nil
+  def cFiles = source "{blockPIOSiFiveRoot}/tests/c/demo/main.c", Nil
   makeTestProgramPlan programName cFiles
 ```
 
@@ -822,7 +822,7 @@ A more complicated program like dhrystone looks like this.
 ```wake
 def dhrystone =
   def programName = "dhrystone"
-  def prefix = "{blockPIOSiFiveRoot}/tests/dhrystone"
+  def prefix = "{blockPIOSiFiveRoot}/tests/c/dhrystone"
   def cFiles = source "{prefix}/dhry_1.c", source "{prefix}/dhry_2.c", Nil
   def withIncludeDirs = prefix, _
   def withExtraCFlags =
