@@ -263,6 +263,10 @@ pSchema: {
         pioWidth: {
             title: 'Number of IO pads',
             type: 'integer', minimum: 1, maximum: 32, default: 32
+        },
+        writeStrobeWidth: {
+            title: 'Write strobe width',
+            type: 'integer', minimum: 1, maximum: 4, default: 4
         }
     }
 }
