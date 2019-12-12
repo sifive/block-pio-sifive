@@ -12,7 +12,7 @@ void pio_odata_write(uint8_t *pio_base, uint16_t bit,
                      bool data) {
     volatile uint8_t *control_base = pio_base;
 
-    unsigned int byte_to_write = (bit >> 3) + (METAL_PIO_ODATA);
+    unsigned int byte_to_write = (bit >> 3) + (PIO_REGISTER_ODATA_DATA_BYTE);
 
     uint8_t bit_to_write = 1 << (bit & 0x0007);
 
@@ -27,7 +27,7 @@ void pio_oenable_write(uint8_t *pio_base, uint16_t bit,
                        bool data) {
     volatile uint8_t *control_base = pio_base;
 
-    unsigned int byte_to_write = (bit >> 3) + (METAL_PIO_OENABLE);
+    unsigned int byte_to_write = (bit >> 3) + (PIO_REGISTER_OENABLE_DATA_BYTE);
     uint8_t bit_to_write = 1 << (bit & 0x0007);
     if (data) {
         METAL_PIO_REGB(byte_to_write) |= bit_to_write;
@@ -38,7 +38,7 @@ void pio_oenable_write(uint8_t *pio_base, uint16_t bit,
 
 bool pio_idata_read(uint8_t *pio_base, uint16_t bit) {
     volatile uint8_t *control_base = pio_base;
-    unsigned int byte_to_read = (bit >> 3) + (METAL_PIO_IDATA);
+    unsigned int byte_to_read = (bit >> 3) + (PIO_REGISTER_IDATA_DATA_BYTE);
     uint8_t bit_to_read = 1 << (bit & 0x0007);
     return !!(METAL_PIO_REGB(byte_to_read) & bit_to_read);
 }
@@ -71,7 +71,7 @@ bool metal_pio_idata_read(const struct metal_pio *pio, uint16_t bit) {
  */
 
 struct metal_pio metal_pio = {
-    .pio_width = METAL_PIO_ODATA_WIDTH,
+    .pio_width = PIO_REGISTER_ODATA_DATA_WIDTH,
     .vtable.v_pio_odata_write = pio_odata_write,
     .vtable.v_pio_oenable_write = pio_oenable_write,
     .vtable.v_pio_idata_read = pio_idata_read,
