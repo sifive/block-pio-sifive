@@ -462,11 +462,10 @@ with the following lines.
     // instantiate and connect the loopback vip in the test harness
     bap.testHarness {
       // instantiate the loopback vip
-      val loopbackP = NloopbackTopParams(
+      val loopback = LazyModule(new NloopbackTop(NloopbackTopParams(
         blackbox = loopbackParams(
           pioWidth = c.blackbox.pioWidth,
-          cacheBlockBytes = p(CacheBlockBytes)))
-      val loopback = NloopbackTop.attach(loopbackP)(bap)
+          cacheBlockBytes = p(CacheBlockBytes)))))
 
       // route loopback signals to the testharness
       val loopbackNode = BundleBridgeSink[loopbackBlackBoxIO]()
