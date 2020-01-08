@@ -228,12 +228,12 @@ the `component` object in pio.json5 as follows.
             displayName: 'Output Data Register',
             fields: [{name: 'data', bitWidth: 32, bitOffset: 0}]
         }, {
-            name: 'OENABLE', addressOffset: 32, size: 32,
+            name: 'OENABLE', addressOffset: 4, size: 32,
             displayName: 'Data direction',
             description: 'determines whether the pin is an input or an output. If the data direction bit is a 1, then the pin is an input',
             fields: [{name: 'data', bitWidth: 32, bitOffset: 0}]
         }, {
-            name: 'IDATA', addressOffset: 64, size: 32,
+            name: 'IDATA', addressOffset: 8, size: 32,
             displayName: 'Input data',
             description: 'read the port pins',
             fields: [{name: 'data', bitWidth: 32, bitOffset: 0}]
