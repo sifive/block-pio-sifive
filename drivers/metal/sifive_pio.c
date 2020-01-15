@@ -81,7 +81,7 @@ struct metal_pio *pio_tables[] = {&metal_pio};
 uint8_t pio_tables_cnt = PIO_COUNT;
 
 const struct metal_pio *get_metal_pio(uint8_t idx) {
-    uint32_t pio_int_bases[PIO_COUNT] = PIO_BASES;
+    uintptr_t pio_int_bases[PIO_COUNT] = PIO_BASES;
     if (idx >= pio_tables_cnt)
         return NULL;
     pio_tables[idx]->pio_base = (uint8_t *) pio_int_bases[idx];
