@@ -17,7 +17,7 @@ env:
   global:
     BLOCK_REPO=$TRAVIS_BUILD_DIR
     BLOCKCI_DOCKER_IMAGE=sifive/environment-blockci:0.3.0
-    WIT_DOCKER_IMAGE=sifive/wit:v0.11.1
+    WIT_DOCKER_IMAGE=sifive/wit:v0.12.0
     WIT_WORKSPACE=$HOME/workspace
 
 before_install:
