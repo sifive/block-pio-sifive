@@ -1,0 +1,14 @@
+{
+  catalog: {
+    vendor: 'sifive',
+    library: 'projects',
+    name: 'pio',
+    version: '0.1.0',
+    designs: [],
+    components: [
+      {$ref: './pio.json5'},
+      {$ref: './loopback.json5'},
+    ],
+    busDefinitions: []
+  },
+}
