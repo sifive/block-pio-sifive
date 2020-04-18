@@ -283,6 +283,18 @@ To validate that our DUH document conforms to the DUH schema run
 duh validate pio.json5
 ```
 
+You will see some `info` level messages, which are OK and do not indicate the validation has failed:
+
+```bash 
+>> duh validate pio.json5
+info: t_ctrl:ACLKEN is unmapped
+info: t_ctrl:AWUSER is unmapped
+info: t_ctrl:WUSER is unmapped
+info: t_ctrl:BUSER is unmapped
+info: t_ctrl:ARUSER is unmapped
+info: t_ctrl:RUSER is unmapped
+```
+
 ### Creating the loopback DUH document
 To test our PIO block we will use a simple loopback VIP. This VIP block can be
 onboarded with a DUH document similarly to the PIO block. Follow the same steps
