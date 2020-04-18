@@ -277,6 +277,12 @@ in the `component` object in pio.json5 as follows:
 }
 ```
 
+### Validation
+To validate that our DUH document conforms to the DUH schema run
+```bash
+duh validate pio.json5
+```
+
 ### Creating the loopback DUH document
 To test our PIO block we will use a simple loopback VIP. This VIP block can be
 onboarded with a DUH document similarly to the PIO block. Follow the same steps
@@ -332,10 +338,10 @@ to `vip` instead.
     version: '0.1.0',
 ```
 
-### Validation
-To validate that our DUH document conforms to the DUH schema run
+Validate this file as well:
+
 ```bash
-duh validate pio.json5
+duh validate loopback.json5
 ```
 
 
