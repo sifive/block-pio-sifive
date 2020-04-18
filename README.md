@@ -211,7 +211,7 @@ The final result should look like
             }
         }
     ]
-}
+},
 ```
 
 ### Define memory maps
@@ -244,7 +244,7 @@ the `component` object in pio.json5 as follows.
             fields: [{name: 'data', bitWidth: 32, bitOffset: 0}]
         }]
     }]
-}]
+}],
 ```
 
 ### Define parameter schema
@@ -274,7 +274,7 @@ in the `component` object in pio.json5 as follows:
             type: 'integer', minimum: 1, maximum: 4, default: 4
         }
     }
-}
+},
 ```
 
 ### Validation
