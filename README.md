@@ -98,7 +98,7 @@ installed in `node_modules/.bin`. You may want to add this to your path with
 ### Initializing the DUH document
 To create an initial DUH document run `duh init` and answer the prompts. For
 this tutorial we will name the block `pio` and write the DUH document to
-`block-pio-sifive/pio.json5`
+`pio.json5`
 <pre>
 duh init
 ? <b>Document file name</b> pio.json5
