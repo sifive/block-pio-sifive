@@ -301,7 +301,7 @@ onboarded with a DUH document similarly to the PIO block. Follow the same steps
 to onboard the loopback VIP as we did for the PIO block. Since the loopback
 does not have any bus interfaces we can skip the `duh-portinf` step.
 
-initialization
+Create initial DUH file `loopback.json5`:
 <pre>
 duh init
 ? <b>Document file name</b> loopback.json5
@@ -312,19 +312,20 @@ duh init
 ? <b>Source type</b> Verilog
 </pre>
 
-import ports
+Import ports:
 ```bash
 cat rtl/verilog/loopback/loopback.sv | duh-import-verilog-ports loopback.json5
 ```
 
-add fileSets
+Manually edit file to fill out the fileSets:
 ```javascript
 fileSets: {
     VerilogFiles: ['loopback.sv']
-}
+},
 ```
 
-add parameter schema
+Manually edit the `loopback.json5` to fill out the parameter schema:
+
 ```javascript
 pSchema: {
     type: 'object',
@@ -334,7 +335,7 @@ pSchema: {
             type: 'integer', minimum: 1, maximum: 32, default: 32
         }
     }
-}
+},
 ```
 
 By default, `duh init` will set the `library` field of the initialized DUH
