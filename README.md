@@ -109,7 +109,9 @@ duh init
 ? <b>Source type</b> Verilog
 </pre>
 
-Since we are onboarding a Verilog IP block we should set the `fileSets` field in
+Now we can open the generated `pio.json5` in our editor of choice.
+
+Since we are onboarding a Verilog IP block, in `pio.json5` we should set the `fileSets` field in
 our DUH component to
 ```javascript
 fileSets: {
