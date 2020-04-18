@@ -251,10 +251,10 @@ the `component` object in pio.json5 as follows.
 Finally, we need to describe the parameters of the PIO block. This block has
 `addrWidth`, `dataWidth`, and `pioWidth` parameters that need to be described
 in the DUH document. The `pSchema` field of `component` is a JSON schema that
-describes the parameters of the block as a JSON object. Add a `pSchema` field
-to the `component` object in pio.json5 as follows.
+describes the parameters of the block as a JSON object. Fill in the `pSchema` field
+in the `component` object in pio.json5 as follows:
 ```javascript
-pSchema: {
+"pSchema": {
     type: 'object',
     properties: {
         addrWidth: {
