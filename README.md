@@ -164,8 +164,8 @@ You should now see the following fields in the DUH component of pio.json5
 ```
 
 The first candidate inferred by `duh-portinf` is pretty close but is missing
-the `ACLK` and `ARESETn` signals. Find the node corresponding to the reference
-in `busInterfaces` and add the following fields to its port map
+the `ACLK` and `ARESETn` signals. To fix this, find the node corresponding to the 
+`definitions/busDefinitions/` in `busInterfaces` and add the following fields to the beginning of its `portMaps` array:
 ```javascript
 "ACLK": "clk",
 "ARESETn": "reset_n",
