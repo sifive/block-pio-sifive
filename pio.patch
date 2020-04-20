@@ -1,0 +1,177 @@
+diff -p -r craft/pio/src3/pio-base.scala craft/pio/src4/pio-base.scala
+*** craft/pio/src3/pio-base.scala	2020-04-18 15:38:02.138600432 -0700
+--- craft/pio/src4/pio-base.scala	2020-04-19 22:34:27.736687997 -0700
+*************** class LpioBase(c: pioParams)(implicit p:
+*** 118,123 ****
+--- 118,127 ----
+            supportsWrite = TransferSizes(1, ((dataWidth) * 1 / 8)),
+            supportsRead  = TransferSizes(1, ((dataWidth) * 1 / 8)),
+            interleavedId = Some(0),
++           // I think this should be
++           //  resources = Seq(device.reg("name that came from pio.json5 of this memory region") ++ ...)
++           // If you have multiple memory regions behind this port there should be multiple on that list,
++           // named what you want them named.
+            resources     = device.reg
+          )
+        ),
+*************** object NpioTopParams {
+*** 261,272 ****
+--- 265,281 ----
+  class NpioTopLogicalTreeNode(component: NpioTopBase) extends LogicalTreeNode(() => Some(component.imp.device)) {
+    override def getOMComponents(resourceBindings: ResourceBindings, components: Seq[OMComponent]): Seq[OMComponent] = {
+      val name = component.imp.device.describe(resourceBindings).name
++     // We dynamically build up the omDevice as a mutable hash map,
++     // so that any case class can be returned in the omUser code.
+      val omDevice = new scala.collection.mutable.LinkedHashMap[String, Any] with OMDevice {
+        val memoryRegions = component.getOMMemoryRegions(resourceBindings)
+        val interrupts = component.getOMInterrupts(resourceBindings)
+        val _types: Seq[String] = Seq("OMpio", "OMDevice", "OMComponent", "OMCompoundType")
+      }
+      val userOM = component.userOM
++ 
++     // productIterator is a built-in for case classes,
++     // so this lets us iterate over anything that has been put into the userOM case class.
+      val values = userOM.productIterator
+      if (values.nonEmpty) {
+        val pairs = (userOM.getClass.getDeclaredFields.map { field =>
+*************** class NpioTopLogicalTreeNode(component:
+*** 281,286 ****
+--- 290,298 ----
+      omDevice("memoryRegions") = omDevice.memoryRegions
+      omDevice("interrupts") = omDevice.interrupts
+      omDevice("_types") = omDevice._types
++ 
++     // We only ever return one omDevice in this flow, though
++     // in theory a single module could contain multiple devices.
+      Seq(omDevice)
+    }
+  }
+*************** class NpioTopBase(val c: NpioTopParams)(
+*** 327,352 ****
+      }
+    }
+  
+!   def omRegisterMaps = Seq(
+!     OMRegister.convert(
+!       0 -> RegFieldGroup("ODATA", None, padFields(
+!         0 -> RegField(32, Bool(), RegFieldDesc("data", "")))),
+!       4 -> RegFieldGroup("OENABLE", Some("""determines whether the pin is an input or an output. If the data direction bit is a 1, then the pin is an input"""), padFields(
+!         0 -> RegField(32, Bool(), RegFieldDesc("data", "")))),
+!       8 -> RegFieldGroup("IDATA", Some("""read the port pins"""), padFields(
+!         0 -> RegField(32, Bool(), RegFieldDesc("data", ""))))),
+!     OMRegister.convert(
+!       0 -> RegFieldGroup("FOO", None, padFields(
+!         0 -> RegField(5, Bool(), RegFieldDesc("foo", ""))))),
+!     OMRegister.convert(
+!       ),
+!     OMRegister.convert(
+!       0 -> RegFieldGroup("SOMETHING", None, padFields(
+!         0 -> RegField(16, Bool(), RegFieldDesc("data", "")),16 -> RegField(16, Bool(), RegFieldDesc("control", ""))))))
+  
+    def getOMMemoryRegions(resourceBindings: ResourceBindings): Seq[OMMemoryRegion] = {
+      val name = imp.device.describe(resourceBindings).name
+!     DiplomaticObjectModelAddressing.getOMMemoryRegions(name, resourceBindings, None)
+    }
+  
+    def getOMInterrupts(resourceBindings: ResourceBindings): Seq[OMInterrupt] = {
+--- 339,374 ----
+      }
+    }
+  
+!   // Make this private since it's just a helper for the below
+!   private def omRegisterMaps: Map[(String, Option[Seq(RegMap)])] = Map(
+!     "CSR" -> Some(Seq(
+!       OMRegister.convert(
+!         0 + 0-> RegFieldGroup("ODATA", None, padFields(
+!           0 -> RegField(32, Bool(), RegFieldDesc("data", "")))),
+!         4 + 0-> RegFieldGroup("OENABLE", Some("""determines whether the pin is an input or an output. If the data direction bit is a 1, then the pin is an input"""), padFields(
+!           0 -> RegField(32, Bool(), RegFieldDesc("data", "")))),
+!         8 + 0-> RegFieldGroup("IDATA", Some("""read the port pins"""), padFields(
+!           0 -> RegField(32, Bool(), RegFieldDesc("data", ""))))))),
+!       OMRegister.convert(
+!         0 + 512 -> RegFieldGroup("FOO", None, padFields(
+!           0 -> RegField(5, Bool(), RegFieldDesc("foo", "")))))),
+!       "NoRegistersHere" -> None,
+!       "MEGAWATTS" -> Some(Seq(
+!         OMRegister.convert(
+!           0 + 128 -> RegFieldGroup("SOMETHING", None, padFields(
+!             0 -> RegField(16, Bool(), RegFieldDesc("data", "")),16 -> RegField(16, Bool(), RegFieldDesc("control", "")))))))
+!   }
+  
++ // I changed this to automatically pull in the register maps, based on the name (description...?) of the
++ // memory region, stored in the Map above.
+    def getOMMemoryRegions(resourceBindings: ResourceBindings): Seq[OMMemoryRegion] = {
+      val name = imp.device.describe(resourceBindings).name
+!     val beforeAddingRegMaps = DiplomaticObjectModelAddressing.getOMMemoryRegions(name, resourceBindings, None)
+!     val omRegisterMaps = getOMRegisterMaps
+!     // this will error if the key is not found in the hash above
+!     beforeAddingRegMaps.map { case memoryRegion => 
+!       memoryRegion.copy(registerMap = omRegisterMaps(memoryRegion.description))
+!     }
+    }
+  
+    def getOMInterrupts(resourceBindings: ResourceBindings): Seq[OMInterrupt] = {
+diff -p -r craft/pio/src3/pio.scala craft/pio/src4/pio.scala
+*** craft/pio/src3/pio.scala	2020-04-19 21:31:10.707454348 -0700
+--- craft/pio/src4/pio.scala	2020-04-19 21:39:02.566639979 -0700
+*************** class Lpio(c: pioParams)(implicit p: Par
+*** 37,54 ****
+  class NpioTop(c: NpioTopParams)(implicit p: Parameters) extends NpioTopBase(c)(p)
+  {
+  
+!   // User code here
+  
+    // This is the code the tutorial tells me to add
+- 
+    // add in custom fields to the Object Model entry for this block
+    override val userOM: OMPIO = OMPIO(c.blackbox.pioWidth)
+  
+    // associate register maps with memory regions in Object model
+    override def getOMMemoryRegions(resourceBindings: ResourceBindings) = {
+      super.getOMMemoryRegions(resourceBindings).zip(omRegisterMaps).map { case (memRegion, regmap) =>
+        memRegion.copy(registerMap = Some(regmap))
+      }
+    }
+  }
+  
+--- 37,61 ----
+  class NpioTop(c: NpioTopParams)(implicit p: Parameters) extends NpioTopBase(c)(p)
+  {
+  
+! // User code here
+  
+    // This is the code the tutorial tells me to add
+    // add in custom fields to the Object Model entry for this block
+    override val userOM: OMPIO = OMPIO(c.blackbox.pioWidth)
+  
+    // associate register maps with memory regions in Object model
++   // why this code can't be done automatically in the getOMMemoryRegions code I don't understand.
+    override def getOMMemoryRegions(resourceBindings: ResourceBindings) = {
+      super.getOMMemoryRegions(resourceBindings).zip(omRegisterMaps).map { case (memRegion, regmap) =>
+        memRegion.copy(registerMap = Some(regmap))
+      }
++ 
++     // Call stack here is:
++     // getOMMemoryRegions(resourceBindings, ...)
++     // super.getOMMemoryRegions (resourceBindings)
++     // NpioBase.getOMMemoryRegions(resourceBindings)
++     //    name = whatever is called in to SimpleDevice(name =...) (generated from duh-export-scala, find it in pio-base.scala)
++     // DiplomaticObjectModelAddressing.getOMMemoryRegions(name, resourceBindings)
+    }
+  }
+  
+*************** class WithpioTop extends Config(
+*** 73,77 ****
+  
+  
+  // This is the code the tutorial tells me to add
+! case class OMPIO(width: Int)
+  
+--- 80,86 ----
+  
+  
+  // This is the code the tutorial tells me to add
+! case class OMPIO(
+!   width: Int
+! )
+  
