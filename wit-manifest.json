@@ -10,7 +10,7 @@
         "source": "git@github.com:sifive/api-generator-sifive.git"
     },
     {
-        "commit": "1c38068e5338dce8594f3aef0466c6333f46a24d",
+        "commit": "c51c7980f86afa2d1841c524644fefbe564cd982",
         "name": "api-scala-sifive",
         "source": "git@github.com:sifive/api-scala-sifive.git"
     }
