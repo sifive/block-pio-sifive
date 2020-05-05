@@ -98,8 +98,11 @@ installed in `node_modules/.bin`. You may want to add this to your path with
 ### Initializing the DUH document
 To create an initial DUH document run `duh init` and answer the prompts. For
 this tutorial we will name the block `pio` and write the DUH document to
-`block-pio-sifive/pio.json5`
+`pio.json5`. The rest of the tutorial assumes that we are running these commands from
+`workspace/block-pio-sifive`, so first we `cd` to that directory.
+
 <pre>
+cd workspace/block-pio-sifive
 duh init
 ? <b>Document file name</b> pio.json5
 ? <b>Block name</b> pio
@@ -109,7 +112,9 @@ duh init
 ? <b>Source type</b> Verilog
 </pre>
 
-Since we are onboarding a Verilog IP block we should set the `fileSets` field in
+Now we can open the generated `pio.json5` in our editor of choice.
+
+Since we are onboarding a Verilog IP block, in `pio.json5` we should set the `fileSets` field in
 our DUH component to
 ```javascript
 fileSets: {
@@ -159,8 +164,8 @@ You should now see the following fields in the DUH component of pio.json5
 ```
 
 The first candidate inferred by `duh-portinf` is pretty close but is missing
-the `ACLK` and `ARESETn` signals. Find the node corresponding to the reference
-in `busInterfaces` and add the following fields to its port map
+the `ACLK` and `ARESETn` signals. To fix this, find the node corresponding to the 
+`definitions/busDefinitions/` in `busInterfaces` and add the following fields to the beginning of its `portMaps` array:
 ```javascript
 "ACLK": "clk",
 "ARESETn": "reset_n",
@@ -206,7 +211,7 @@ The final result should look like
             }
         }
     ]
-}
+},
 ```
 
 ### Define memory maps
@@ -239,17 +244,17 @@ the `component` object in pio.json5 as follows.
             fields: [{name: 'data', bitWidth: 32, bitOffset: 0}]
         }]
     }]
-}]
+}],
 ```
 
 ### Define parameter schema
 Finally, we need to describe the parameters of the PIO block. This block has
 `addrWidth`, `dataWidth`, and `pioWidth` parameters that need to be described
 in the DUH document. The `pSchema` field of `component` is a JSON schema that
-describes the parameters of the block as a JSON object. Add a `pSchema` field
-to the `component` object in pio.json5 as follows.
+describes the parameters of the block as a JSON object. Fill in the `pSchema` field
+in the `component` object in pio.json5 as follows:
 ```javascript
-pSchema: {
+"pSchema": {
     type: 'object',
     properties: {
         addrWidth: {
@@ -269,7 +274,25 @@ pSchema: {
             type: 'integer', minimum: 1, maximum: 4, default: 4
         }
     }
-}
+},
+```
+
+### Validation
+To validate that our DUH document conforms to the DUH schema run
+```bash
+duh validate pio.json5
+```
+
+You will see some `info` level messages, which are OK and do not indicate the validation has failed:
+
+```bash 
+>> duh validate pio.json5
+info: t_ctrl:ACLKEN is unmapped
+info: t_ctrl:AWUSER is unmapped
+info: t_ctrl:WUSER is unmapped
+info: t_ctrl:BUSER is unmapped
+info: t_ctrl:ARUSER is unmapped
+info: t_ctrl:RUSER is unmapped
 ```
 
 ### Creating the loopback DUH document
@@ -278,7 +301,7 @@ onboarded with a DUH document similarly to the PIO block. Follow the same steps
 to onboard the loopback VIP as we did for the PIO block. Since the loopback
 does not have any bus interfaces we can skip the `duh-portinf` step.
 
-initialization
+Create initial DUH file `loopback.json5`:
 <pre>
 duh init
 ? <b>Document file name</b> loopback.json5
@@ -289,19 +312,20 @@ duh init
 ? <b>Source type</b> Verilog
 </pre>
 
-import ports
+Import ports:
 ```bash
 cat rtl/verilog/loopback/loopback.sv | duh-import-verilog-ports loopback.json5
 ```
 
-add fileSets
+Manually edit file to fill out the fileSets:
 ```javascript
 fileSets: {
     VerilogFiles: ['loopback.sv']
-}
+},
 ```
 
-add parameter schema
+Manually edit the `loopback.json5` to fill out the parameter schema:
+
 ```javascript
 pSchema: {
     type: 'object',
@@ -311,7 +335,7 @@ pSchema: {
             type: 'integer', minimum: 1, maximum: 32, default: 32
         }
     }
-}
+},
 ```
 
 By default, `duh init` will set the `library` field of the initialized DUH
@@ -327,10 +351,10 @@ to `vip` instead.
     version: '0.1.0',
 ```
 
-### Validation
-To validate that our DUH document conforms to the DUH schema run
+Validate this file as well:
+
 ```bash
-duh validate pio.json5
+duh validate loopback.json5
 ```
 
 
