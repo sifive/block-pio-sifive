@@ -90,6 +90,7 @@
                             }
                         ]
                     },
+                    ]},
                     {
                         "name": "JustMemoryNoRegisters",
                         "addressBlocks": [
@@ -139,9 +140,7 @@
                             }
                         ]
                     }
-                ]
-            }
-        ],
+                ],
         "model": {
             "views": [],
             "ports": {
@@ -884,7 +883,7 @@
             "busint-portgroup_2-mapping_0-prefix_t_mem-slave-AXI4-Lite_rtl": {
                 "name": "t_mem",
                 "interfaceMode": "slave",
-                "memoryMapRef": "JustMemoryNoRegisters"
+                "memoryMapRef": "JustMemoryNoRegisters",
                 "busType": {
                     "vendor": "amba.com",
                     "library": "AMBA4",
