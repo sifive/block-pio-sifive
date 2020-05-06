@@ -153,7 +153,27 @@
                 "pio.sv"
             ]
         },
-        "pSchema": {},
+        "pSchema": {
+    type: 'object',
+    properties: {
+        addrWidth: {
+            title: 'Address bus width',
+            type: 'integer', minimum: 6, maximum: 32, default: 12
+        },
+        dataWidth: {
+            title: 'Data bus width',
+            type: 'integer', minimum: 32, maximum: 64, default: 32
+        },
+        pioWidth: {
+            title: 'Number of IO pads',
+            type: 'integer', minimum: 1, maximum: 32, default: 32
+        },
+        writeStrobeWidth: {
+            title: 'Write strobe width',
+            type: 'integer', minimum: 1, maximum: 4, default: 4
+        }
+    }
+},
         "busInterfaceAlts": [
             {"$ref": "#/definitions/busDefinitions/busint-portgroup_0-mapping_1-prefix_t_sideband-slave-AXI4_rtl"},
             {"$ref": "#/definitions/busDefinitions/busint-portgroup_0-mapping_2-prefix_t_sideband-master-AXI4-Lite_rtl"},
