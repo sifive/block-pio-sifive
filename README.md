@@ -119,7 +119,7 @@ our DUH component to
 ```javascript
 fileSets: {
     VerilogFiles: ['pio.sv']
-}
+},
 ```
 
 ### Importing verilog ports
