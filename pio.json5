@@ -5,7 +5,8 @@
         "name": "pio",
         "version": "0.1.0",
         "busInterfaces": [
-            {"$ref": "#/definitions/busDefinitions/busint-portgroup_0-mapping_0-prefix_t_ctrl-slave-AXI4-Lite_rtl"}
+            {"$ref": "#/definitions/busDefinitions/busint-portgroup_0-mapping_0-prefix_t_sideband-slave-AXI4-Lite_rtl"},
+            {"$ref": "#/definitions/busDefinitions/busint-portgroup_1-mapping_0-prefix_t_ctrl-slave-AXI4-Lite_rtl"}
         ],
         "addressSpaces": [],
         "memoryMaps": [
@@ -88,35 +89,22 @@
                 "pio.sv"
             ]
         },
-        "pSchema": {
-    type: 'object',
-    properties: {
-        addrWidth: {
-            title: 'Address bus width',
-            type: 'integer', minimum: 6, maximum: 32, default: 12
-        },
-        dataWidth: {
-            title: 'Data bus width',
-            type: 'integer', minimum: 32, maximum: 64, default: 32
-        },
-        pioWidth: {
-            title: 'Number of IO pads',
-            type: 'integer', minimum: 1, maximum: 32, default: 32
-        },
-        writeStrobeWidth: {
-            title: 'Write strobe width',
-            type: 'integer', minimum: 1, maximum: 4, default: 4
-        }
-    }
-},
+        "pSchema": {},
         "busInterfaceAlts": [
-            {"$ref": "#/definitions/busDefinitions/busint-portgroup_0-mapping_1-prefix_t_ctrl-slave-AXI4_rtl"},
-            {"$ref": "#/definitions/busDefinitions/busint-portgroup_0-mapping_2-prefix_t_ctrl-master-AHBLite_rtl"},
-            {"$ref": "#/definitions/busDefinitions/busint-portgroup_0-mapping_3-prefix_t_ctrl-master-AXI4-Lite_rtl"},
-            {"$ref": "#/definitions/busDefinitions/busint-portgroup_0-mapping_4-prefix_t_ctrl-slave-AXI4Stream_rtl"},
-            {"$ref": "#/definitions/busDefinitions/busint-portgroup_0-mapping_5-prefix_t_ctrl-slave-DPRAM_rtl"},
-            {"$ref": "#/definitions/busDefinitions/busint-portgroup_0-mapping_6-prefix_t_ctrl-master-AXI4_rtl"},
-            {"$ref": "#/definitions/busDefinitions/busint-portgroup_0-mapping_7-prefix_t_ctrl-slave-SPRAM_rtl"}
+            {"$ref": "#/definitions/busDefinitions/busint-portgroup_0-mapping_1-prefix_t_sideband-slave-AXI4_rtl"},
+            {"$ref": "#/definitions/busDefinitions/busint-portgroup_0-mapping_2-prefix_t_sideband-master-AXI4-Lite_rtl"},
+            {"$ref": "#/definitions/busDefinitions/busint-portgroup_0-mapping_3-prefix_t_sideband-master-AHBLite_rtl"},
+            {"$ref": "#/definitions/busDefinitions/busint-portgroup_0-mapping_4-prefix_t_sideband-slave-DPRAM_rtl"},
+            {"$ref": "#/definitions/busDefinitions/busint-portgroup_0-mapping_5-prefix_t_sideband-slave-SPRAM_rtl"},
+            {"$ref": "#/definitions/busDefinitions/busint-portgroup_0-mapping_6-prefix_t_sideband-slave-AXI4Stream_rtl"},
+            {"$ref": "#/definitions/busDefinitions/busint-portgroup_0-mapping_7-prefix_t_sideband-master-AXI4_rtl"},
+            {"$ref": "#/definitions/busDefinitions/busint-portgroup_1-mapping_1-prefix_t_ctrl-slave-AXI4_rtl"},
+            {"$ref": "#/definitions/busDefinitions/busint-portgroup_1-mapping_2-prefix_t_ctrl-master-AHBLite_rtl"},
+            {"$ref": "#/definitions/busDefinitions/busint-portgroup_1-mapping_3-prefix_t_ctrl-master-AXI4-Lite_rtl"},
+            {"$ref": "#/definitions/busDefinitions/busint-portgroup_1-mapping_4-prefix_t_ctrl-slave-AXI4Stream_rtl"},
+            {"$ref": "#/definitions/busDefinitions/busint-portgroup_1-mapping_5-prefix_t_ctrl-slave-DPRAM_rtl"},
+            {"$ref": "#/definitions/busDefinitions/busint-portgroup_1-mapping_6-prefix_t_ctrl-master-AXI4_rtl"},
+            {"$ref": "#/definitions/busDefinitions/busint-portgroup_1-mapping_7-prefix_t_ctrl-slave-SPRAM_rtl"}
         ]
     },
     "definitions": {
@@ -140,6 +128,25 @@
             "t_ctrl_rready": 1,
             "t_ctrl_rdata": "-(dataWidth)",
             "t_ctrl_rresp": -2,
+            "t_sideband_awvalid": 1,
+            "t_sideband_awready": -1,
+            "t_sideband_awaddr": "addrWidth",
+            "t_sideband_awprot": 3,
+            "t_sideband_wvalid": 1,
+            "t_sideband_wready": -1,
+            "t_sideband_wdata": "dataWidth",
+            "t_sideband_wstrb": "writeStrobeWidth",
+            "t_sideband_bvalid": -1,
+            "t_sideband_bready": 1,
+            "t_sideband_bresp": -2,
+            "t_sideband_arvalid": 1,
+            "t_sideband_arready": -1,
+            "t_sideband_araddr": "addrWidth",
+            "t_sideband_arprot": 3,
+            "t_sideband_rvalid": -1,
+            "t_sideband_rready": 1,
+            "t_sideband_rdata": "-(dataWidth)",
+            "t_sideband_rresp": -2,
             "irq0": -1,
             "irq1": -1,
             "odata": "-(pioWidth)",
@@ -148,9 +155,315 @@
             "clk": 1,
             "reset_n": 1
         },
-        "pg_cnt": 1,
+        "pg_cnt": 2,
         "busDefinitions": {
-            "busint-portgroup_0-mapping_0-prefix_t_ctrl-slave-AXI4-Lite_rtl": {
+            "busint-portgroup_0-mapping_0-prefix_t_sideband-slave-AXI4-Lite_rtl": {
+                "name": "t_sideband",
+                "interfaceMode": "slave",
+                "busType": {
+                    "vendor": "amba.com",
+                    "library": "AMBA4",
+                    "name": "AXI4-Lite",
+                    "version": "r0p0_0"
+                },
+                "abstractionTypes": [
+                    {
+                        "viewRef": "RTLview",
+                        "portMaps": {
+                            "ACLK": "clk",
+                            "ARESETn": "reset_n",
+                            "WDATA": "t_sideband_wdata",
+                            "AWPROT": "t_sideband_awprot",
+                            "RRESP": "t_sideband_rresp",
+                            "RDATA": "t_sideband_rdata",
+                            "ARREADY": "t_sideband_arready",
+                            "AWVALID": "t_sideband_awvalid",
+                            "BVALID": "t_sideband_bvalid",
+                            "ARVALID": "t_sideband_arvalid",
+                            "AWADDR": "t_sideband_awaddr",
+                            "ARPROT": "t_sideband_arprot",
+                            "ARADDR": "t_sideband_araddr",
+                            "RVALID": "t_sideband_rvalid",
+                            "WREADY": "t_sideband_wready",
+                            "WVALID": "t_sideband_wvalid",
+                            "BREADY": "t_sideband_bready",
+                            "BRESP": "t_sideband_bresp",
+                            "AWREADY": "t_sideband_awready",
+                            "RREADY": "t_sideband_rready",
+                            "WSTRB": "t_sideband_wstrb"
+                        }
+                    }
+                ]
+            },
+            "busint-portgroup_0-mapping_1-prefix_t_sideband-slave-AXI4_rtl": {
+                "name": "t_sideband",
+                "interfaceMode": "slave",
+                "busType": {
+                    "vendor": "amba.com",
+                    "library": "AMBA4",
+                    "name": "AXI4",
+                    "version": "r0p0_0"
+                },
+                "abstractionTypes": [
+                    {
+                        "viewRef": "RTLview",
+                        "portMaps": {
+                            "WDATA": "t_sideband_wdata",
+                            "AWPROT": "t_sideband_awprot",
+                            "RRESP": "t_sideband_rresp",
+                            "RDATA": "t_sideband_rdata",
+                            "ARREADY": "t_sideband_arready",
+                            "AWVALID": "t_sideband_awvalid",
+                            "BVALID": "t_sideband_bvalid",
+                            "ARVALID": "t_sideband_arvalid",
+                            "AWADDR": "t_sideband_awaddr",
+                            "ARPROT": "t_sideband_arprot",
+                            "ARADDR": "t_sideband_araddr",
+                            "RVALID": "t_sideband_rvalid",
+                            "WREADY": "t_sideband_wready",
+                            "WVALID": "t_sideband_wvalid",
+                            "BREADY": "t_sideband_bready",
+                            "BRESP": "t_sideband_bresp",
+                            "AWREADY": "t_sideband_awready",
+                            "RREADY": "t_sideband_rready",
+                            "WSTRB": "t_sideband_wstrb"
+                        }
+                    }
+                ]
+            },
+            "busint-portgroup_0-mapping_2-prefix_t_sideband-master-AXI4-Lite_rtl": {
+                "name": "t_sideband",
+                "interfaceMode": "master",
+                "busType": {
+                    "vendor": "amba.com",
+                    "library": "AMBA4",
+                    "name": "AXI4-Lite",
+                    "version": "r0p0_0"
+                },
+                "abstractionTypes": [
+                    {
+                        "viewRef": "RTLview",
+                        "portMaps": {
+                            "RVALID": "t_sideband_arvalid",
+                            "ARVALID": "t_sideband_rvalid",
+                            "RREADY": "t_sideband_arready",
+                            "ARREADY": "t_sideband_rready",
+                            "WVALID": "t_sideband_bvalid",
+                            "BREADY": "t_sideband_wready",
+                            "BVALID": "t_sideband_wvalid",
+                            "WREADY": "t_sideband_bready",
+                            "WDATA": "t_sideband_rdata",
+                            "AWADDR": "t_sideband_awready",
+                            "RDATA": "t_sideband_arprot",
+                            "ACLK": "t_sideband_awvalid",
+                            "RRESP": "t_sideband_awprot",
+                            "__UMAP__": [
+                                "t_sideband_awaddr",
+                                "t_sideband_wdata",
+                                "t_sideband_wstrb",
+                                "t_sideband_bresp",
+                                "t_sideband_rresp",
+                                "t_sideband_araddr"
+                            ]
+                        }
+                    }
+                ]
+            },
+            "busint-portgroup_0-mapping_3-prefix_t_sideband-master-AHBLite_rtl": {
+                "name": "t_sideband",
+                "interfaceMode": "master",
+                "busType": {
+                    "vendor": "amba.com",
+                    "library": "AMBA3",
+                    "name": "AHBLite",
+                    "version": "r2p0_0"
+                },
+                "abstractionTypes": [
+                    {
+                        "viewRef": "RTLview",
+                        "portMaps": {
+                            "HREADY": "t_sideband_rready",
+                            "HRDATA": "t_sideband_wdata",
+                            "HADDR": "t_sideband_arready",
+                            "HWRITE": "t_sideband_wready",
+                            "HRESP": "t_sideband_bready",
+                            "HWDATA": "t_sideband_awready",
+                            "HPROT": "t_sideband_rdata",
+                            "HTRANS": "t_sideband_bresp",
+                            "HCLK": "t_sideband_wvalid",
+                            "HBURST": "t_sideband_wstrb",
+                            "HSIZE": "t_sideband_awprot",
+                            "__UMAP__": [
+                                "t_sideband_awaddr",
+                                "t_sideband_rvalid",
+                                "t_sideband_rresp",
+                                "t_sideband_arprot",
+                                "t_sideband_awvalid",
+                                "t_sideband_bvalid",
+                                "t_sideband_araddr",
+                                "t_sideband_arvalid"
+                            ]
+                        }
+                    }
+                ]
+            },
+            "busint-portgroup_0-mapping_4-prefix_t_sideband-slave-DPRAM_rtl": {
+                "name": "t_sideband",
+                "interfaceMode": "slave",
+                "busType": {
+                    "vendor": "sifive.com",
+                    "library": "MEM",
+                    "name": "DPRAM",
+                    "version": "0.1.0"
+                },
+                "abstractionTypes": [
+                    {
+                        "viewRef": "RTLview",
+                        "portMaps": {
+                            "RDDATA": "t_sideband_rdata",
+                            "WRADDR": "t_sideband_araddr",
+                            "WRDATA": "t_sideband_wdata",
+                            "RDADDR": "t_sideband_awaddr",
+                            "RDERR": "t_sideband_arready",
+                            "RDEN": "t_sideband_rready",
+                            "WREN": "t_sideband_wstrb",
+                            "BEN": "t_sideband_bready",
+                            "__UMAP__": [
+                                "t_sideband_rvalid",
+                                "t_sideband_wready",
+                                "t_sideband_wvalid",
+                                "t_sideband_awprot",
+                                "t_sideband_bresp",
+                                "t_sideband_rresp",
+                                "t_sideband_arprot",
+                                "t_sideband_awvalid",
+                                "t_sideband_bvalid",
+                                "t_sideband_awready",
+                                "t_sideband_arvalid"
+                            ]
+                        }
+                    }
+                ]
+            },
+            "busint-portgroup_0-mapping_5-prefix_t_sideband-slave-SPRAM_rtl": {
+                "name": "t_sideband",
+                "interfaceMode": "slave",
+                "busType": {
+                    "vendor": "sifive.com",
+                    "library": "MEM",
+                    "name": "SPRAM",
+                    "version": "0.1.0"
+                },
+                "abstractionTypes": [
+                    {
+                        "viewRef": "RTLview",
+                        "portMaps": {
+                            "RDDATA": "t_sideband_rdata",
+                            "ADDR": "t_sideband_araddr",
+                            "WRDATA": "t_sideband_wdata",
+                            "RDERR": "t_sideband_arready",
+                            "RDEN": "t_sideband_rready",
+                            "WREN": "t_sideband_wstrb",
+                            "BEN": "t_sideband_bready",
+                            "CLK": "t_sideband_wvalid",
+                            "__UMAP__": [
+                                "t_sideband_awaddr",
+                                "t_sideband_rvalid",
+                                "t_sideband_wready",
+                                "t_sideband_awprot",
+                                "t_sideband_bresp",
+                                "t_sideband_rresp",
+                                "t_sideband_arprot",
+                                "t_sideband_awvalid",
+                                "t_sideband_bvalid",
+                                "t_sideband_awready",
+                                "t_sideband_arvalid"
+                            ]
+                        }
+                    }
+                ]
+            },
+            "busint-portgroup_0-mapping_6-prefix_t_sideband-slave-AXI4Stream_rtl": {
+                "name": "t_sideband",
+                "interfaceMode": "slave",
+                "busType": {
+                    "vendor": "amba.com",
+                    "library": "AMBA4",
+                    "name": "AXI4Stream",
+                    "version": "r0p0_1"
+                },
+                "abstractionTypes": [
+                    {
+                        "viewRef": "RTLview",
+                        "portMaps": {
+                            "TVALID": "t_sideband_wvalid",
+                            "TREADY": "t_sideband_wready",
+                            "TSTRB": "t_sideband_wstrb",
+                            "TDATA": "t_sideband_wdata",
+                            "TID": "t_sideband_arvalid",
+                            "TDEST": "t_sideband_rready",
+                            "ACLK": "t_sideband_awvalid",
+                            "TUSER": [
+                                "t_sideband_awaddr",
+                                "t_sideband_awprot",
+                                "t_sideband_bready",
+                                "t_sideband_arprot",
+                                "t_sideband_araddr"
+                            ],
+                            "__UMAP__": [
+                                "t_sideband_rvalid",
+                                "t_sideband_bresp",
+                                "t_sideband_rresp",
+                                "t_sideband_rdata",
+                                "t_sideband_arready",
+                                "t_sideband_bvalid",
+                                "t_sideband_awready"
+                            ]
+                        }
+                    }
+                ]
+            },
+            "busint-portgroup_0-mapping_7-prefix_t_sideband-master-AXI4_rtl": {
+                "name": "t_sideband",
+                "interfaceMode": "master",
+                "busType": {
+                    "vendor": "amba.com",
+                    "library": "AMBA4",
+                    "name": "AXI4",
+                    "version": "r0p0_0"
+                },
+                "abstractionTypes": [
+                    {
+                        "viewRef": "RTLview",
+                        "portMaps": {
+                            "RVALID": "t_sideband_arvalid",
+                            "ARVALID": "t_sideband_rvalid",
+                            "RREADY": "t_sideband_arready",
+                            "ARREADY": "t_sideband_rready",
+                            "WVALID": "t_sideband_bvalid",
+                            "BREADY": "t_sideband_wready",
+                            "BVALID": "t_sideband_wvalid",
+                            "WREADY": "t_sideband_bready",
+                            "RDATA": "t_sideband_wdata",
+                            "WDATA": "t_sideband_rdata",
+                            "RID": "t_sideband_arprot",
+                            "BID": "t_sideband_awprot",
+                            "AWUSER": [
+                                "t_sideband_awready"
+                            ],
+                            "__UMAP__": [
+                                "t_sideband_awaddr",
+                                "t_sideband_wstrb",
+                                "t_sideband_bresp",
+                                "t_sideband_rresp",
+                                "t_sideband_awvalid",
+                                "t_sideband_araddr"
+                            ]
+                        }
+                    }
+                ]
+            },
+            "busint-portgroup_1-mapping_0-prefix_t_ctrl-slave-AXI4-Lite_rtl": {
                 "name": "t_ctrl",
                 "interfaceMode": "slave",
                 "busType": {
@@ -165,30 +478,30 @@
                         "portMaps": {
                             "ACLK": "clk",
                             "ARESETn": "reset_n",
-                            "BVALID": "t_ctrl_bvalid",
                             "WSTRB": "t_ctrl_wstrb",
-                            "WVALID": "t_ctrl_wvalid",
-                            "AWADDR": "t_ctrl_awaddr",
-                            "WDATA": "t_ctrl_wdata",
-                            "RVALID": "t_ctrl_rvalid",
                             "AWVALID": "t_ctrl_awvalid",
-                            "BRESP": "t_ctrl_bresp",
-                            "BREADY": "t_ctrl_bready",
-                            "RRESP": "t_ctrl_rresp",
-                            "ARVALID": "t_ctrl_arvalid",
-                            "ARADDR": "t_ctrl_araddr",
-                            "ARREADY": "t_ctrl_arready",
-                            "WREADY": "t_ctrl_wready",
-                            "AWPROT": "t_ctrl_awprot",
-                            "AWREADY": "t_ctrl_awready",
-                            "RREADY": "t_ctrl_rready",
                             "RDATA": "t_ctrl_rdata",
+                            "AWREADY": "t_ctrl_awready",
+                            "BREADY": "t_ctrl_bready",
+                            "AWPROT": "t_ctrl_awprot",
+                            "WVALID": "t_ctrl_wvalid",
+                            "WREADY": "t_ctrl_wready",
+                            "RVALID": "t_ctrl_rvalid",
+                            "RREADY": "t_ctrl_rready",
+                            "BRESP": "t_ctrl_bresp",
                             "ARPROT": "t_ctrl_arprot",
+                            "ARADDR": "t_ctrl_araddr",
+                            "AWADDR": "t_ctrl_awaddr",
+                            "ARREADY": "t_ctrl_arready",
+                            "RRESP": "t_ctrl_rresp",
+                            "BVALID": "t_ctrl_bvalid",
+                            "ARVALID": "t_ctrl_arvalid",
+                            "WDATA": "t_ctrl_wdata"
                         }
                     }
                 ]
             },
-            "busint-portgroup_0-mapping_1-prefix_t_ctrl-slave-AXI4_rtl": {
+            "busint-portgroup_1-mapping_1-prefix_t_ctrl-slave-AXI4_rtl": {
                 "name": "t_ctrl",
                 "interfaceMode": "slave",
                 "busType": {
@@ -201,30 +514,30 @@
                     {
                         "viewRef": "RTLview",
                         "portMaps": {
-                            "BVALID": "t_ctrl_bvalid",
                             "WSTRB": "t_ctrl_wstrb",
-                            "WVALID": "t_ctrl_wvalid",
-                            "AWADDR": "t_ctrl_awaddr",
-                            "WDATA": "t_ctrl_wdata",
-                            "RVALID": "t_ctrl_rvalid",
                             "AWVALID": "t_ctrl_awvalid",
-                            "BRESP": "t_ctrl_bresp",
-                            "BREADY": "t_ctrl_bready",
-                            "RRESP": "t_ctrl_rresp",
-                            "ARVALID": "t_ctrl_arvalid",
-                            "ARADDR": "t_ctrl_araddr",
-                            "ARREADY": "t_ctrl_arready",
-                            "WREADY": "t_ctrl_wready",
-                            "AWPROT": "t_ctrl_awprot",
-                            "AWREADY": "t_ctrl_awready",
-                            "RREADY": "t_ctrl_rready",
                             "RDATA": "t_ctrl_rdata",
-                            "ARPROT": "t_ctrl_arprot"
+                            "AWREADY": "t_ctrl_awready",
+                            "BREADY": "t_ctrl_bready",
+                            "AWPROT": "t_ctrl_awprot",
+                            "WVALID": "t_ctrl_wvalid",
+                            "WREADY": "t_ctrl_wready",
+                            "RVALID": "t_ctrl_rvalid",
+                            "RREADY": "t_ctrl_rready",
+                            "BRESP": "t_ctrl_bresp",
+                            "ARPROT": "t_ctrl_arprot",
+                            "ARADDR": "t_ctrl_araddr",
+                            "AWADDR": "t_ctrl_awaddr",
+                            "ARREADY": "t_ctrl_arready",
+                            "RRESP": "t_ctrl_rresp",
+                            "BVALID": "t_ctrl_bvalid",
+                            "ARVALID": "t_ctrl_arvalid",
+                            "WDATA": "t_ctrl_wdata"
                         }
                     }
                 ]
             },
-            "busint-portgroup_0-mapping_2-prefix_t_ctrl-master-AHBLite_rtl": {
+            "busint-portgroup_1-mapping_2-prefix_t_ctrl-master-AHBLite_rtl": {
                 "name": "t_ctrl",
                 "interfaceMode": "master",
                 "busType": {
@@ -249,20 +562,20 @@
                             "HBURST": "t_ctrl_wstrb",
                             "__UMAP__": [
                                 "t_ctrl_rvalid",
-                                "t_ctrl_bvalid",
-                                "t_ctrl_awvalid",
-                                "t_ctrl_araddr",
-                                "t_ctrl_arvalid",
                                 "t_ctrl_rresp",
-                                "t_ctrl_awaddr",
+                                "t_ctrl_bvalid",
+                                "t_ctrl_awprot",
+                                "t_ctrl_awvalid",
+                                "t_ctrl_arvalid",
                                 "t_ctrl_arprot",
-                                "t_ctrl_awprot"
+                                "t_ctrl_araddr",
+                                "t_ctrl_awaddr"
                             ]
                         }
                     }
                 ]
             },
-            "busint-portgroup_0-mapping_3-prefix_t_ctrl-master-AXI4-Lite_rtl": {
+            "busint-portgroup_1-mapping_3-prefix_t_ctrl-master-AXI4-Lite_rtl": {
                 "name": "t_ctrl",
                 "interfaceMode": "master",
                 "busType": {
@@ -277,30 +590,30 @@
                         "portMaps": {
                             "ARVALID": "t_ctrl_rvalid",
                             "RVALID": "t_ctrl_arvalid",
-                            "RREADY": "t_ctrl_arready",
                             "ARREADY": "t_ctrl_rready",
-                            "WVALID": "t_ctrl_bvalid",
-                            "BVALID": "t_ctrl_wvalid",
+                            "RREADY": "t_ctrl_arready",
                             "WREADY": "t_ctrl_bready",
+                            "BVALID": "t_ctrl_wvalid",
                             "BREADY": "t_ctrl_wready",
+                            "WVALID": "t_ctrl_bvalid",
                             "WDATA": "t_ctrl_rdata",
                             "AWADDR": "t_ctrl_awready",
                             "WSTRB": "t_ctrl_bresp",
                             "ACLK": "t_ctrl_awvalid",
                             "__UMAP__": [
-                                "t_ctrl_araddr",
                                 "t_ctrl_wstrb",
                                 "t_ctrl_rresp",
                                 "t_ctrl_awprot",
-                                "t_ctrl_awaddr",
                                 "t_ctrl_arprot",
+                                "t_ctrl_araddr",
+                                "t_ctrl_awaddr",
                                 "t_ctrl_wdata"
                             ]
                         }
                     }
                 ]
             },
-            "busint-portgroup_0-mapping_4-prefix_t_ctrl-slave-AXI4Stream_rtl": {
+            "busint-portgroup_1-mapping_4-prefix_t_ctrl-slave-AXI4Stream_rtl": {
                 "name": "t_ctrl",
                 "interfaceMode": "slave",
                 "busType": {
@@ -317,30 +630,30 @@
                             "TREADY": "t_ctrl_wready",
                             "TSTRB": "t_ctrl_wstrb",
                             "TDATA": "t_ctrl_wdata",
-                            "TID": "t_ctrl_awvalid",
-                            "ACLK": "t_ctrl_arvalid",
+                            "TID": "t_ctrl_arvalid",
+                            "ACLK": "t_ctrl_awvalid",
                             "TLAST": "t_ctrl_awaddr",
                             "TUSER": [
-                                "t_ctrl_araddr",
-                                "t_ctrl_rready",
                                 "t_ctrl_bready",
+                                "t_ctrl_rready",
+                                "t_ctrl_awprot",
                                 "t_ctrl_arprot",
-                                "t_ctrl_awprot"
+                                "t_ctrl_araddr"
                             ],
                             "__UMAP__": [
-                                "t_ctrl_awready",
+                                "t_ctrl_arready",
                                 "t_ctrl_rvalid",
+                                "t_ctrl_rresp",
                                 "t_ctrl_bvalid",
                                 "t_ctrl_bresp",
-                                "t_ctrl_rresp",
-                                "t_ctrl_arready",
-                                "t_ctrl_rdata"
+                                "t_ctrl_rdata",
+                                "t_ctrl_awready"
                             ]
                         }
                     }
                 ]
             },
-            "busint-portgroup_0-mapping_5-prefix_t_ctrl-slave-DPRAM_rtl": {
+            "busint-portgroup_1-mapping_5-prefix_t_ctrl-slave-DPRAM_rtl": {
                 "name": "t_ctrl",
                 "interfaceMode": "slave",
                 "busType": {
@@ -361,24 +674,24 @@
                             "RDEN": "t_ctrl_rready",
                             "BEN": "t_ctrl_bready",
                             "__UMAP__": [
-                                "t_ctrl_awready",
-                                "t_ctrl_rvalid",
-                                "t_ctrl_arvalid",
-                                "t_ctrl_bvalid",
-                                "t_ctrl_wstrb",
-                                "t_ctrl_awvalid",
-                                "t_ctrl_bresp",
-                                "t_ctrl_rresp",
-                                "t_ctrl_wvalid",
                                 "t_ctrl_wready",
+                                "t_ctrl_wstrb",
+                                "t_ctrl_rvalid",
+                                "t_ctrl_rresp",
+                                "t_ctrl_awprot",
+                                "t_ctrl_bvalid",
+                                "t_ctrl_awvalid",
+                                "t_ctrl_wvalid",
+                                "t_ctrl_bresp",
+                                "t_ctrl_arvalid",
                                 "t_ctrl_arprot",
-                                "t_ctrl_awprot"
+                                "t_ctrl_awready"
                             ]
                         }
                     }
                 ]
             },
-            "busint-portgroup_0-mapping_6-prefix_t_ctrl-master-AXI4_rtl": {
+            "busint-portgroup_1-mapping_6-prefix_t_ctrl-master-AXI4_rtl": {
                 "name": "t_ctrl",
                 "interfaceMode": "master",
                 "busType": {
@@ -393,32 +706,32 @@
                         "portMaps": {
                             "ARVALID": "t_ctrl_rvalid",
                             "RVALID": "t_ctrl_arvalid",
-                            "RREADY": "t_ctrl_arready",
                             "ARREADY": "t_ctrl_rready",
-                            "WVALID": "t_ctrl_bvalid",
-                            "BVALID": "t_ctrl_wvalid",
+                            "RREADY": "t_ctrl_arready",
                             "WREADY": "t_ctrl_bready",
+                            "BVALID": "t_ctrl_wvalid",
                             "BREADY": "t_ctrl_wready",
-                            "RDATA": "t_ctrl_wdata",
+                            "WVALID": "t_ctrl_bvalid",
                             "WDATA": "t_ctrl_rdata",
+                            "RDATA": "t_ctrl_wdata",
                             "AWUSER": [
                                 "t_ctrl_awready"
                             ],
                             "__UMAP__": [
-                                "t_ctrl_araddr",
-                                "t_ctrl_awvalid",
                                 "t_ctrl_wstrb",
-                                "t_ctrl_bresp",
                                 "t_ctrl_rresp",
-                                "t_ctrl_awaddr",
+                                "t_ctrl_awprot",
+                                "t_ctrl_awvalid",
+                                "t_ctrl_bresp",
                                 "t_ctrl_arprot",
-                                "t_ctrl_awprot"
+                                "t_ctrl_araddr",
+                                "t_ctrl_awaddr"
                             ]
                         }
                     }
                 ]
             },
-            "busint-portgroup_0-mapping_7-prefix_t_ctrl-slave-SPRAM_rtl": {
+            "busint-portgroup_1-mapping_7-prefix_t_ctrl-slave-SPRAM_rtl": {
                 "name": "t_ctrl",
                 "interfaceMode": "slave",
                 "busType": {
@@ -437,20 +750,20 @@
                             "BEN": "t_ctrl_bready",
                             "CLK": "t_ctrl_wvalid",
                             "__UMAP__": [
-                                "t_ctrl_awready",
-                                "t_ctrl_rvalid",
-                                "t_ctrl_arvalid",
-                                "t_ctrl_bvalid",
-                                "t_ctrl_rready",
+                                "t_ctrl_arready",
+                                "t_ctrl_wready",
                                 "t_ctrl_wstrb",
+                                "t_ctrl_rvalid",
+                                "t_ctrl_rready",
+                                "t_ctrl_rresp",
+                                "t_ctrl_awprot",
+                                "t_ctrl_bvalid",
                                 "t_ctrl_awvalid",
                                 "t_ctrl_bresp",
-                                "t_ctrl_rresp",
-                                "t_ctrl_arready",
-                                "t_ctrl_awaddr",
-                                "t_ctrl_wready",
+                                "t_ctrl_arvalid",
                                 "t_ctrl_arprot",
-                                "t_ctrl_awprot"
+                                "t_ctrl_awaddr",
+                                "t_ctrl_awready"
                             ]
                         }
                     }
@@ -460,6 +773,15 @@
         "busMappedPortGroups": [
             [
                 "portgroup_0",
+                [
+                    ["num_ports", 19],
+                    ["prefix", "t_sideband_"],
+                    ["num-direction-mismatch", 0],
+                    ["num-width-mismatch", 0]
+                ]
+            ],
+            [
+                "portgroup_1",
                 [
                     ["num_ports", 19],
                     ["prefix", "t_ctrl_"],

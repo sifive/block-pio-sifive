@@ -30,6 +30,34 @@ module pio #(
     input                         t_ctrl_rready,
     output logic  [dataWidth-1:0] t_ctrl_rdata,
     output logic            [1:0] t_ctrl_rresp,
+
+
+    // AXI4-Lite
+    // AW
+    input                         t_sideband_awvalid,
+    output logic                  t_sideband_awready,
+    input         [addrWidth-1:0] t_sideband_awaddr,
+    input                   [2:0] t_sideband_awprot, // ignored
+    // W
+    input                         t_sideband_wvalid,
+    output logic                  t_sideband_wready,
+    input         [dataWidth-1:0] t_sideband_wdata,
+    input  [writeStrobeWidth-1:0] t_sideband_wstrb,
+    // B
+    output logic                  t_sideband_bvalid,
+    input                         t_sideband_bready,
+    output logic            [1:0] t_sideband_bresp,
+    // AR
+    input                         t_sideband_arvalid,
+    output logic                  t_sideband_arready,
+    input         [addrWidth-1:0] t_sideband_araddr,
+    input                   [2:0] t_sideband_arprot,
+    // R
+    output logic                  t_sideband_rvalid,
+    input                         t_sideband_rready,
+    output logic  [dataWidth-1:0] t_sideband_rdata,
+    output logic            [1:0] t_sideband_rresp,
+
     // Interrupts
     output logic                  irq0,
     output logic                  irq1,
