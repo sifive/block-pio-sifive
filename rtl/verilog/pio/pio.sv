@@ -7,67 +7,95 @@ module pio #(
 ) (
     // AXI4-Lite
     // AW
-    input                         t_ctrl_awvalid,
-    output logic                  t_ctrl_awready,
-    input         [addrWidth-1:0] t_ctrl_awaddr,
-    input                   [2:0] t_ctrl_awprot, // ignored
+    input                        t_ctrl_awvalid,
+    output logic                 t_ctrl_awready,
+    input [addrWidth-1:0]        t_ctrl_awaddr,
+    input [2:0]                  t_ctrl_awprot, // ignored
     // W
-    input                         t_ctrl_wvalid,
-    output logic                  t_ctrl_wready,
-    input         [dataWidth-1:0] t_ctrl_wdata,
-    input  [writeStrobeWidth-1:0] t_ctrl_wstrb,
+    input                        t_ctrl_wvalid,
+    output logic                 t_ctrl_wready,
+    input [dataWidth-1:0]        t_ctrl_wdata,
+    input [writeStrobeWidth-1:0] t_ctrl_wstrb,
     // B
-    output logic                  t_ctrl_bvalid,
-    input                         t_ctrl_bready,
-    output logic            [1:0] t_ctrl_bresp,
+    output logic                 t_ctrl_bvalid,
+    input                        t_ctrl_bready,
+    output logic [1:0]           t_ctrl_bresp,
     // AR
-    input                         t_ctrl_arvalid,
-    output logic                  t_ctrl_arready,
-    input         [addrWidth-1:0] t_ctrl_araddr,
-    input                   [2:0] t_ctrl_arprot,
+    input                        t_ctrl_arvalid,
+    output logic                 t_ctrl_arready,
+    input [addrWidth-1:0]        t_ctrl_araddr,
+    input [2:0]                  t_ctrl_arprot,
     // R
-    output logic                  t_ctrl_rvalid,
-    input                         t_ctrl_rready,
-    output logic  [dataWidth-1:0] t_ctrl_rdata,
-    output logic            [1:0] t_ctrl_rresp,
+    output logic                 t_ctrl_rvalid,
+    input                        t_ctrl_rready,
+    output logic [dataWidth-1:0] t_ctrl_rdata,
+    output logic [1:0]           t_ctrl_rresp,
 
 
     // AXI4-Lite
     // AW
-    input                         t_sideband_awvalid,
-    output logic                  t_sideband_awready,
-    input         [addrWidth-1:0] t_sideband_awaddr,
-    input                   [2:0] t_sideband_awprot, // ignored
+    input                        t_sideband_awvalid,
+    output logic                 t_sideband_awready,
+    input [addrWidth-1:0]        t_sideband_awaddr,
+    input [2:0]                  t_sideband_awprot, // ignored
     // W
-    input                         t_sideband_wvalid,
-    output logic                  t_sideband_wready,
-    input         [dataWidth-1:0] t_sideband_wdata,
-    input  [writeStrobeWidth-1:0] t_sideband_wstrb,
+    input                        t_sideband_wvalid,
+    output logic                 t_sideband_wready,
+    input [dataWidth-1:0]        t_sideband_wdata,
+    input [writeStrobeWidth-1:0] t_sideband_wstrb,
     // B
-    output logic                  t_sideband_bvalid,
-    input                         t_sideband_bready,
-    output logic            [1:0] t_sideband_bresp,
+    output logic                 t_sideband_bvalid,
+    input                        t_sideband_bready,
+    output logic [1:0]           t_sideband_bresp,
     // AR
-    input                         t_sideband_arvalid,
-    output logic                  t_sideband_arready,
-    input         [addrWidth-1:0] t_sideband_araddr,
-    input                   [2:0] t_sideband_arprot,
+    input                        t_sideband_arvalid,
+    output logic                 t_sideband_arready,
+    input [addrWidth-1:0]        t_sideband_araddr,
+    input [2:0]                  t_sideband_arprot,
     // R
-    output logic                  t_sideband_rvalid,
-    input                         t_sideband_rready,
-    output logic  [dataWidth-1:0] t_sideband_rdata,
-    output logic            [1:0] t_sideband_rresp,
+    output logic                 t_sideband_rvalid,
+    input                        t_sideband_rready,
+    output logic [dataWidth-1:0] t_sideband_rdata,
+    output logic [1:0]           t_sideband_rresp,
+
+
+   // AXI4-Lite
+    // AW
+    input                        t_mem_awvalid,
+    output logic                 t_mem_awready,
+    input [addrWidth-1:0]        t_mem_awaddr,
+    input [2:0]                  t_mem_awprot, // ignored
+    // W
+    input                        t_mem_wvalid,
+    output logic                 t_mem_wready,
+    input [dataWidth-1:0]        t_mem_wdata,
+    input [writeStrobeWidth-1:0] t_mem_wstrb,
+    // B
+    output logic                 t_mem_bvalid,
+    input                        t_mem_bready,
+    output logic [1:0]           t_mem_bresp,
+    // AR
+    input                        t_mem_arvalid,
+    output logic                 t_mem_arready,
+    input [addrWidth-1:0]        t_mem_araddr,
+    input [2:0]                  t_mem_arprot,
+    // R
+    output logic                 t_mem_rvalid,
+    input                        t_mem_rready,
+    output logic [dataWidth-1:0] t_mem_rdata,
+    output logic [1:0]           t_mem_rresp,
+
 
     // Interrupts
-    output logic                  irq0,
-    output logic                  irq1,
+    output logic                 irq0,
+    output logic                 irq1,
     // IO pins
-    output logic   [pioWidth-1:0] odata,
-    output logic   [pioWidth-1:0] oenable,
-    input          [pioWidth-1:0] idata,
+    output logic [pioWidth-1:0]  odata,
+    output logic [pioWidth-1:0]  oenable,
+    input [pioWidth-1:0]         idata,
     // system
-    input clk,
-    input reset_n
+    input                        clk,
+    input                        reset_n
 );
 
 

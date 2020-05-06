@@ -6,78 +6,142 @@
         "version": "0.1.0",
         "busInterfaces": [
             {"$ref": "#/definitions/busDefinitions/busint-portgroup_0-mapping_0-prefix_t_sideband-slave-AXI4-Lite_rtl"},
-            {"$ref": "#/definitions/busDefinitions/busint-portgroup_1-mapping_0-prefix_t_ctrl-slave-AXI4-Lite_rtl"}
+            {"$ref": "#/definitions/busDefinitions/busint-portgroup_1-mapping_0-prefix_t_ctrl-slave-AXI4-Lite_rtl"},
+            {"$ref": "#/definitions/busDefinitions/busint-portgroup_2-mapping_0-prefix_t_mem-slave-AXI4-Lite_rtl"}
         ],
         "addressSpaces": [],
         "memoryMaps": [
-        {
-      name: 'CSR',
-      addressBlocks: [
-      {
-        name: 'csrAddressBlock0',
-        baseAddress: 0,
-        range: 512, width: 32,
-        usage: 'register',
-        volatile: false, access: 'read-write',
-        registers: [{
-            name: 'ODATA',
-            addressOffset: 0, size: 32,
-            displayName: 'Output Data Register',
-            fields: [{name: 'data', bitWidth: 32, bitOffset: 0}]
-        }, {
-            name: 'OENABLE', addressOffset: 4, size: 32,
-            displayName: 'Data direction',
-            description: 'determines whether the pin is an input or an output. If the data direction bit is a 1, then the pin is an input',
-            fields: [{name: 'data', bitWidth: 32, bitOffset: 0}]
-        }, {
-            name: 'IDATA', addressOffset: 8, size: 32,
-            displayName: 'Input data',
-            description: 'read the port pins',
-            fields: [{name: 'data', bitWidth: 32, bitOffset: 0}]
-        }]
-    },
-    { name: 'csrAddressBlock1',
-    baseAddress: 512 , range: 512, width: 32,
-    usage: 'register',
-    volatile: false,
-    access: 'read-write',
-    registers: [ {
-    name: 'FOO',
-    addressOffset: 0, size: 32,
-    displayName: 'My Foo Register',
-    fields: [{name: 'foo', bitWidth: 5, bitOffset: 0}]
-    }]}
-    
-]
-}, 
-{
-      name: 'NoRegistersHere',
-      addressBlocks: [
-      {
-        name: 'NoRegs',
-        baseAddress: 0,
-        range: 2096, width: 32,
-        usage: 'memory',
-        volatile: false, access: 'read-write',
-        registers: []
-    }]},
-{
-      name: 'MEGAWATTS',
-      addressBlocks: [
-      {
-        name: 'MegaRegs',
-        baseAddress: 128,
-        range: 512, width: 32,
-        usage: 'register',
-        volatile: false, access: 'read-write',
-        registers: [{
-            name: 'SOMETHING',
-            addressOffset: 0, size: 32,
-            displayName: 'A Register with two fields',
-            fields: [{name: 'data', bitWidth: 16, bitOffset: 0}, {name: 'control', bitWidth: 16, bitOffset:16}]
-        }]
-    }]}
-],
+            {
+                "name": "CSR",
+                "addressBlocks": [
+                    {
+                        "name": "csrAddressBlock0",
+                        "baseAddress": 0,
+                        "range": 512,
+                        "width": 32,
+                        "usage": "register",
+                        "volatile": false,
+                        "access": "read-write",
+                        "registers": [
+                            {
+                                "name": "ODATA",
+                                "addressOffset": 0,
+                                "size": 32,
+                                "displayName": "Output Data Register",
+                                "fields": [
+                                    {
+                                        "name": "data",
+                                        "bitWidth": 32,
+                                        "bitOffset": 0
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "OENABLE",
+                                "addressOffset": 4,
+                                "size": 32,
+                                "displayName": "Data direction",
+                                "description": "determines whether the pin is an input or an output. If the data direction bit is a 1, then the pin is an input",
+                                "fields": [
+                                    {
+                                        "name": "data",
+                                        "bitWidth": 32,
+                                        "bitOffset": 0
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "IDATA",
+                                "addressOffset": 8,
+                                "size": 32,
+                                "displayName": "Input data",
+                                "description": "read the port pins",
+                                "fields": [
+                                    {
+                                        "name": "data",
+                                        "bitWidth": 32,
+                                        "bitOffset": 0
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "name": "csrAddressBlock1",
+                        "baseAddress": 512,
+                        "range": 512,
+                        "width": 32,
+                        "usage": "register",
+                        "volatile": false,
+                        "access": "read-write",
+                        "registers": [
+                            {
+                                "name": "FOO",
+                                "addressOffset": 0,
+                                "size": 32,
+                                "displayName": "My Foo Register",
+                                "fields": [
+                                    {
+                                        "name": "foo",
+                                        "bitWidth": 5,
+                                        "bitOffset": 0
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "name": "JustMemoryNoRegisters",
+                        "addressBlocks": [
+                            {
+                                "name": "NoRegistersAddressBlock",
+                                "baseAddress": 0,
+                                "range": 2096,
+                                "width": 32,
+                                "usage": "memory",
+                                "volatile": false,
+                                "access": "read-write",
+                                "registers": []
+                            }
+                        ]
+                    },
+                    {
+                        "name": "SIDEBAND_CSR",
+                        "addressBlocks": [
+                            {
+                                "name": "SidebandCSRAddressBlock",
+                                "baseAddress": 128,
+                                "range": 512,
+                                "width": 32,
+                                "usage": "register",
+                                "volatile": false,
+                                "access": "read-write",
+                                "registers": [
+                                    {
+                                        "name": "SomeRegister",
+                                        "addressOffset": 0,
+                                        "size": 32,
+                                        "displayName": "A Register with two fields",
+                                        "fields": [
+                                            {
+                                                "name": "data",
+                                                "bitWidth": 16,
+                                                "bitOffset": 0
+                                            },
+                                            {
+                                                "name": "control",
+                                                "bitWidth": 16,
+                                                "bitOffset": 16
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
         "model": {
             "views": [],
             "ports": {
@@ -104,7 +168,14 @@
             {"$ref": "#/definitions/busDefinitions/busint-portgroup_1-mapping_4-prefix_t_ctrl-slave-AXI4Stream_rtl"},
             {"$ref": "#/definitions/busDefinitions/busint-portgroup_1-mapping_5-prefix_t_ctrl-slave-DPRAM_rtl"},
             {"$ref": "#/definitions/busDefinitions/busint-portgroup_1-mapping_6-prefix_t_ctrl-master-AXI4_rtl"},
-            {"$ref": "#/definitions/busDefinitions/busint-portgroup_1-mapping_7-prefix_t_ctrl-slave-SPRAM_rtl"}
+            {"$ref": "#/definitions/busDefinitions/busint-portgroup_1-mapping_7-prefix_t_ctrl-slave-SPRAM_rtl"},
+            {"$ref": "#/definitions/busDefinitions/busint-portgroup_2-mapping_1-prefix_t_mem-slave-AXI4_rtl"},
+            {"$ref": "#/definitions/busDefinitions/busint-portgroup_2-mapping_2-prefix_t_mem-master-AXI4-Lite_rtl"},
+            {"$ref": "#/definitions/busDefinitions/busint-portgroup_2-mapping_3-prefix_t_mem-slave-AXI4Stream_rtl"},
+            {"$ref": "#/definitions/busDefinitions/busint-portgroup_2-mapping_4-prefix_t_mem-slave-DPRAM_rtl"},
+            {"$ref": "#/definitions/busDefinitions/busint-portgroup_2-mapping_5-prefix_t_mem-slave-SPRAM_rtl"},
+            {"$ref": "#/definitions/busDefinitions/busint-portgroup_2-mapping_6-prefix_t_mem-master-AHBLite_rtl"},
+            {"$ref": "#/definitions/busDefinitions/busint-portgroup_2-mapping_7-prefix_t_mem-master-AXI4_rtl"}
         ]
     },
     "definitions": {
@@ -147,6 +218,25 @@
             "t_sideband_rready": 1,
             "t_sideband_rdata": "-(dataWidth)",
             "t_sideband_rresp": -2,
+            "t_mem_awvalid": 1,
+            "t_mem_awready": -1,
+            "t_mem_awaddr": "addrWidth",
+            "t_mem_awprot": 3,
+            "t_mem_wvalid": 1,
+            "t_mem_wready": -1,
+            "t_mem_wdata": "dataWidth",
+            "t_mem_wstrb": "writeStrobeWidth",
+            "t_mem_bvalid": -1,
+            "t_mem_bready": 1,
+            "t_mem_bresp": -2,
+            "t_mem_arvalid": 1,
+            "t_mem_arready": -1,
+            "t_mem_araddr": "addrWidth",
+            "t_mem_arprot": 3,
+            "t_mem_rvalid": -1,
+            "t_mem_rready": 1,
+            "t_mem_rdata": "-(dataWidth)",
+            "t_mem_rresp": -2,
             "irq0": -1,
             "irq1": -1,
             "odata": "-(pioWidth)",
@@ -155,11 +245,12 @@
             "clk": 1,
             "reset_n": 1
         },
-        "pg_cnt": 2,
+        "pg_cnt": 3,
         "busDefinitions": {
             "busint-portgroup_0-mapping_0-prefix_t_sideband-slave-AXI4-Lite_rtl": {
                 "name": "t_sideband",
                 "interfaceMode": "slave",
+                "memoryMapRef": "SIDEBAND_CSR",
                 "busType": {
                     "vendor": "amba.com",
                     "library": "AMBA4",
@@ -466,6 +557,7 @@
             "busint-portgroup_1-mapping_0-prefix_t_ctrl-slave-AXI4-Lite_rtl": {
                 "name": "t_ctrl",
                 "interfaceMode": "slave",
+                "memoryMapRef": "CSR",
                 "busType": {
                     "vendor": "amba.com",
                     "library": "AMBA4",
@@ -768,23 +860,364 @@
                         }
                     }
                 ]
+            },
+            "busint-portgroup_2-mapping_0-prefix_t_mem-slave-AXI4-Lite_rtl": {
+                "name": "t_mem",
+                "interfaceMode": "slave",
+                "memoryMapRef": "JustMemoryNoRegisters"
+                "busType": {
+                    "vendor": "amba.com",
+                    "library": "AMBA4",
+                    "name": "AXI4-Lite",
+                    "version": "r0p0_0"
+                },
+                "abstractionTypes": [
+                    {
+                        "viewRef": "RTLview",
+                        "portMaps": {
+                            "ACLK": "clk",
+                            "ARESETn": "reset_n",
+
+                            "BREADY": "t_mem_bready",
+                            "RDATA": "t_mem_rdata",
+                            "AWADDR": "t_mem_awaddr",
+                            "ARREADY": "t_mem_arready",
+                            "ARPROT": "t_mem_arprot",
+                            "ARADDR": "t_mem_araddr",
+                            "WSTRB": "t_mem_wstrb",
+                            "RVALID": "t_mem_rvalid",
+                            "WVALID": "t_mem_wvalid",
+                            "AWVALID": "t_mem_awvalid",
+                            "AWREADY": "t_mem_awready",
+                            "ARVALID": "t_mem_arvalid",
+                            "WDATA": "t_mem_wdata",
+                            "AWPROT": "t_mem_awprot",
+                            "RRESP": "t_mem_rresp",
+                            "WREADY": "t_mem_wready",
+                            "BRESP": "t_mem_bresp",
+                            "BVALID": "t_mem_bvalid",
+                            "RREADY": "t_mem_rready"
+                        }
+                    }
+                ]
+            },
+            "busint-portgroup_2-mapping_1-prefix_t_mem-slave-AXI4_rtl": {
+                "name": "t_mem",
+                "interfaceMode": "slave",
+                "busType": {
+                    "vendor": "amba.com",
+                    "library": "AMBA4",
+                    "name": "AXI4",
+                    "version": "r0p0_0"
+                },
+                "abstractionTypes": [
+                    {
+                        "viewRef": "RTLview",
+                        "portMaps": {
+                            "BREADY": "t_mem_bready",
+                            "RDATA": "t_mem_rdata",
+                            "AWADDR": "t_mem_awaddr",
+                            "ARREADY": "t_mem_arready",
+                            "ARPROT": "t_mem_arprot",
+                            "ARADDR": "t_mem_araddr",
+                            "WSTRB": "t_mem_wstrb",
+                            "RVALID": "t_mem_rvalid",
+                            "WVALID": "t_mem_wvalid",
+                            "AWVALID": "t_mem_awvalid",
+                            "AWREADY": "t_mem_awready",
+                            "ARVALID": "t_mem_arvalid",
+                            "WDATA": "t_mem_wdata",
+                            "AWPROT": "t_mem_awprot",
+                            "RRESP": "t_mem_rresp",
+                            "WREADY": "t_mem_wready",
+                            "BRESP": "t_mem_bresp",
+                            "BVALID": "t_mem_bvalid",
+                            "RREADY": "t_mem_rready"
+                        }
+                    }
+                ]
+            },
+            "busint-portgroup_2-mapping_2-prefix_t_mem-master-AXI4-Lite_rtl": {
+                "name": "t_mem",
+                "interfaceMode": "master",
+                "busType": {
+                    "vendor": "amba.com",
+                    "library": "AMBA4",
+                    "name": "AXI4-Lite",
+                    "version": "r0p0_0"
+                },
+                "abstractionTypes": [
+                    {
+                        "viewRef": "RTLview",
+                        "portMaps": {
+                            "ARVALID": "t_mem_rvalid",
+                            "RVALID": "t_mem_arvalid",
+                            "RREADY": "t_mem_arready",
+                            "ARREADY": "t_mem_rready",
+                            "WREADY": "t_mem_bready",
+                            "BVALID": "t_mem_wvalid",
+                            "BREADY": "t_mem_wready",
+                            "WVALID": "t_mem_bvalid",
+                            "WDATA": "t_mem_rdata",
+                            "AWADDR": "t_mem_awready",
+                            "BRESP": "t_mem_wstrb",
+                            "WSTRB": "t_mem_bresp",
+                            "RDATA": "t_mem_arprot",
+                            "ACLK": "t_mem_awvalid",
+                            "RRESP": "t_mem_awprot",
+                            "__UMAP__": [
+                                "t_mem_awaddr",
+                                "t_mem_wdata",
+                                "t_mem_rresp",
+                                "t_mem_araddr"
+                            ]
+                        }
+                    }
+                ]
+            },
+            "busint-portgroup_2-mapping_3-prefix_t_mem-slave-AXI4Stream_rtl": {
+                "name": "t_mem",
+                "interfaceMode": "slave",
+                "busType": {
+                    "vendor": "amba.com",
+                    "library": "AMBA4",
+                    "name": "AXI4Stream",
+                    "version": "r0p0_1"
+                },
+                "abstractionTypes": [
+                    {
+                        "viewRef": "RTLview",
+                        "portMaps": {
+                            "TVALID": "t_mem_wvalid",
+                            "TREADY": "t_mem_wready",
+                            "TSTRB": "t_mem_wstrb",
+                            "TDATA": "t_mem_wdata",
+                            "TID": "t_mem_awvalid",
+                            "TKEEP": "t_mem_arprot",
+                            "TDEST": "t_mem_rready",
+                            "ACLK": "t_mem_arvalid",
+                            "TUSER": [
+                                "t_mem_bready",
+                                "t_mem_awaddr",
+                                "t_mem_awprot",
+                                "t_mem_araddr"
+                            ],
+                            "__UMAP__": [
+                                "t_mem_awready",
+                                "t_mem_rdata",
+                                "t_mem_arready",
+                                "t_mem_rresp",
+                                "t_mem_bresp",
+                                "t_mem_rvalid",
+                                "t_mem_bvalid"
+                            ]
+                        }
+                    }
+                ]
+            },
+            "busint-portgroup_2-mapping_4-prefix_t_mem-slave-DPRAM_rtl": {
+                "name": "t_mem",
+                "interfaceMode": "slave",
+                "busType": {
+                    "vendor": "sifive.com",
+                    "library": "MEM",
+                    "name": "DPRAM",
+                    "version": "0.1.0"
+                },
+                "abstractionTypes": [
+                    {
+                        "viewRef": "RTLview",
+                        "portMaps": {
+                            "RDDATA": "t_mem_rdata",
+                            "WRADDR": "t_mem_araddr",
+                            "WRDATA": "t_mem_wdata",
+                            "RDADDR": "t_mem_awaddr",
+                            "RDERR": "t_mem_arready",
+                            "RDEN": "t_mem_rready",
+                            "WREN": "t_mem_wstrb",
+                            "BEN": "t_mem_bready",
+                            "__UMAP__": [
+                                "t_mem_awready",
+                                "t_mem_arvalid",
+                                "t_mem_wvalid",
+                                "t_mem_rresp",
+                                "t_mem_awprot",
+                                "t_mem_arprot",
+                                "t_mem_wready",
+                                "t_mem_bresp",
+                                "t_mem_rvalid",
+                                "t_mem_awvalid",
+                                "t_mem_bvalid"
+                            ]
+                        }
+                    }
+                ]
+            },
+            "busint-portgroup_2-mapping_5-prefix_t_mem-slave-SPRAM_rtl": {
+                "name": "t_mem",
+                "interfaceMode": "slave",
+                "busType": {
+                    "vendor": "sifive.com",
+                    "library": "MEM",
+                    "name": "SPRAM",
+                    "version": "0.1.0"
+                },
+                "abstractionTypes": [
+                    {
+                        "viewRef": "RTLview",
+                        "portMaps": {
+                            "RDDATA": "t_mem_rdata",
+                            "ADDR": "t_mem_araddr",
+                            "WRDATA": "t_mem_wdata",
+                            "RDERR": "t_mem_arready",
+                            "RDEN": "t_mem_rready",
+                            "WREN": "t_mem_wstrb",
+                            "BEN": "t_mem_bready",
+                            "CLK": "t_mem_wvalid",
+                            "__UMAP__": [
+                                "t_mem_awready",
+                                "t_mem_arvalid",
+                                "t_mem_awaddr",
+                                "t_mem_rresp",
+                                "t_mem_awprot",
+                                "t_mem_arprot",
+                                "t_mem_wready",
+                                "t_mem_bresp",
+                                "t_mem_rvalid",
+                                "t_mem_bvalid",
+                                "t_mem_awvalid"
+                            ]
+                        }
+                    }
+                ]
+            },
+            "busint-portgroup_2-mapping_6-prefix_t_mem-master-AHBLite_rtl": {
+                "name": "t_mem",
+                "interfaceMode": "master",
+                "busType": {
+                    "vendor": "amba.com",
+                    "library": "AMBA3",
+                    "name": "AHBLite",
+                    "version": "r2p0_0"
+                },
+                "abstractionTypes": [
+                    {
+                        "viewRef": "RTLview",
+                        "portMaps": {
+                            "HREADY": "t_mem_rready",
+                            "HRDATA": "t_mem_wdata",
+                            "HADDR": "t_mem_arready",
+                            "HWRITE": "t_mem_wready",
+                            "HRESP": "t_mem_bready",
+                            "HWDATA": "t_mem_awready",
+                            "HPROT": "t_mem_rdata",
+                            "HCLK": "t_mem_wvalid",
+                            "HBURST": "t_mem_wstrb",
+                            "HSIZE": "t_mem_arprot",
+                            "__UMAP__": [
+                                "t_mem_arvalid",
+                                "t_mem_awaddr",
+                                "t_mem_rresp",
+                                "t_mem_awprot",
+                                "t_mem_rvalid",
+                                "t_mem_araddr",
+                                "t_mem_bresp",
+                                "t_mem_bvalid",
+                                "t_mem_awvalid"
+                            ]
+                        }
+                    }
+                ]
+            },
+            "busint-portgroup_2-mapping_7-prefix_t_mem-master-AXI4_rtl": {
+                "name": "t_mem",
+                "interfaceMode": "master",
+                "busType": {
+                    "vendor": "amba.com",
+                    "library": "AMBA4",
+                    "name": "AXI4",
+                    "version": "r0p0_0"
+                },
+                "abstractionTypes": [
+                    {
+                        "viewRef": "RTLview",
+                        "portMaps": {
+                            "ARVALID": "t_mem_rvalid",
+                            "RVALID": "t_mem_arvalid",
+                            "RREADY": "t_mem_arready",
+                            "ARREADY": "t_mem_rready",
+                            "WREADY": "t_mem_bready",
+                            "BVALID": "t_mem_wvalid",
+                            "BREADY": "t_mem_wready",
+                            "WVALID": "t_mem_bvalid",
+                            "WDATA": "t_mem_rdata",
+                            "RDATA": "t_mem_wdata",
+                            "AWUSER": [
+                                "t_mem_awready"
+                            ],
+                            "__UMAP__": [
+                                "t_mem_awaddr",
+                                "t_mem_rresp",
+                                "t_mem_arprot",
+                                "t_mem_awprot",
+                                "t_mem_araddr",
+                                "t_mem_wstrb",
+                                "t_mem_bresp",
+                                "t_mem_awvalid"
+                            ]
+                        }
+                    }
+                ]
             }
         },
         "busMappedPortGroups": [
             [
                 "portgroup_0",
                 [
-                    ["num_ports", 19],
-                    ["prefix", "t_sideband_"],
-                    ["num-direction-mismatch", 0],
-                    ["num-width-mismatch", 0]
+                    [
+                        "num_ports",
+                        19
+                    ],
+                    [
+                        "prefix",
+                        "t_sideband_"
+                    ],
+                    [
+                        "num-direction-mismatch",
+                        0
+                    ],
+                    [
+                        "num-width-mismatch",
+                        0
+                    ]
                 ]
             ],
             [
                 "portgroup_1",
                 [
+                    [
+                        "num_ports",
+                        19
+                    ],
+                    [
+                        "prefix",
+                        "t_ctrl_"
+                    ],
+                    [
+                        "num-direction-mismatch",
+                        0
+                    ],
+                    [
+                        "num-width-mismatch",
+                        0
+                    ]
+                ]
+            ],
+            [
+                "portgroup_0",
+                [
                     ["num_ports", 19],
-                    ["prefix", "t_ctrl_"],
+                    ["prefix", "t_mem_"],
                     ["num-direction-mismatch", 0],
                     ["num-width-mismatch", 0]
                 ]
