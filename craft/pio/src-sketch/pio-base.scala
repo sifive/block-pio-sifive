@@ -160,7 +160,8 @@ class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule {
           supportsWrite = TransferSizes(1, ((dataWidth) * 1 / 8)),
           supportsRead  = TransferSizes(1, ((dataWidth) * 1 / 8)),
           interleavedId = Some(0),
-          resources     = device.reg
+          // SKETCH: Need to put the correct memory map name here to distinguish
+          resources     = device.reg("SIDEBAND_CSR")
         )
       ),
       beatBytes = (dataWidth) / 8
@@ -176,7 +177,8 @@ class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule {
           supportsWrite = TransferSizes(1, ((dataWidth) * 1 / 8)),
           supportsRead  = TransferSizes(1, ((dataWidth) * 1 / 8)),
           interleavedId = Some(0),
-          resources     = device.reg
+          // SKETCH: Need to put the correct memory map name here to distinguish
+          resources     = device.reg("CSR")
         )
       ),
       beatBytes = (dataWidth) / 8
@@ -192,7 +194,8 @@ class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule {
           supportsWrite = TransferSizes(1, ((dataWidth) * 1 / 8)),
           supportsRead  = TransferSizes(1, ((dataWidth) * 1 / 8)),
           interleavedId = Some(0),
-          resources     = device.reg
+          // SKETCH: Need to put the correct memory map name here to distinguish
+          resources     = device.reg("JustMemoryNoRegisters")
         )
       ),
       beatBytes = (dataWidth) / 8
@@ -571,22 +574,40 @@ class NpioTopBase(val c: NpioTopParams)(implicit p: Parameters)
     }
   }
 
-  def omRegisterMaps = Seq(
-    OMRegister.convert(
+  //SKETCH: make this a map from MemoryMap name to register map
+  def omRegisterMaps: Map[String, Seq[OMRegMap]] = Map(
+    "CSR" ->
+      // SKETCH: use new method convertSeq instead of plain convert because AddressBlock returns a Seq
+      OMRegister.convertSeq(
+        // SKETCH: these come from the JSON addressBlock
+        RegFieldAddressBlock(AddressBlockInfo("csrAddressBlock0", baseAddress = 0, range=512, width=32), addBase=true),
+        // SKETCH: set this to true so that you don't have to add the offsets in the 0 -> lines below
+        addAddressOffset = true,
       0 -> RegFieldGroup("ODATA", None, padFields(
         0 -> RegField(32, Bool(), RegFieldDesc("data", "")))),
       4 -> RegFieldGroup("OENABLE", Some("""determines whether the pin is an input or an output. If the data direction bit is a 1, then the pin is an input"""), padFields(
         0 -> RegField(32, Bool(), RegFieldDesc("data", "")))),
       8 -> RegFieldGroup("IDATA", Some("""read the port pins"""), padFields(
-        0 -> RegField(32, Bool(), RegFieldDesc("data", ""))))),
-    OMRegister.convert(
+        0 -> RegField(32, Bool(), RegFieldDesc("data", "")))) ++ // SKETCH: note appending these within one single OMRegister.convert(...) call 
+    RegFieldAddressBlock(RegFieldAddressBlockInfo(name = "csrAddressBlock1",
+      baseAddress = 512, range = 512, width=32),
+      addAddressOffset = true,
       0 -> RegFieldGroup("FOO", None, padFields(
-        0 -> RegField(5, Bool(), RegFieldDesc("foo", ""))))),
-    OMRegister.convert(
-      ),
-    OMRegister.convert(
+        0 -> RegField(5, Bool(), RegFieldDesc("foo", ""))))
+    )),
+    //OMRegister.convert
+    // SKETCH: makes no sense to include empty register map
+    // OMRegister.convert(
+    //   ),
+    //SKETCH: note the second memory region mapping
+    "SIDEBAND_CSR" ->  OMRegister.convertSeq(
+      //SKETCH: adding the address block info
+        RegFieldAddresssBlock(AddressBlockInfo(name = "SidebandCSRAddressBlock",
+          addressOffset = 128 , range = 512 , width= 32),
+          addAddressOffset = true,
       0 -> RegFieldGroup("SomeRegister", None, padFields(
-        0 -> RegField(16, Bool(), RegFieldDesc("data", "")),16 -> RegField(16, Bool(), RegFieldDesc("control", ""))))))
+        0 -> RegField(16, Bool(), RegFieldDesc("data", "")),16 -> RegField(16, Bool(), RegFieldDesc("control", "")))))))
+  )
 
   def getOMMemoryRegions(resourceBindings: ResourceBindings): Seq[OMMemoryRegion] = {
     val name = imp.device.describe(resourceBindings).name
