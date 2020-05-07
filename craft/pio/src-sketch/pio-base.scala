@@ -580,7 +580,7 @@ class NpioTopBase(val c: NpioTopParams)(implicit p: Parameters)
       // SKETCH: use new method convertSeq instead of plain convert because AddressBlock returns a Seq
       OMRegister.convertSeq(
         // SKETCH: these come from the JSON addressBlock
-        RegFieldAddressBlock(AddressBlockInfo("csrAddressBlock0", baseAddress = 0, range=512, width=32), addBase=true),
+        RegFieldAddressBlock(AddressBlockInfo("csrAddressBlock0", baseAddress = 0, range=512, width=32),
         // SKETCH: set this to true so that you don't have to add the offsets in the 0 -> lines below
         addAddressOffset = true,
       0 -> RegFieldGroup("ODATA", None, padFields(
