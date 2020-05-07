@@ -575,6 +575,12 @@ class NpioTopBase(val c: NpioTopParams)(implicit p: Parameters)
   }
 
   //SKETCH: make this a map from MemoryMap name to register map
+  // SKETCH: note, we would be able to better avoid the "blowing up code size" issue if each
+  // addressBlock call was broken out into a separate def and then just assembled here.
+  // e.g.
+  // def csrAddressBlock0 = RegFieldAddressBlock(...)
+  // then
+  // OMRegister.convertSeq(csrAddressBlock0 ++ csrAddressBlock1)
   def omRegisterMaps: Map[String, Seq[OMRegMap]] = Map(
     "CSR" ->
       // SKETCH: use new method convertSeq instead of plain convert because AddressBlock returns a Seq
@@ -609,15 +615,27 @@ class NpioTopBase(val c: NpioTopParams)(implicit p: Parameters)
         0 -> RegField(16, Bool(), RegFieldDesc("data", "")),16 -> RegField(16, Bool(), RegFieldDesc("control", "")))))))
   )
 
+  //SKETCH: we should just put this code in the auto-generated class, right?
+  //SKETCH: user can still override it if they want
   def getOMMemoryRegions(resourceBindings: ResourceBindings): Seq[OMMemoryRegion] = {
     val name = imp.device.describe(resourceBindings).name
-    DiplomaticObjectModelAddressing.getOMMemoryRegions(name, resourceBindings, None)
+    val diplomaticRegions = DiplomaticObjectModelAddressing.getOMMemoryRegions(name, resourceBindings, None)
+      // associate register maps with memory regions in Object model
+    diplomaticRegions.map { case (memRegion) =>
+      val regMaps: Map[String, Seq[OMRegMap]] = omRegisterMaps
+      memRegion.copy(registerMap = omRegisterMaps.lift(memRegion.name))
+    }
+  }
+
   }
 
   def getOMInterrupts(resourceBindings: ResourceBindings): Seq[OMInterrupt] = {
     val name = imp.device.describe(resourceBindings).name
     DiplomaticObjectModelAddressing.describeGlobalInterrupts(name, resourceBindings)
   }
+
+
+
 
   def logicalTreeNode: LogicalTreeNode = new NpioTopLogicalTreeNode(this)
 
