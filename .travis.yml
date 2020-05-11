@@ -35,7 +35,7 @@ install:
       -v "$WIT_WORKSPACE:/mnt/workspace" \
       --workdir /mnt/workspace \
       "$WIT_DOCKER_IMAGE" \
-      bash -c "git config --global url.'https://github.com/'.insteadOf 'git@github.com:' && wit init /mnt/workspace -a /mnt/block-pio-sifive -a git@github.com:sifive/environment-blockci-sifive.git::0.4.0"
+      sh -c "git config --global url.'https://github.com/'.insteadOf 'git@github.com:' && wit init /mnt/workspace -a /mnt/block-pio-sifive -a git@github.com:sifive/environment-blockci-sifive.git::0.4.0"
 
 jobs:
   include:
