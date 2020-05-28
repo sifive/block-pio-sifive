@@ -52,13 +52,6 @@ class NpioTop(c: NpioTopParams)(implicit p: Parameters) extends NpioTopBase(c)(p
   val ioBridgeSink = BundleBridgeSink[pioBlackBoxIO]()
   ioBridgeSink := imp.ioBridgeSource
 
-  // associate register maps with memory regions in Object model
-  override def getOMMemoryRegions(resourceBindings: ResourceBindings) = {
-    super.getOMMemoryRegions(resourceBindings).zip(omRegisterMaps).map { case (memRegion, regmap) =>
-      memRegion.copy(registerMap = Some(regmap))
-    }
-  }
-
   // create a new ports for odata, oenable, and idata
   val ioBridgeSource = BundleBridgeSource(() => new NpioTopIO(c.blackbox.pioWidth))
 
@@ -112,7 +105,9 @@ object NpioTop {
 
 class WithpioTop extends Config(
   new WithpioTopBase(
-    ctrl_base = 0x60000L
+    sideband_base = 0x1000000000000L,
+    ctrl_base = 0x2000000000000L,
+    mem_base = 0x3000000000000L
   )
 
     // User code here
@@ -122,7 +117,9 @@ class WithpioTop extends Config(
 class WithpioTop2 extends Config((site, here, up) => {
   case BlockDescriptorKey =>
     val defaults = NpioTopParams.defaults(
+        sideband_base = 0x60000L,
         ctrl_base = 0x70000L,
+        mem_base = 0x80000L,
         cacheBlockBytes = site(CacheBlockBytes))
     BlockDescriptor(
       name = "pio",
