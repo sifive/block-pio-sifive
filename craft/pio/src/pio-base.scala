@@ -173,7 +173,7 @@ class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule {
           supportsWrite = TransferSizes(1, (dataWidth / 8)),
           supportsRead  = TransferSizes(1, (dataWidth / 8)),
           interleavedId = Some(0),
-          resources     = device.reg
+          resources     = device.reg("CSR")
         )
       ),
       beatBytes = dataWidth / 8
@@ -621,10 +621,12 @@ class NpioTopBase(val c: NpioTopParams)(implicit p: Parameters)
   def getOMMemoryRegions(resourceBindings: ResourceBindings): Seq[OMMemoryRegion] = {
     val name = imp.device.describe(resourceBindings).name
     val diplomaticRegions = DiplomaticObjectModelAddressing.getOMMemoryRegions(name, resourceBindings, None)
-      // associate register maps with memory regions in Object model
+    // associate register maps with memory regions in Object model
+    val regMaps: Map[String, OMRegisterMap] = omRegisterMaps
     diplomaticRegions.map { case (memRegion) =>
-      val regMaps: Map[String, OMRegisterMap] = omRegisterMaps
-      memRegion.copy(registerMap = omRegisterMaps.lift(memRegion.name))
+      val regMapOpt = omRegisterMaps.lift(memRegion.description)
+      memRegion.copy(registerMap = omRegisterMaps.lift(memRegion.description),
+        addressBlocks = regMapOpt.map{_.addressBlocks}.getOrElse(Nil))
     }
   }
 
