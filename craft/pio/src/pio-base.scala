@@ -31,7 +31,8 @@ import sifive.blocks.util.{NonBlockingEnqueue, NonBlockingDequeue}
 class pioBlackBoxIO(
   val addrWidth: Int,
   val dataWidth: Int,
-  val pioWidth: Int
+  val pioWidth: Int,
+  val writeStrobeWidth: Int
 ) extends Bundle {
   val t_ctrl_awvalid = Input(Bool())
   val t_ctrl_awready = Output(Bool())
@@ -40,7 +41,7 @@ class pioBlackBoxIO(
   val t_ctrl_wvalid = Input(Bool())
   val t_ctrl_wready = Output(Bool())
   val t_ctrl_wdata = Input(UInt((dataWidth).W))
-  val t_ctrl_wstrb = Input(UInt((dataWidth / 8).W))
+  val t_ctrl_wstrb = Input(UInt((writeStrobeWidth).W))
   val t_ctrl_bvalid = Output(Bool())
   val t_ctrl_bready = Input(Bool())
   val t_ctrl_bresp = Output(UInt((2).W))
@@ -50,7 +51,7 @@ class pioBlackBoxIO(
   val t_ctrl_arprot = Input(UInt((3).W))
   val t_ctrl_rvalid = Output(Bool())
   val t_ctrl_rready = Input(Bool())
-  val t_ctrl_rdata = Output(UInt((dataWidth).W))
+  val t_ctrl_rdata = Output(UInt(((dataWidth)).W))
   val t_ctrl_rresp = Output(UInt((2).W))
   val t_sideband_awvalid = Input(Bool())
   val t_sideband_awready = Output(Bool())
@@ -59,7 +60,7 @@ class pioBlackBoxIO(
   val t_sideband_wvalid = Input(Bool())
   val t_sideband_wready = Output(Bool())
   val t_sideband_wdata = Input(UInt((dataWidth).W))
-  val t_sideband_wstrb = Input(UInt((dataWidth/8).W))
+  val t_sideband_wstrb = Input(UInt((writeStrobeWidth).W))
   val t_sideband_bvalid = Output(Bool())
   val t_sideband_bready = Input(Bool())
   val t_sideband_bresp = Output(UInt((2).W))
@@ -78,7 +79,7 @@ class pioBlackBoxIO(
   val t_mem_wvalid = Input(Bool())
   val t_mem_wready = Output(Bool())
   val t_mem_wdata = Input(UInt((dataWidth).W))
-  val t_mem_wstrb = Input(UInt((dataWidth/8).W))
+  val t_mem_wstrb = Input(UInt((writeStrobeWidth).W))
   val t_mem_bvalid = Output(Bool())
   val t_mem_bready = Input(Bool())
   val t_mem_bresp = Output(UInt((2).W))
@@ -102,16 +103,19 @@ class pioBlackBoxIO(
 class pio(
   val addrWidth: Int,
   val dataWidth: Int,
-  val pioWidth: Int
+  val pioWidth: Int,
+  val writeStrobeWidth: Int
 ) extends BlackBox(Map(
   "addrWidth" -> core.IntParam(addrWidth),
   "dataWidth" -> core.IntParam(dataWidth),
-  "pioWidth" -> core.IntParam(pioWidth)
+  "pioWidth" -> core.IntParam(pioWidth),
+  "writeStrobeWidth" -> core.IntParam(writeStrobeWidth)
 )) with HasBlackBoxResource {
   val io = IO(new pioBlackBoxIO(
     addrWidth,
     dataWidth,
-    pioWidth
+    pioWidth,
+    writeStrobeWidth
   ))
 // setResource("top.v")
 }
@@ -120,9 +124,10 @@ case class pioParams(
   addrWidth: Int = 12,
   dataWidth: Int = 32,
   pioWidth: Int = 32,
-  ctrlParams: PctrlParams,
-  sidebandParams: PsidebandParams,
-  memParams: PmemParams,
+  writeStrobeWidth: Int = 4,
+  t_sidebandParams: Pt_sidebandParams,
+  t_ctrlParams: Pt_ctrlParams,
+  t_memParams: Pt_memParams,
   irqParams: PirqParams,
   cacheBlockBytes: Int
 )
@@ -146,17 +151,17 @@ class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule {
   val addrWidth = c.addrWidth
   val dataWidth = c.dataWidth
   val pioWidth = c.pioWidth
+  val writeStrobeWidth = c.writeStrobeWidth
 
-  val sidebandNode = AXI4SlaveNode(Seq(
+  val t_sidebandNode = AXI4SlaveNode(Seq(
     AXI4SlavePortParameters(
       slaves = Seq(
         AXI4SlaveParameters(
-          address       = List(AddressSet(c.sidebandParams.base, ((1L << addrWidth) - 1))),
-          executable    = c.sidebandParams.executable,
+          address       = List(AddressSet(c.t_sidebandParams.base, ((1L << addrWidth) - 1))),
+          executable    = c.t_sidebandParams.executable,
           supportsWrite = TransferSizes(1, ((dataWidth) * 1 / 8)),
           supportsRead  = TransferSizes(1, ((dataWidth) * 1 / 8)),
           interleavedId = Some(0),
-          // SKETCH: Need to put the correct memory map name here to distinguish
           resources     = device.reg("SIDEBAND_CSR")
         )
       ),
@@ -164,19 +169,19 @@ class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule {
     )
   ))
 
-  val ctrlNode = AXI4SlaveNode(Seq(
+  val t_ctrlNode = AXI4SlaveNode(Seq(
     AXI4SlavePortParameters(
       slaves = Seq(
         AXI4SlaveParameters(
-          address       = List(AddressSet(c.ctrlParams.base, ((1L << addrWidth) - 1))),
-          executable    = c.ctrlParams.executable,
-          supportsWrite = TransferSizes(1, (dataWidth / 8)),
-          supportsRead  = TransferSizes(1, (dataWidth / 8)),
+          address       = List(AddressSet(c.t_ctrlParams.base, ((1L << addrWidth) - 1))),
+          executable    = c.t_ctrlParams.executable,
+          supportsWrite = TransferSizes(1, ((dataWidth) * 1 / 8)),
+          supportsRead  = TransferSizes(1, ((dataWidth) * 1 / 8)),
           interleavedId = Some(0),
           resources     = device.reg("CSR")
         )
       ),
-      beatBytes = dataWidth / 8
+      beatBytes = (dataWidth) / 8
     )
   ))
 
@@ -185,16 +190,15 @@ class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule {
     resources = device.int
   ))
 
-  val memNode = AXI4SlaveNode(Seq(
+  val t_memNode = AXI4SlaveNode(Seq(
     AXI4SlavePortParameters(
       slaves = Seq(
         AXI4SlaveParameters(
-          address       = List(AddressSet(c.memParams.base, ((1L << addrWidth) - 1))),
-          executable    = c.memParams.executable,
+          address       = List(AddressSet(c.t_memParams.base, ((1L << addrWidth) - 1))),
+          executable    = c.t_memParams.executable,
           supportsWrite = TransferSizes(1, ((dataWidth) * 1 / 8)),
           supportsRead  = TransferSizes(1, ((dataWidth) * 1 / 8)),
           interleavedId = Some(0),
-          // SKETCH: Need to put the correct memory map name here to distinguish
           resources     = device.reg("JustMemoryNoRegisters")
         )
       ),
@@ -206,14 +210,16 @@ class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule {
   val ioBridgeSource = BundleBridgeSource(() => new pioBlackBoxIO(
     c.addrWidth,
     c.dataWidth,
-    c.pioWidth
+    c.pioWidth,
+    c.writeStrobeWidth
   ))
 
   class LpioBaseImp extends LazyRawModuleImp(this) {
     val blackbox = Module(new pio(
       c.addrWidth,
       c.dataWidth,
-      c.pioWidth
+      c.pioWidth,
+      c.writeStrobeWidth
     ))
     // interface wiring 2
 
@@ -287,165 +293,166 @@ class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule {
     blackbox.io.clk := ioBridgeSource.bundle.clk
     blackbox.io.reset_n := ioBridgeSource.bundle.reset_n
     // interface alias
-    val sideband0 = sidebandNode.in(0)._1
-    val ctrl0 = ctrlNode.in(0)._1
-    val mem0 = memNode.in(0)._1
+    val t_sideband0 = t_sidebandNode.in(0)._1
+    val t_ctrl0 = t_ctrlNode.in(0)._1
+    val t_mem0 = t_memNode.in(0)._1
     val irq0 = irqNode.out(0)._1
     // interface wiring
     // wiring for t_sideband of type AXI4-Lite
     // -> {"aw":{"valid":1,"ready":-1,"bits":{"id":"awIdWidth","addr":"awAddrWidth","len":8,"size":3,"burst":2,"lock":1,"cache":4,"prot":3,"qos":4,"region":4}},"w":{"valid":1,"ready":-1,"bits":{"data":"wDataWidth","strb":"wStrbWidth","last":1}},"b":{"valid":-1,"ready":1,"bits":{"id":"-bIdWidth","resp":-2}},"ar":{"valid":1,"ready":-1,"bits":{"id":"arIdWidth","addr":"addrWidth","len":8,"size":3,"burst":2,"lock":1,"cache":4,"prot":3,"qos":4,"region":4}},"r":{"valid":-1,"ready":1,"bits":{"id":"-rIdWidth","data":"-dataWidth","resp":-2,"last":-1}}}
     // aw
-    blackbox.io.t_sideband_awvalid := sideband0.aw.valid
-    sideband0.aw.ready := blackbox.io.t_sideband_awready
+    blackbox.io.t_sideband_awvalid := t_sideband0.aw.valid
+    t_sideband0.aw.ready := blackbox.io.t_sideband_awready
     // aw
     // AWID
-    blackbox.io.t_sideband_awaddr := sideband0.aw.bits.addr
+    blackbox.io.t_sideband_awaddr := t_sideband0.aw.bits.addr
     // AWLEN
     // AWSIZE
     // AWBURST
     // AWLOCK
     // AWCACHE
-    blackbox.io.t_sideband_awprot := sideband0.aw.bits.prot
+    blackbox.io.t_sideband_awprot := t_sideband0.aw.bits.prot
     // AWQOS
     // AWREGION
     // w
-    blackbox.io.t_sideband_wvalid := sideband0.w.valid
-    sideband0.w.ready := blackbox.io.t_sideband_wready
+    blackbox.io.t_sideband_wvalid := t_sideband0.w.valid
+    t_sideband0.w.ready := blackbox.io.t_sideband_wready
     // w
-    blackbox.io.t_sideband_wdata := sideband0.w.bits.data
-    blackbox.io.t_sideband_wstrb := sideband0.w.bits.strb
+    blackbox.io.t_sideband_wdata := t_sideband0.w.bits.data
+    blackbox.io.t_sideband_wstrb := t_sideband0.w.bits.strb
     // WLAST
     // b
-    sideband0.b.valid := blackbox.io.t_sideband_bvalid
-    blackbox.io.t_sideband_bready := sideband0.b.ready
+    t_sideband0.b.valid := blackbox.io.t_sideband_bvalid
+    blackbox.io.t_sideband_bready := t_sideband0.b.ready
     // b
-    sideband0.b.bits.id := 0.U // BID
-    sideband0.b.bits.resp := blackbox.io.t_sideband_bresp
+    t_sideband0.b.bits.id := 0.U // BID
+    t_sideband0.b.bits.resp := blackbox.io.t_sideband_bresp
     // ar
-    blackbox.io.t_sideband_arvalid := sideband0.ar.valid
-    sideband0.ar.ready := blackbox.io.t_sideband_arready
+    blackbox.io.t_sideband_arvalid := t_sideband0.ar.valid
+    t_sideband0.ar.ready := blackbox.io.t_sideband_arready
     // ar
     // ARID
-    blackbox.io.t_sideband_araddr := sideband0.ar.bits.addr
+    blackbox.io.t_sideband_araddr := t_sideband0.ar.bits.addr
     // ARLEN
     // ARSIZE
     // ARBURST
     // ARLOCK
     // ARCACHE
-    blackbox.io.t_sideband_arprot := sideband0.ar.bits.prot
+    blackbox.io.t_sideband_arprot := t_sideband0.ar.bits.prot
     // ARQOS
     // ARREGION
     // r
-    sideband0.r.valid := blackbox.io.t_sideband_rvalid
-    blackbox.io.t_sideband_rready := sideband0.r.ready
+    t_sideband0.r.valid := blackbox.io.t_sideband_rvalid
+    blackbox.io.t_sideband_rready := t_sideband0.r.ready
     // r
-    sideband0.r.bits.id := 0.U // RID
-    sideband0.r.bits.data := blackbox.io.t_sideband_rdata
-    sideband0.r.bits.resp := blackbox.io.t_sideband_rresp
-    sideband0.r.bits.last := true.B // RLAST    
+    t_sideband0.r.bits.id := 0.U // RID
+    t_sideband0.r.bits.data := blackbox.io.t_sideband_rdata
+    t_sideband0.r.bits.resp := blackbox.io.t_sideband_rresp
+    t_sideband0.r.bits.last := true.B // RLAST
 
-
-    // wiring for ctrl of type AXI4-Lite
-    // -> {"aw":{"valid":1,"ready":-1,"bits":{"id":"awIdWidth","addr":"awAddrWidth","len":8,"size":3,"burst":2,"lock":1,"cache":4,"prot":3,"qos":4}},"w":{"valid":1,"ready":-1,"bits":{"data":"wDataWidth","strb":"wStrbWidth","last":1}},"b":{"valid":-1,"ready":1,"bits":{"id":"-bIdWidth","resp":-2}},"ar":{"valid":1,"ready":-1,"bits":{"id":"arIdWidth","addr":"addrWidth","len":8,"size":3,"burst":2,"lock":1,"cache":4,"prot":3,"qos":4}},"r":{"valid":-1,"ready":1,"bits":{"id":"-rIdWidth","data":"-dataWidth","resp":-2,"last":-1}}}
+    // wiring for t_ctrl of type AXI4-Lite
+    // -> {"aw":{"valid":1,"ready":-1,"bits":{"id":"awIdWidth","addr":"awAddrWidth","len":8,"size":3,"burst":2,"lock":1,"cache":4,"prot":3,"qos":4,"region":4}},"w":{"valid":1,"ready":-1,"bits":{"data":"wDataWidth","strb":"wStrbWidth","last":1}},"b":{"valid":-1,"ready":1,"bits":{"id":"-bIdWidth","resp":-2}},"ar":{"valid":1,"ready":-1,"bits":{"id":"arIdWidth","addr":"addrWidth","len":8,"size":3,"burst":2,"lock":1,"cache":4,"prot":3,"qos":4,"region":4}},"r":{"valid":-1,"ready":1,"bits":{"id":"-rIdWidth","data":"-dataWidth","resp":-2,"last":-1}}}
     // aw
-    blackbox.io.t_ctrl_awvalid := ctrl0.aw.valid
-    ctrl0.aw.ready := blackbox.io.t_ctrl_awready
+    blackbox.io.t_ctrl_awvalid := t_ctrl0.aw.valid
+    t_ctrl0.aw.ready := blackbox.io.t_ctrl_awready
     // aw
     // AWID
-    blackbox.io.t_ctrl_awaddr := ctrl0.aw.bits.addr
+    blackbox.io.t_ctrl_awaddr := t_ctrl0.aw.bits.addr
     // AWLEN
     // AWSIZE
     // AWBURST
     // AWLOCK
     // AWCACHE
-    blackbox.io.t_ctrl_awprot := ctrl0.aw.bits.prot
+    blackbox.io.t_ctrl_awprot := t_ctrl0.aw.bits.prot
     // AWQOS
+    // AWREGION
     // w
-    blackbox.io.t_ctrl_wvalid := ctrl0.w.valid
-    ctrl0.w.ready := blackbox.io.t_ctrl_wready
+    blackbox.io.t_ctrl_wvalid := t_ctrl0.w.valid
+    t_ctrl0.w.ready := blackbox.io.t_ctrl_wready
     // w
-    blackbox.io.t_ctrl_wdata := ctrl0.w.bits.data
-    blackbox.io.t_ctrl_wstrb := ctrl0.w.bits.strb
+    blackbox.io.t_ctrl_wdata := t_ctrl0.w.bits.data
+    blackbox.io.t_ctrl_wstrb := t_ctrl0.w.bits.strb
     // WLAST
     // b
-    ctrl0.b.valid := blackbox.io.t_ctrl_bvalid
-    blackbox.io.t_ctrl_bready := ctrl0.b.ready
+    t_ctrl0.b.valid := blackbox.io.t_ctrl_bvalid
+    blackbox.io.t_ctrl_bready := t_ctrl0.b.ready
     // b
-    ctrl0.b.bits.id := 0.U // BID
-    ctrl0.b.bits.resp := blackbox.io.t_ctrl_bresp
+    t_ctrl0.b.bits.id := 0.U // BID
+    t_ctrl0.b.bits.resp := blackbox.io.t_ctrl_bresp
     // ar
-    blackbox.io.t_ctrl_arvalid := ctrl0.ar.valid
-    ctrl0.ar.ready := blackbox.io.t_ctrl_arready
+    blackbox.io.t_ctrl_arvalid := t_ctrl0.ar.valid
+    t_ctrl0.ar.ready := blackbox.io.t_ctrl_arready
     // ar
     // ARID
-    blackbox.io.t_ctrl_araddr := ctrl0.ar.bits.addr
+    blackbox.io.t_ctrl_araddr := t_ctrl0.ar.bits.addr
     // ARLEN
     // ARSIZE
     // ARBURST
     // ARLOCK
     // ARCACHE
-    blackbox.io.t_ctrl_arprot := ctrl0.ar.bits.prot
+    blackbox.io.t_ctrl_arprot := t_ctrl0.ar.bits.prot
     // ARQOS
+    // ARREGION
     // r
-    ctrl0.r.valid := blackbox.io.t_ctrl_rvalid
-    blackbox.io.t_ctrl_rready := ctrl0.r.ready
+    t_ctrl0.r.valid := blackbox.io.t_ctrl_rvalid
+    blackbox.io.t_ctrl_rready := t_ctrl0.r.ready
     // r
-    ctrl0.r.bits.id := 0.U // RID
-    ctrl0.r.bits.data := blackbox.io.t_ctrl_rdata
-    ctrl0.r.bits.resp := blackbox.io.t_ctrl_rresp
-    ctrl0.r.bits.last := true.B // RLAST
+    t_ctrl0.r.bits.id := 0.U // RID
+    t_ctrl0.r.bits.data := blackbox.io.t_ctrl_rdata
+    t_ctrl0.r.bits.resp := blackbox.io.t_ctrl_rresp
+    t_ctrl0.r.bits.last := true.B // RLAST
 
     // wiring for t_mem of type AXI4-Lite
     // -> {"aw":{"valid":1,"ready":-1,"bits":{"id":"awIdWidth","addr":"awAddrWidth","len":8,"size":3,"burst":2,"lock":1,"cache":4,"prot":3,"qos":4,"region":4}},"w":{"valid":1,"ready":-1,"bits":{"data":"wDataWidth","strb":"wStrbWidth","last":1}},"b":{"valid":-1,"ready":1,"bits":{"id":"-bIdWidth","resp":-2}},"ar":{"valid":1,"ready":-1,"bits":{"id":"arIdWidth","addr":"addrWidth","len":8,"size":3,"burst":2,"lock":1,"cache":4,"prot":3,"qos":4,"region":4}},"r":{"valid":-1,"ready":1,"bits":{"id":"-rIdWidth","data":"-dataWidth","resp":-2,"last":-1}}}
     // aw
-    blackbox.io.t_mem_awvalid := mem0.aw.valid
-    mem0.aw.ready := blackbox.io.t_mem_awready
+    blackbox.io.t_mem_awvalid := t_mem0.aw.valid
+    t_mem0.aw.ready := blackbox.io.t_mem_awready
     // aw
     // AWID
-    blackbox.io.t_mem_awaddr := mem0.aw.bits.addr
+    blackbox.io.t_mem_awaddr := t_mem0.aw.bits.addr
     // AWLEN
     // AWSIZE
     // AWBURST
     // AWLOCK
     // AWCACHE
-    blackbox.io.t_mem_awprot := mem0.aw.bits.prot
+    blackbox.io.t_mem_awprot := t_mem0.aw.bits.prot
     // AWQOS
     // AWREGION
     // w
-    blackbox.io.t_mem_wvalid := mem0.w.valid
-    mem0.w.ready := blackbox.io.t_mem_wready
+    blackbox.io.t_mem_wvalid := t_mem0.w.valid
+    t_mem0.w.ready := blackbox.io.t_mem_wready
     // w
-    blackbox.io.t_mem_wdata := mem0.w.bits.data
-    blackbox.io.t_mem_wstrb := mem0.w.bits.strb
+    blackbox.io.t_mem_wdata := t_mem0.w.bits.data
+    blackbox.io.t_mem_wstrb := t_mem0.w.bits.strb
     // WLAST
     // b
-    mem0.b.valid := blackbox.io.t_mem_bvalid
-    blackbox.io.t_mem_bready := mem0.b.ready
+    t_mem0.b.valid := blackbox.io.t_mem_bvalid
+    blackbox.io.t_mem_bready := t_mem0.b.ready
     // b
-    mem0.b.bits.id := 0.U // BID
-    mem0.b.bits.resp := blackbox.io.t_mem_bresp
+    t_mem0.b.bits.id := 0.U // BID
+    t_mem0.b.bits.resp := blackbox.io.t_mem_bresp
     // ar
-    blackbox.io.t_mem_arvalid := mem0.ar.valid
-    mem0.ar.ready := blackbox.io.t_mem_arready
+    blackbox.io.t_mem_arvalid := t_mem0.ar.valid
+    t_mem0.ar.ready := blackbox.io.t_mem_arready
     // ar
     // ARID
-    blackbox.io.t_mem_araddr := mem0.ar.bits.addr
+    blackbox.io.t_mem_araddr := t_mem0.ar.bits.addr
     // ARLEN
     // ARSIZE
     // ARBURST
     // ARLOCK
     // ARCACHE
-    blackbox.io.t_mem_arprot := mem0.ar.bits.prot
+    blackbox.io.t_mem_arprot := t_mem0.ar.bits.prot
     // ARQOS
     // ARREGION
     // r
-    mem0.r.valid := blackbox.io.t_mem_rvalid
-    blackbox.io.t_mem_rready := mem0.r.ready
+    t_mem0.r.valid := blackbox.io.t_mem_rvalid
+    blackbox.io.t_mem_rready := t_mem0.r.ready
     // r
-    mem0.r.bits.id := 0.U // RID
-    mem0.r.bits.data := blackbox.io.t_mem_rdata
-    mem0.r.bits.resp := blackbox.io.t_mem_rresp
-    mem0.r.bits.last := true.B // RLAST
+    t_mem0.r.bits.id := 0.U // RID
+    t_mem0.r.bits.data := blackbox.io.t_mem_rdata
+    t_mem0.r.bits.resp := blackbox.io.t_mem_rresp
+    t_mem0.r.bits.last := true.B // RLAST
 
     // wiring for irq of type interrupts
     // ["irq0","irq1"]
@@ -454,7 +461,8 @@ class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule {
   lazy val module = new LpioBaseImp
 }
 
-case class PsidebandParams(
+
+case class Pt_sidebandParams(
   base: BigInt,
   executable: Boolean = false,
   maxFifoBits: Int = 2,
@@ -463,7 +471,8 @@ case class PsidebandParams(
   tlBufferParams: TLBufferParams = TLBufferParams()
 )
 
-case class PctrlParams(
+
+case class Pt_ctrlParams(
   base: BigInt,
   executable: Boolean = false,
   maxFifoBits: Int = 2,
@@ -473,8 +482,7 @@ case class PctrlParams(
 )
 
 
-
-case class PmemParams(
+case class Pt_memParams(
   base: BigInt,
   executable: Boolean = false,
   maxFifoBits: Int = 2,
@@ -494,15 +502,15 @@ case class NpioTopParams(
 
 object NpioTopParams {
   def defaults(
-    sideband_base: BigInt,
-    ctrl_base: BigInt,
-    mem_base: BigInt,
+    t_sideband_base: BigInt,
+    t_ctrl_base: BigInt,
+    t_mem_base: BigInt,
     cacheBlockBytes: Int
   ) = NpioTopParams(
     blackbox = pioParams(
-      sidebandParams = PsidebandParams(base = sideband_base),
-      ctrlParams = PctrlParams(base = ctrl_base),
-      memParams = PmemParams(base = mem_base),
+      t_sidebandParams = Pt_sidebandParams(base = t_sideband_base),
+      t_ctrlParams = Pt_ctrlParams(base = t_ctrl_base),
+      t_memParams = Pt_memParams(base = t_mem_base),
       irqParams = PirqParams(),
       cacheBlockBytes = cacheBlockBytes
     )
@@ -547,21 +555,29 @@ class NpioTopBase(val c: NpioTopParams)(implicit p: Parameters)
 
   def userOM: Product with Serializable = Nil
 
+  private def prettyPrintField(field: RegField, bitOffset: Int): String = {
+    val nameOpt = field.desc.map(_.name)
+    nameOpt.map(_ + " ").getOrElse("") + s"at offset $bitOffset"
+  }
   private def padFields(fields: (Int, RegField)*) = {
     var previousOffset = 0
-    var previousField: Option[RegField] = None
+    var previousFieldOpt: Option[RegField] = None
 
-    fields.flatMap { case (fieldOffset, field) =>
-      val padWidth = fieldOffset - previousOffset
-      require(padWidth >= 0,
-        if (previousField.isDefined) {
-          s"register fields at $previousOffset and $fieldOffset are overlapping"
-        } else {
-          s"register field $field has a negative offset"
-        })
+    fields.sortBy({ case (offset, _) => offset }).flatMap { case (fieldOffset, field) =>
+      val padWidth = fieldOffset - (previousOffset + previousFieldOpt.map(_.width).getOrElse(0))
+      val prettyField = prettyPrintField(field, fieldOffset)
+      require(
+        padWidth >= 0,
+        previousFieldOpt.map(previousField => {
+          val prettyPrevField = prettyPrintField(previousField, previousOffset)
+          s"register fields $prettyPrevField and $prettyField are overlapping"
+        }).getOrElse(
+          s"register field $prettyField has a negative offset"
+        )
+      )
 
       previousOffset = fieldOffset
-      previousField = Some(field)
+      previousFieldOpt = Some(field)
 
       if (padWidth > 0) {
         Seq(RegField(padWidth), field)
@@ -579,42 +595,54 @@ class NpioTopBase(val c: NpioTopParams)(implicit p: Parameters)
   // then
   // OMRegister.convertSeq(csrAddressBlock0 ++ csrAddressBlock1)
   def omRegisterMaps: Map[String, OMRegisterMap] = Map(
-    "CSR" ->
-      // SKETCH: use new method convertSeq instead of plain convert because AddressBlock returns a Seq
-      OMRegister.convertSeq(
-        // SKETCH: these come from the JSON addressBlock
-        RegFieldAddressBlock(AddressBlockInfo("csrAddressBlock0", addressOffset = 0, range=512, width=32),
-        // SKETCH: set this to true so that you don't have to add the offsets in the 0 -> lines below
+    // memoryMap: "CSR" with registers
+    "CSR" -> OMRegister.convertSeq(
+      // addressBlock: csrAddressBlock0
+      RegFieldAddressBlock(
+        AddressBlockInfo(
+          "csrAddressBlock0",
+          addressOffset = 0,
+          range = 512,
+          width = 32
+        ),
         addAddressOffset = true,
-      0 -> RegFieldGroup("ODATA", None, padFields(
-        0 -> RegField(32, Bool(), RegFieldDesc("data", "")))),
-      4 -> RegFieldGroup("OENABLE", Some("""determines whether the pin is an input or an output. If the data direction bit is a 1, then the pin is an input"""), padFields(
-        0 -> RegField(32, Bool(), RegFieldDesc("data", "")))),
-      8 -> RegFieldGroup("IDATA", Some("""read the port pins"""), padFields(
-        0 -> RegField(32, Bool(), RegFieldDesc("data", ""))))
-    ) ++ // SKETCH: note appending these within one single OMRegister.convert(...) call
-    RegFieldAddressBlock(AddressBlockInfo(name = "csrAddressBlock1",
-      addressOffset = 512, range = 512, width=32),
-      addAddressOffset = true,
-      0 -> RegFieldGroup("FOO", None, padFields(
-        0 -> RegField(5, Bool(), RegFieldDesc("foo", ""))))
-    )),
-    //OMRegister.convert
-    // SKETCH: makes no sense to include empty register map
-    // OMRegister.convert(
-    //   ),
-    //SKETCH: note the second memory region mapping
-    "SIDEBAND_CSR" ->  OMRegister.convertSeq(
-      //SKETCH: adding the address block info
-        RegFieldAddressBlock(AddressBlockInfo(name = "SidebandCSRAddressBlock",
-          addressOffset = 128 , range = 512 , width= 32),
-          addAddressOffset = true,
-      0 -> RegFieldGroup("SomeRegister", None, padFields(
-        0 -> RegField(16, Bool(), RegFieldDesc("data", "")),16 -> RegField(16, Bool(), RegFieldDesc("control", ""))
-      )))
+        0 -> RegFieldGroup("ODATA", None, padFields(
+          0 -> RegField(32, Bool(), RegFieldDesc("data", "")))),
+        4 -> RegFieldGroup("OENABLE", Some("""determines whether the pin is an input or an output. If the data direction bit is a 1, then the pin is an input"""), padFields(
+          0 -> RegField(32, Bool(), RegFieldDesc("data", "")))),
+        8 -> RegFieldGroup("IDATA", Some("""read the port pins"""), padFields(
+          0 -> RegField(32, Bool(), RegFieldDesc("data", ""))))
+      ) ++
+      // addressBlock: csrAddressBlock1
+      RegFieldAddressBlock(
+        AddressBlockInfo(
+          "csrAddressBlock1",
+          addressOffset = 512,
+          range = 512,
+          width = 32
+        ),
+        addAddressOffset = true,
+        0 -> RegFieldGroup("FOO", None, padFields(
+          0 -> RegField(5, Bool(), RegFieldDesc("foo", ""))))
+      )
+    ),
+    // memoryMap: "JustMemoryNoRegisters",
+    // memoryMap: "SIDEBAND_CSR" with registers
+    "SIDEBAND_CSR" -> OMRegister.convertSeq(
+      // addressBlock: SidebandCSRAddressBlock
+      RegFieldAddressBlock(
+        AddressBlockInfo(
+          "SidebandCSRAddressBlock",
+          addressOffset = 128,
+          range = 512,
+          width = 32
+        ),
+        addAddressOffset = true,
+        0 -> RegFieldGroup("SomeRegister", None, padFields(
+          0 -> RegField(16, Bool(), RegFieldDesc("data", "")),16 -> RegField(16, Bool(), RegFieldDesc("control", ""))))
+      )
     )
   )
-  
 
   //SKETCH: we should just put this code in the auto-generated class, right?
   //SKETCH: user can still override it if they want
@@ -640,73 +668,77 @@ class NpioTopBase(val c: NpioTopParams)(implicit p: Parameters)
   val addrWidth: Int = c.blackbox.addrWidth
   val dataWidth: Int = c.blackbox.dataWidth
   val pioWidth: Int = c.blackbox.pioWidth
+  val writeStrobeWidth: Int = c.blackbox.writeStrobeWidth
 // no channel node
 
-val sidebandNode: AXI4SlaveNode = imp.sidebandNode  
-val ctrlNode: AXI4SlaveNode = imp.ctrlNode
+  val t_sidebandNode: AXI4SlaveNode = imp.t_sidebandNode
 
-    def getsidebandNodeTLAdapter(): TLInwardNode = {(
-    sidebandNode
+  def gett_sidebandNodeTLAdapter(): TLInwardNode = {(
+    t_sidebandNode
       := AXI4Buffer(
-        aw = c.blackbox.sidebandParams.axi4BufferParams.aw,
-        ar = c.blackbox.sidebandParams.axi4BufferParams.ar,
-        w = c.blackbox.sidebandParams.axi4BufferParams.w,
-        r = c.blackbox.sidebandParams.axi4BufferParams.r,
-        b = c.blackbox.sidebandParams.axi4BufferParams.b
+        aw = c.blackbox.t_sidebandParams.axi4BufferParams.aw,
+        ar = c.blackbox.t_sidebandParams.axi4BufferParams.ar,
+        w = c.blackbox.t_sidebandParams.axi4BufferParams.w,
+        r = c.blackbox.t_sidebandParams.axi4BufferParams.r,
+        b = c.blackbox.t_sidebandParams.axi4BufferParams.b
       )
-      := AXI4UserYanker(capMaxFlight = Some(c.blackbox.sidebandParams.maxTransactions))
+      := AXI4UserYanker(capMaxFlight = Some(c.blackbox.t_sidebandParams.maxTransactions))
       := TLToAXI4()
       := TLFragmenter(((dataWidth) / 8), c.blackbox.cacheBlockBytes, holdFirstDeny=true)
       := TLBuffer(
-        a = c.blackbox.sidebandParams.tlBufferParams.a,
-        b = c.blackbox.sidebandParams.tlBufferParams.b,
-        c = c.blackbox.sidebandParams.tlBufferParams.c,
-        d = c.blackbox.sidebandParams.tlBufferParams.d,
-        e = c.blackbox.sidebandParams.tlBufferParams.e
-      )
-  )}
-  
-  def getctrlNodeTLAdapter(): TLInwardNode = {(
-    ctrlNode
-      := AXI4Buffer(
-        aw = c.blackbox.ctrlParams.axi4BufferParams.aw,
-        ar = c.blackbox.ctrlParams.axi4BufferParams.ar,
-        w = c.blackbox.ctrlParams.axi4BufferParams.w,
-        r = c.blackbox.ctrlParams.axi4BufferParams.r,
-        b = c.blackbox.ctrlParams.axi4BufferParams.b
-      )
-      := AXI4UserYanker(capMaxFlight = Some(c.blackbox.ctrlParams.maxTransactions))
-      := TLToAXI4()
-      := TLFragmenter((dataWidth / 8), c.blackbox.cacheBlockBytes, holdFirstDeny=true)
-      := TLBuffer(
-        a = c.blackbox.ctrlParams.tlBufferParams.a,
-        b = c.blackbox.ctrlParams.tlBufferParams.b,
-        c = c.blackbox.ctrlParams.tlBufferParams.c,
-        d = c.blackbox.ctrlParams.tlBufferParams.d,
-        e = c.blackbox.ctrlParams.tlBufferParams.e
+        a = c.blackbox.t_sidebandParams.tlBufferParams.a,
+        b = c.blackbox.t_sidebandParams.tlBufferParams.b,
+        c = c.blackbox.t_sidebandParams.tlBufferParams.c,
+        d = c.blackbox.t_sidebandParams.tlBufferParams.d,
+        e = c.blackbox.t_sidebandParams.tlBufferParams.e
       )
   )}
 
-  val memNode: AXI4SlaveNode = imp.memNode
 
-  def getmemNodeTLAdapter(): TLInwardNode = {(
-    memNode
+  val t_ctrlNode: AXI4SlaveNode = imp.t_ctrlNode
+
+  def gett_ctrlNodeTLAdapter(): TLInwardNode = {(
+    t_ctrlNode
       := AXI4Buffer(
-        aw = c.blackbox.memParams.axi4BufferParams.aw,
-        ar = c.blackbox.memParams.axi4BufferParams.ar,
-        w = c.blackbox.memParams.axi4BufferParams.w,
-        r = c.blackbox.memParams.axi4BufferParams.r,
-        b = c.blackbox.memParams.axi4BufferParams.b
+        aw = c.blackbox.t_ctrlParams.axi4BufferParams.aw,
+        ar = c.blackbox.t_ctrlParams.axi4BufferParams.ar,
+        w = c.blackbox.t_ctrlParams.axi4BufferParams.w,
+        r = c.blackbox.t_ctrlParams.axi4BufferParams.r,
+        b = c.blackbox.t_ctrlParams.axi4BufferParams.b
       )
-      := AXI4UserYanker(capMaxFlight = Some(c.blackbox.memParams.maxTransactions))
+      := AXI4UserYanker(capMaxFlight = Some(c.blackbox.t_ctrlParams.maxTransactions))
       := TLToAXI4()
       := TLFragmenter(((dataWidth) / 8), c.blackbox.cacheBlockBytes, holdFirstDeny=true)
       := TLBuffer(
-        a = c.blackbox.memParams.tlBufferParams.a,
-        b = c.blackbox.memParams.tlBufferParams.b,
-        c = c.blackbox.memParams.tlBufferParams.c,
-        d = c.blackbox.memParams.tlBufferParams.d,
-        e = c.blackbox.memParams.tlBufferParams.e
+        a = c.blackbox.t_ctrlParams.tlBufferParams.a,
+        b = c.blackbox.t_ctrlParams.tlBufferParams.b,
+        c = c.blackbox.t_ctrlParams.tlBufferParams.c,
+        d = c.blackbox.t_ctrlParams.tlBufferParams.d,
+        e = c.blackbox.t_ctrlParams.tlBufferParams.e
+      )
+  )}
+
+
+  val t_memNode: AXI4SlaveNode = imp.t_memNode
+
+  def gett_memNodeTLAdapter(): TLInwardNode = {(
+    t_memNode
+      := AXI4Buffer(
+        aw = c.blackbox.t_memParams.axi4BufferParams.aw,
+        ar = c.blackbox.t_memParams.axi4BufferParams.ar,
+        w = c.blackbox.t_memParams.axi4BufferParams.w,
+        r = c.blackbox.t_memParams.axi4BufferParams.r,
+        b = c.blackbox.t_memParams.axi4BufferParams.b
+      )
+      := AXI4UserYanker(capMaxFlight = Some(c.blackbox.t_memParams.maxTransactions))
+      := TLToAXI4()
+      := TLFragmenter(((dataWidth) / 8), c.blackbox.cacheBlockBytes, holdFirstDeny=true)
+      := TLBuffer(
+        a = c.blackbox.t_memParams.tlBufferParams.a,
+        b = c.blackbox.t_memParams.tlBufferParams.b,
+        c = c.blackbox.t_memParams.tlBufferParams.c,
+        d = c.blackbox.t_memParams.tlBufferParams.d,
+        e = c.blackbox.t_memParams.tlBufferParams.e
       )
   )}
 
@@ -719,27 +751,27 @@ object NpioTopBase {
     implicit val p: Parameters = bap.p
     val pio_top = LazyModule(new NpioTop(c))
     // no channel attachment
-    bap.pbus.coupleTo("axi") { pio_top.getsidebandNodeTLAdapter() := TLWidthWidget(bap.pbus) := _ }
-    bap.pbus.coupleTo("axi") { pio_top.getctrlNodeTLAdapter() := TLWidthWidget(bap.pbus) := _ }
-    bap.pbus.coupleTo("axi") { pio_top.getmemNodeTLAdapter() := TLWidthWidget(bap.pbus) := _ }
+    bap.pbus.coupleTo("axi") { pio_top.gett_sidebandNodeTLAdapter() := TLWidthWidget(bap.pbus) := _ }
+    bap.pbus.coupleTo("axi") { pio_top.gett_ctrlNodeTLAdapter() := TLWidthWidget(bap.pbus) := _ }
+    bap.pbus.coupleTo("axi") { pio_top.gett_memNodeTLAdapter() := TLWidthWidget(bap.pbus) := _ }
+    LogicalModuleTree.add(bap.parentNode, pio_top.logicalTreeNode)
     bap.ibus := pio_top.irqNode
-LogicalModuleTree.add(bap.parentNode, pio_top.logicalTreeNode)
     pio_top
   }
 }
 
 class WithpioTopBase (
-  sideband_base: BigInt,
-  ctrl_base: BigInt,
-  mem_base: BigInt
+  t_sideband_base: BigInt,
+  t_ctrl_base: BigInt,
+  t_mem_base: BigInt
 ) extends Config((site, here, up) => {
   case BlockDescriptorKey =>
     BlockDescriptor(
       name = "pio",
       place = NpioTop.attach(NpioTopParams.defaults(
-        sideband_base = sideband_base,
-        ctrl_base = ctrl_base,
-        mem_base = mem_base,
+        t_sideband_base = t_sideband_base,
+        t_ctrl_base = t_ctrl_base,
+        t_mem_base = t_mem_base,
         cacheBlockBytes = site(CacheBlockBytes)
       ))
     ) +: up(BlockDescriptorKey, site)
