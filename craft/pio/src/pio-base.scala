@@ -160,7 +160,7 @@ class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule {
           supportsWrite = TransferSizes(1, ((dataWidth) * 1 / 8)),
           supportsRead  = TransferSizes(1, ((dataWidth) * 1 / 8)),
           interleavedId = Some(0),
-          resources     = device.reg
+          resources     = device.reg("SIDEBAND_CSR")
         )
       ),
       beatBytes = (dataWidth) / 8
@@ -176,7 +176,7 @@ class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule {
           supportsWrite = TransferSizes(1, ((dataWidth) * 1 / 8)),
           supportsRead  = TransferSizes(1, ((dataWidth) * 1 / 8)),
           interleavedId = Some(0),
-          resources     = device.reg
+          resources     = device.reg("CSR")
         )
       ),
       beatBytes = (dataWidth) / 8
@@ -192,7 +192,7 @@ class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule {
           supportsWrite = TransferSizes(1, ((dataWidth) * 1 / 8)),
           supportsRead  = TransferSizes(1, ((dataWidth) * 1 / 8)),
           interleavedId = Some(0),
-          resources     = device.reg
+          resources     = device.reg("JustMemoryNoRegisters")
         )
       ),
       beatBytes = (dataWidth) / 8
@@ -571,26 +571,64 @@ class NpioTopBase(val c: NpioTopParams)(implicit p: Parameters)
     }
   }
 
-  def omRegisterMaps = Seq(
-    OMRegister.convert(
-      0 -> RegFieldGroup("ODATA", None, padFields(
-        0 -> RegField(32, Bool(), RegFieldDesc("data", "")))),
-      4 -> RegFieldGroup("OENABLE", Some("""determines whether the pin is an input or an output. If the data direction bit is a 1, then the pin is an input"""), padFields(
-        0 -> RegField(32, Bool(), RegFieldDesc("data", "")))),
-      8 -> RegFieldGroup("IDATA", Some("""read the port pins"""), padFields(
-        0 -> RegField(32, Bool(), RegFieldDesc("data", ""))))),
-    OMRegister.convert(
-      0 -> RegFieldGroup("FOO", None, padFields(
-        0 -> RegField(5, Bool(), RegFieldDesc("foo", ""))))),
-    OMRegister.convert(
-      ),
-    OMRegister.convert(
-      0 -> RegFieldGroup("SomeRegister", None, padFields(
-        0 -> RegField(16, Bool(), RegFieldDesc("data", "")),16 -> RegField(16, Bool(), RegFieldDesc("control", ""))))))
+  def omRegisterMaps: Map[String, OMRegisterMap] = Map(
+    // memoryMap: "CSR" with registers
+    "CSR" -> OMRegister.convertSeq(
+      // addressBlock: csrAddressBlock0
+      RegFieldAddressBlock(
+        AddressBlockInfo(
+          "csrAddressBlock0",
+          addressOffset = 0,
+          range = 512,
+          width = 32
+        ),
+        addAddressOffset = true,
+        0 -> RegFieldGroup("ODATA", None, padFields(
+          0 -> RegField(32, Bool(), RegFieldDesc("data", "")))),
+        4 -> RegFieldGroup("OENABLE", Some("""determines whether the pin is an input or an output. If the data direction bit is a 1, then the pin is an input"""), padFields(
+          0 -> RegField(32, Bool(), RegFieldDesc("data", "")))),
+        8 -> RegFieldGroup("IDATA", Some("""read the port pins"""), padFields(
+          0 -> RegField(32, Bool(), RegFieldDesc("data", ""))))
+      ) ++
+      // addressBlock: csrAddressBlock1
+      RegFieldAddressBlock(
+        AddressBlockInfo(
+          "csrAddressBlock1",
+          addressOffset = 512,
+          range = 512,
+          width = 32
+        ),
+        addAddressOffset = true,
+        0 -> RegFieldGroup("FOO", None, padFields(
+          0 -> RegField(5, Bool(), RegFieldDesc("foo", ""))))
+      )
+    ),
+    // memoryMap: "JustMemoryNoRegisters",
+    // memoryMap: "SIDEBAND_CSR" with registers
+    "SIDEBAND_CSR" -> OMRegister.convertSeq(
+      // addressBlock: SidebandCSRAddressBlock
+      RegFieldAddressBlock(
+        AddressBlockInfo(
+          "SidebandCSRAddressBlock",
+          addressOffset = 128,
+          range = 512,
+          width = 32
+        ),
+        addAddressOffset = true,
+        0 -> RegFieldGroup("SomeRegister", None, padFields(
+          0 -> RegField(16, Bool(), RegFieldDesc("data", "")),16 -> RegField(16, Bool(), RegFieldDesc("control", ""))))
+      )
+    )
+  )
 
   def getOMMemoryRegions(resourceBindings: ResourceBindings): Seq[OMMemoryRegion] = {
     val name = imp.device.describe(resourceBindings).name
-    DiplomaticObjectModelAddressing.getOMMemoryRegions(name, resourceBindings, None)
+    val diplomaticRegions = DiplomaticObjectModelAddressing.getOMMemoryRegions(name, resourceBindings, None)
+    // associate register maps with memory regions in Object model
+    diplomaticRegions.map { case (memRegion) =>
+      val regMaps: Map[String, Seq[OMRegMap]] = omRegisterMaps
+      memRegion.copy(registerMap = omRegisterMaps.lift(memRegion.name))
+    }
   }
 
   def getOMInterrupts(resourceBindings: ResourceBindings): Seq[OMInterrupt] = {
