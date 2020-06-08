@@ -162,19 +162,13 @@
     }, {
       name: 'irq',
       interfaceMode: 'master',
-      busType: {vendor: 'sifive.com', library: 'free', name: 'interrupts', version: '0.1.0'},
+      busType: {vendor: 'sifive.com', library: 'PRCI', name: 'INTERRUPT', version: '0.1.0'},
       abstractionTypes: [{
         viewRef: 'RTLview',
-        portMaps: [
-          'irq0',
-          'irq1'
-        ]
+        portMaps: {
+          IRQ: ['irq0', 'irq1']
+        }
       }]
-    }],
-    addressSpaces: [{
-      name: 'csrAddressSpace',
-      range: 1024,
-      width: 32
     }],
     memoryMaps: [{$ref: '#/definitions/csrMemMap'}],
     model: {
