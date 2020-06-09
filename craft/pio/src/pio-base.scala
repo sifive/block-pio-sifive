@@ -135,7 +135,7 @@ case class pioParams(
 // busType: AXI4-Lite, mode: slave
 // busType: AXI4-Lite, mode: slave
 // busType: AXI4-Lite, mode: slave
-// busType: interrupts, mode: master
+// busType: INTERRUPT, mode: master
 
 class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule {
 
@@ -185,11 +185,6 @@ class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule {
     )
   ))
 
-  val irqNode = IntSourceNode(IntSourcePortSimple(
-    num = 2,
-    resources = device.int
-  ))
-
   val t_memNode = AXI4SlaveNode(Seq(
     AXI4SlavePortParameters(
       slaves = Seq(
@@ -206,6 +201,10 @@ class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule {
     )
   ))
 
+  val irqNode = IntSourceNode(IntSourcePortSimple(
+    num = 1,
+    resources = device.int
+  ))
 
   val ioBridgeSource = BundleBridgeSource(() => new pioBlackBoxIO(
     c.addrWidth,
@@ -222,6 +221,7 @@ class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule {
       c.writeStrobeWidth
     ))
     // interface wiring 2
+
 
 
 
@@ -288,8 +288,6 @@ class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule {
     ioBridgeSource.bundle.odata := blackbox.io.odata
     ioBridgeSource.bundle.oenable := blackbox.io.oenable
     blackbox.io.idata := ioBridgeSource.bundle.idata
-    ioBridgeSource.bundle.irq0 := blackbox.io.irq0
-    ioBridgeSource.bundle.irq1 := blackbox.io.irq1
     blackbox.io.clk := ioBridgeSource.bundle.clk
     blackbox.io.reset_n := ioBridgeSource.bundle.reset_n
     // interface alias
@@ -490,6 +488,7 @@ case class Pt_memParams(
   axi4BufferParams: AXI4BufferParams = AXI4BufferParams(),
   tlBufferParams: TLBufferParams = TLBufferParams()
 )
+
 
 case class PirqParams()
 
@@ -754,8 +753,8 @@ object NpioTopBase {
     bap.pbus.coupleTo("axi") { pio_top.gett_sidebandNodeTLAdapter() := TLWidthWidget(bap.pbus) := _ }
     bap.pbus.coupleTo("axi") { pio_top.gett_ctrlNodeTLAdapter() := TLWidthWidget(bap.pbus) := _ }
     bap.pbus.coupleTo("axi") { pio_top.gett_memNodeTLAdapter() := TLWidthWidget(bap.pbus) := _ }
-    LogicalModuleTree.add(bap.parentNode, pio_top.logicalTreeNode)
     bap.ibus := pio_top.irqNode
+    LogicalModuleTree.add(bap.parentNode, pio_top.logicalTreeNode)
     pio_top
   }
 }

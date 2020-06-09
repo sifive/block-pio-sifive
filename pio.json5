@@ -7,7 +7,18 @@
         "busInterfaces": [
             {"$ref": "#/definitions/busDefinitions/busint-portgroup_0-mapping_0-prefix_t_sideband-slave-AXI4-Lite_rtl"},
             {"$ref": "#/definitions/busDefinitions/busint-portgroup_1-mapping_0-prefix_t_ctrl-slave-AXI4-Lite_rtl"},
-            {"$ref": "#/definitions/busDefinitions/busint-portgroup_2-mapping_0-prefix_t_mem-slave-AXI4-Lite_rtl"}
+            {"$ref": "#/definitions/busDefinitions/busint-portgroup_2-mapping_0-prefix_t_mem-slave-AXI4-Lite_rtl"},
+            {name: 'irq',
+             interfaceMode: 'master',
+             busType: {vendor: 'sifive.com', library: 'PRCI', name: 'INTERRUPT', version: '0.1.0'},
+             abstractionTypes: [
+               { viewRef: 'RTLview',
+                 portMaps: {
+                   IRQ: ['irq0', 'irq1']
+                 }
+               }
+             ]
+           }
         ],
         "addressSpaces": [],
         "memoryMaps": [
