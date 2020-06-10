@@ -452,8 +452,8 @@ class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule {
     t_mem0.r.bits.resp := blackbox.io.t_mem_rresp
     t_mem0.r.bits.last := true.B // RLAST
 
-    // wiring for irq of type interrupts
-    // ["irq0","irq1"]
+    // wiring for irq of type INTERRUPT
+    // {"IRQ":["irq0","irq1"]}
 
   }
   lazy val module = new LpioBaseImp
