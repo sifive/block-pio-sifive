@@ -38,6 +38,7 @@ The loopback block outputs the xor of oenable and odata to idata.
 * duh assists in IP onboarding
 * Please see instructions on [duh README](https://github.com/sifive/duh)
 
+* Note: duh-scala used was 0.16.0 (32df4ab)
 #### Other dependencies
 
 * riscv-gnu-toolchain
