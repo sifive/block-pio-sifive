@@ -34,10 +34,11 @@ The loopback block outputs the xor of oenable and odata to idata.
 
 #### duh
 
-* `npm i duh@1.13.1`
+* `npm i duh@1.17.10`
 * duh assists in IP onboarding
 * Please see instructions on [duh README](https://github.com/sifive/duh)
 
+* Note: duh-scala used was 0.16.0 (32df4ab)
 #### Other dependencies
 
 * riscv-gnu-toolchain

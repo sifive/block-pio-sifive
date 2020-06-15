@@ -88,7 +88,7 @@ case class pioParams(
 )
 
 // busType: AXI4-Lite, mode: slave
-// busType: interrupts, mode: master
+// busType: INTERRUPT, mode: master
 
 class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule {
 
@@ -111,10 +111,10 @@ class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule {
         AXI4SlaveParameters(
           address       = List(AddressSet(c.ctrlParams.base, ((1L << addrWidth) - 1))),
           executable    = c.ctrlParams.executable,
-          supportsWrite = TransferSizes(1, (dataWidth / 8)),
-          supportsRead  = TransferSizes(1, (dataWidth / 8)),
+          supportsWrite = TransferSizes(1, (dataWidth * 1 / 8)),
+          supportsRead  = TransferSizes(1, (dataWidth * 1 / 8)),
           interleavedId = Some(0),
-          resources     = device.reg
+          resources     = device.reg("CSR")
         )
       ),
       beatBytes = dataWidth / 8
@@ -173,7 +173,7 @@ class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule {
     val irq0 = irqNode.out(0)._1
     // interface wiring
     // wiring for ctrl of type AXI4-Lite
-    // -> {"aw":{"valid":1,"ready":-1,"bits":{"id":"awIdWidth","addr":"awAddrWidth","len":8,"size":3,"burst":2,"lock":1,"cache":4,"prot":3,"qos":4}},"w":{"valid":1,"ready":-1,"bits":{"data":"wDataWidth","strb":"wStrbWidth","last":1}},"b":{"valid":-1,"ready":1,"bits":{"id":"-bIdWidth","resp":-2}},"ar":{"valid":1,"ready":-1,"bits":{"id":"arIdWidth","addr":"addrWidth","len":8,"size":3,"burst":2,"lock":1,"cache":4,"prot":3,"qos":4}},"r":{"valid":-1,"ready":1,"bits":{"id":"-rIdWidth","data":"-dataWidth","resp":-2,"last":-1}}}
+    // -> {"aw":{"valid":1,"ready":-1,"bits":{"id":"awIdWidth","addr":"awAddrWidth","len":8,"size":3,"burst":2,"lock":1,"cache":4,"prot":3,"qos":4,"region":4}},"w":{"valid":1,"ready":-1,"bits":{"data":"wDataWidth","strb":"wStrbWidth","last":1}},"b":{"valid":-1,"ready":1,"bits":{"id":"-bIdWidth","resp":-2}},"ar":{"valid":1,"ready":-1,"bits":{"id":"arIdWidth","addr":"addrWidth","len":8,"size":3,"burst":2,"lock":1,"cache":4,"prot":3,"qos":4,"region":4}},"r":{"valid":-1,"ready":1,"bits":{"id":"-rIdWidth","data":"-dataWidth","resp":-2,"last":-1}}}
     // aw
     blackbox.io.t_ctrl_awvalid := ctrl0.aw.valid
     ctrl0.aw.ready := blackbox.io.t_ctrl_awready
@@ -187,6 +187,7 @@ class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule {
     // AWCACHE
     blackbox.io.t_ctrl_awprot := ctrl0.aw.bits.prot
     // AWQOS
+    // AWREGION
     // w
     blackbox.io.t_ctrl_wvalid := ctrl0.w.valid
     ctrl0.w.ready := blackbox.io.t_ctrl_wready
@@ -213,6 +214,7 @@ class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule {
     // ARCACHE
     blackbox.io.t_ctrl_arprot := ctrl0.ar.bits.prot
     // ARQOS
+    // ARREGION
     // r
     ctrl0.r.valid := blackbox.io.t_ctrl_rvalid
     blackbox.io.t_ctrl_rready := ctrl0.r.ready
@@ -222,8 +224,8 @@ class LpioBase(c: pioParams)(implicit p: Parameters) extends LazyModule {
     ctrl0.r.bits.resp := blackbox.io.t_ctrl_rresp
     ctrl0.r.bits.last := true.B // RLAST
 
-    // wiring for irq of type interrupts
-    // ["irq0","irq1"]
+    // wiring for irq of type INTERRUPT
+    // {"IRQ":["irq0","irq1"]}
 
   }
   lazy val module = new LpioBaseImp
@@ -300,21 +302,29 @@ class NpioTopBase(val c: NpioTopParams)(implicit p: Parameters)
 
   def userOM: Product with Serializable = Nil
 
+  private def prettyPrintField(field: RegField, bitOffset: Int): String = {
+    val nameOpt = field.desc.map(_.name)
+    nameOpt.map(_ + " ").getOrElse("") + s"at offset $bitOffset"
+  }
   private def padFields(fields: (Int, RegField)*) = {
     var previousOffset = 0
-    var previousField: Option[RegField] = None
+    var previousFieldOpt: Option[RegField] = None
 
-    fields.flatMap { case (fieldOffset, field) =>
-      val padWidth = fieldOffset - previousOffset
-      require(padWidth >= 0,
-        if (previousField.isDefined) {
-          s"register fields at $previousOffset and $fieldOffset are overlapping"
-        } else {
-          s"register field $field has a negative offset"
-        })
+    fields.sortBy({ case (offset, _) => offset }).flatMap { case (fieldOffset, field) =>
+      val padWidth = fieldOffset - (previousOffset + previousFieldOpt.map(_.width).getOrElse(0))
+      val prettyField = prettyPrintField(field, fieldOffset)
+      require(
+        padWidth >= 0,
+        previousFieldOpt.map(previousField => {
+          val prettyPrevField = prettyPrintField(previousField, previousOffset)
+          s"register fields $prettyPrevField and $prettyField are overlapping"
+        }).getOrElse(
+          s"register field $prettyField has a negative offset"
+        )
+      )
 
       previousOffset = fieldOffset
-      previousField = Some(field)
+      previousFieldOpt = Some(field)
 
       if (padWidth > 0) {
         Seq(RegField(padWidth), field)
@@ -324,18 +334,38 @@ class NpioTopBase(val c: NpioTopParams)(implicit p: Parameters)
     }
   }
 
-  def omRegisterMaps = Seq(
-    OMRegister.convert(
-      0 -> RegFieldGroup("ODATA", Some("This drives the output data pins."), padFields(
-        0 -> RegField(pioWidth, Bool(), RegFieldDesc("data", "", reset = Some(0))))),
-      4 -> RegFieldGroup("OENABLE", Some("This determines whether the pin is an input or an output. If the data direction bit is a 1, then the pin is an input."), padFields(
-        0 -> RegField(pioWidth, Bool(), RegFieldDesc("data", "", reset = Some(0))))),
-      8 -> RegFieldGroup("IDATA", Some("This is driven by the input data pins."), padFields(
-        0 -> RegField.r(pioWidth, Bool(), RegFieldDesc("data", ""))))))
+  def omRegisterMaps: Map[String, OMRegisterMap] = Map(
+    // memoryMap: "CSR" with registers
+    "CSR" -> OMRegister.convertSeq(
+      // addressBlock: csrAddressBlock
+      RegFieldAddressBlock(
+        AddressBlockInfo(
+          "csrAddressBlock",
+          addressOffset = 0,
+          range = 1024,
+          width = 32
+        ),
+        addAddressOffset = true,
+        0 -> RegFieldGroup("ODATA", Some("""This drives the output data pins."""), padFields(
+          0 -> RegField(pioWidth, Bool(), RegFieldDesc("data", "", reset = Some(0))))),
+        4 -> RegFieldGroup("OENABLE", Some("""This determines whether the pin is an input or an output. If the data direction bit is a 1, then the pin is an input."""), padFields(
+          0 -> RegField(pioWidth, Bool(), RegFieldDesc("data", "", reset = Some(0))))),
+        8 -> RegFieldGroup("IDATA", Some("""This is driven by the input data pins."""), padFields(
+          0 -> RegField.r(pioWidth, Bool(), RegFieldDesc("data", ""))))
+      )
+    )
+  )
 
   def getOMMemoryRegions(resourceBindings: ResourceBindings): Seq[OMMemoryRegion] = {
     val name = imp.device.describe(resourceBindings).name
-    DiplomaticObjectModelAddressing.getOMMemoryRegions(name, resourceBindings, None)
+    val diplomaticRegions = DiplomaticObjectModelAddressing.getOMMemoryRegions(name, resourceBindings, None)
+    // associate register maps with memory regions in Object model
+    val regMaps: Map[String, OMRegisterMap] = omRegisterMaps
+    diplomaticRegions.map { case (memRegion) =>
+      val regMapOpt = omRegisterMaps.lift(memRegion.description)
+      memRegion.copy(registerMap = omRegisterMaps.lift(memRegion.description),
+        addressBlocks = regMapOpt.map{_.addressBlocks}.getOrElse(Nil))
+    }
   }
 
   def getOMInterrupts(resourceBindings: ResourceBindings): Seq[OMInterrupt] = {

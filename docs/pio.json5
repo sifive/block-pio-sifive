@@ -144,6 +144,7 @@
     busInterfaces: [{
       name: 'ctrl',
       interfaceMode: 'slave',
+      memoryMapRef: 'CSR',
       busType: {vendor: 'amba.com', library: 'AMBA4', name: 'AXI4-Lite', version: 'r0p0_0'},
       abstractionTypes: [{
         viewRef: 'RTLview',
