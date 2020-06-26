@@ -77,30 +77,32 @@ object NpioTop {
     implicit val p: Parameters = bap.p
 
     // instantiate and connect the loopback vip in the testharness
-    bap.testHarness {
-      // instantiate the loopback vip
-      val loopback = LazyModule(new NloopbackTop(NloopbackTopParams(
-        blackbox = loopbackParams(
-          pioWidth = c.blackbox.pioWidth,
-          cacheBlockBytes = p(CacheBlockBytes)))))
+    if (bap.testHarness.isDefined) {
+      bap.testHarness.get {
+        // instantiate the loopback vip
+        val loopback = LazyModule(new NloopbackTop(NloopbackTopParams(
+          blackbox = loopbackParams(
+            pioWidth = c.blackbox.pioWidth,
+            cacheBlockBytes = p(CacheBlockBytes)))))
 
-      // route loopback signals to the testharness
-      val loopbackNode = BundleBridgeSink[loopbackBlackBoxIO]()
-      loopbackNode := loopback.imp.ioBridgeSource
+        // route loopback signals to the testharness
+        val loopbackNode = BundleBridgeSink[loopbackBlackBoxIO]()
+        loopbackNode := loopback.imp.ioBridgeSource
 
-      // route pio signals to the testharness
-      val pioNode = BundleBridgeSink[NpioTopIO]()
-      pioNode := pio.ioBridgeSource
+        // route pio signals to the testharness
+        val pioNode = BundleBridgeSink[NpioTopIO]()
+        pioNode := pio.ioBridgeSource
 
-      // connect the pio and loopback signals
-      InModuleBody {
-        loopbackNode.bundle.odata   := pioNode.bundle.odata
-        loopbackNode.bundle.oenable := pioNode.bundle.oenable
-        pioNode.bundle.idata        := loopbackNode.bundle.idata
+        // connect the pio and loopback signals
+        InModuleBody {
+          loopbackNode.bundle.odata   := pioNode.bundle.odata
+          loopbackNode.bundle.oenable := pioNode.bundle.oenable
+          pioNode.bundle.idata        := loopbackNode.bundle.idata
+        }
       }
     }
-
     pio
+    
   }
 }
 
