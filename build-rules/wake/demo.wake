@@ -67,7 +67,7 @@ global def pioVC707DUT =
   def frequency = 50
   makeVC707TestSocketDUT name frequency blocks
 
-publish dutTests = demoPioTest, demoPio16Test, Nil
+publish dutTests = demoPioTest, demoPio16Test, passPioTest, Nil
 
 global def demoPioTest =
   def name = "demo"
@@ -85,6 +85,23 @@ global def demoPio16Test =
   def name = "demo16"
   def block = pio16Block
   def program = demo16
+  def plusargs =
+    NamedArg        "verbose",
+    NamedArgInteger "random_seed"      1234,
+    NamedArgInteger "tilelink_timeout" 16000,
+    NamedArgInteger "max-cycles"       50000,
+    Nil
+  makeBlockTest name block program plusargs
+
+# A dummy second test to make it easier to test workflows that involve multiple tests
+global def passPioTest =
+  def name = "pass"
+  def block = pioBlock
+  def program =
+    def cFiles =
+      source "{blockPIOSifiveRoot}/tests/c/pass/main.c",
+      Nil
+    makeTestProgramPlan name cFiles
   def plusargs =
     NamedArg        "verbose",
     NamedArgInteger "random_seed"      1234,
