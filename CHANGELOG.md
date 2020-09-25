@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Backwards-Incompatible Changes
 
+- Scribble documentation workflow has been removed.
 - Upgrade to environment-blockci-sifive 0.8.0 and wake 0.19.1. See their
   respective changelogs for individual backwards-incompatible changes.
 - Upgrade to latest api-generator-sifive and soc-testsocket-sifive. These
