@@ -137,7 +137,3 @@ def pioDriver =
   visibleFiles
 
 publish driverImplementations = pioDriver, Nil
-
-# Documentation
-publish scribbleDirectories =  simplify "{blockPIOSifiveRoot}/docs/scribble", Nil
-
