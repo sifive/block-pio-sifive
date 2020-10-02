@@ -21,16 +21,16 @@ The loopback block outputs the xor of oenable and odata to idata.
 #### wit
 
 * Wit is a workspace manager
-* Use version 0.13.0
+* Use version 0.14.0
 * Please see instructions on the [wit README](https://github.com/sifive/wit)
 
 #### wake
 
 * wake is a build tool
-* Use version 0.17.2
-* For installation instructions see the [wake README](https://github.com/sifive/wake/tree/v0.17.2#installing-dependencies)
-* [wake tutorial](https://github.com/sifive/wake/blob/v0.17.2/share/doc/wake/tutorial.md)
-* [wake quickref](https://github.com/sifive/wake/blob/v0.17.2/share/doc/wake/quickref.md)
+* Use version 0.19.1
+* For installation instructions see the [wake README](https://github.com/sifive/wake/tree/v0.19.1#installing-dependencies)
+* [wake tutorial](https://github.com/sifive/wake/blob/v0.19.1/share/doc/wake/tutorial.md)
+* [wake quickref](https://github.com/sifive/wake/blob/v0.19.1/share/doc/wake/quickref.md)
 
 #### duh
 

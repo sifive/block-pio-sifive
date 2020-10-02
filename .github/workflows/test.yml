@@ -1,0 +1,40 @@
+name: Test
+
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Wit Init
+      uses: sifive/wit/actions/init@v0.14.0
+      with:
+        additional_packages: git@github.com:sifive/environment-blockci-sifive.git::0.7.1
+
+    - name: Run pioDUT simulation
+      uses: sifive/environment-blockci-sifive/actions/wake@0.7.1
+      with:
+        command: -x 'runSim pioDUT'
+
+    - name: Run 16-pin pioDUT simulation
+      uses: sifive/environment-blockci-sifive/actions/wake@0.7.1
+      with:
+        command: -x 'runSim pio16DUT'
+
+    - name: Build pioDUT documentation
+      uses: sifive/environment-blockci-sifive/actions/wake@0.7.1
+      with:
+        command: -x 'makeOnboardingDocument pioDUT'
+
+    - name: Build 16-pin pioDUT documentation
+      uses: sifive/environment-blockci-sifive/actions/wake@0.7.1
+      with:
+        command: -x 'makeOnboardingDocument pio16DUT'
