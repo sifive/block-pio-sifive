@@ -28,13 +28,3 @@ jobs:
       uses: sifive/environment-blockci-sifive/actions/wake@0.7.1
       with:
         command: -x 'runSim pio16DUT'
-
-    - name: Build pioDUT documentation
-      uses: sifive/environment-blockci-sifive/actions/wake@0.7.1
-      with:
-        command: -x 'makeOnboardingDocument pioDUT'
-
-    - name: Build 16-pin pioDUT documentation
-      uses: sifive/environment-blockci-sifive/actions/wake@0.7.1
-      with:
-        command: -x 'makeOnboardingDocument pio16DUT'
