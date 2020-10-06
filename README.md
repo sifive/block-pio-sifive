@@ -1,7 +1,7 @@
 # Overview
 
 This branch represents the Parallel IO (PIO) block and loopback Verification IP (VIP) in their completed state. 
-This README describes the commands for running tests, creating an FPGA bitstream, and generating documentation.
+This README describes the commands for running tests and creating an FPGA bitstream.
 
 The earlier [`preonboarded`](https://github.com/sifive/block-pio-sifive/blob/preonboarded/README.md) branch has step-by-step 
 instructions detailing how the PIO block was created and integrated into the test socket framework.
@@ -125,17 +125,6 @@ To create the bitstream, run
 wake 'runBitstream "vc707" pioVC707DUT'
 ```
 The bitstream will be placed at `build/api-generator-sifive/pioVC707DUT/mcs/obj/VC707Shell.bit`
-
-
-## Creating Documentation
-The earlier onboarding process created text describing the PIO block and how it is used.
-The following command generates a test "Onboarding" document which includes that text.
-```
-wake makeOnboardingDocument pioDUT
-```
-The command creates two files, `pioDUT.html` and `pioDut.adoc`, both in the directory `build/api-generator-sifive/pioDUT/documentation`. 
-The .html file can be viewed directly in a web browser, and the .adoc file contains AsciiDoc which can be used for further processing,
-See the [AsciiDoctor PDF project](https://asciidoctor.org/docs/asciidoctor-pdf) for information on converting AsciiDoc to PDF.
 
 
 ## Wrap up
