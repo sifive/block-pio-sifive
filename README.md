@@ -1,7 +1,7 @@
 # Overview
 
 This branch represents the Parallel IO (PIO) block and loopback Verification IP (VIP) in their completed state. 
-This README describes the commands for running tests, creating an FPGA bitstream, and generating documentation.
+This README describes the commands for running tests and creating an FPGA bitstream.
 
 The earlier [`preonboarded`](https://github.com/sifive/block-pio-sifive/blob/preonboarded/README.md) branch has step-by-step 
 instructions detailing how the PIO block was created and integrated into the test socket framework.
