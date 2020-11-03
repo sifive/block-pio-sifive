@@ -1,17 +1,27 @@
 [
     {
-        "commit": "b9806ae597c95cc398226e6a16a14b4fd5789d5e",
+        "commit": "22d1391a4f3ebbb12fdc603ed1d8243ebb747a40",
         "name": "soc-testsocket-sifive",
         "source": "git@github.com:sifive/soc-testsocket-sifive.git"
     },
     {
-        "commit": "06e5e068ffe7045de51f9a6fcfd40d34547e3859",
+        "commit": "ee2856ef22ae79fa54ac0b3c882d43feb462660c",
         "name": "api-generator-sifive",
         "source": "git@github.com:sifive/api-generator-sifive.git"
     },
     {
-        "commit": "c51c7980f86afa2d1841c524644fefbe564cd982",
+        "commit": "cade56fdc52e5be864d34d6bc2031e45cd7c4fdb",
         "name": "api-scala-sifive",
         "source": "git@github.com:sifive/api-scala-sifive.git"
+    },
+    {
+        "commit": "bddefa8c7eb36bdbd62ecaa13cf5c5bbff73c53f",
+        "name": "api-chisel3-sifive",
+        "source": "git@github.com:sifive/api-chisel3-sifive.git"
+    },
+    {
+        "commit": "9315e2c7b4d6a2f37910bf010f52cb9602eba6d7",
+        "name": "sifive-blocks",
+        "source": "git@github.com:sifive/sifive-blocks.git"
     }
 ]
