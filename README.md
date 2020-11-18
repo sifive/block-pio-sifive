@@ -1,3 +1,5 @@
+⚠️ **DEPRECATION NOTICE**: This project is no longer being supported. ⚠️
+
 # Overview
 
 This branch represents the Parallel IO (PIO) block and loopback Verification IP (VIP) in their completed state. 
